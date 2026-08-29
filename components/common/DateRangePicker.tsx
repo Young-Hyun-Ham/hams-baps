@@ -29,7 +29,7 @@ const CustomPickersDay = styled(PickersDay, {
       'isEndOfWeek',
     ].includes(prop as string),
 })<
-  PickersDayProps & {
+  PickersDayProps<Date> & {
     dayIsBetween: boolean;
     isFirstDay: boolean;
     isLastDay: boolean;
@@ -191,7 +191,7 @@ export default function DateRangePicker({
     handleClose();
   };
 
-  const renderDay = (props: PickersDayProps) => {
+  const renderDay = (props: PickersDayProps<Date>) => {
     const { day } = props;
     const isFirstDay = value.start ? isSameDay(day, value.start) : false;
     const isLastDay = value.end ? isSameDay(day, value.end) : false;
