@@ -194,7 +194,7 @@ export default function PdfViewer({
         }
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [highlights, pageData]);
   return (
     <Box

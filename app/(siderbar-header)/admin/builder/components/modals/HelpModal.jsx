@@ -1410,9 +1410,9 @@ const HelpManual_vi = () => (
 // --- 👆 [수정 끝] ---
 
 function HelpModal({ isOpen, onClose }) {
-  if (!isOpen) return null;
-
   const [language, setLanguage] = useState('en');
+
+  if (!isOpen) return null;
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>

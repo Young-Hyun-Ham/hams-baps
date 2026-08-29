@@ -31,7 +31,7 @@ export function useExecutionFormInput() {
 
   useEffect(() => {
     if (!pendingFormInput) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+
       setExecutionFormElements([]);
       setExecutionFormValues({});
       return;

@@ -22,13 +22,13 @@ function badge(category: string) {
 }
 
 export default function BoardListPanel({ items }: { items: AdminBoardRow[] }) {
-  const { 
+  const {
     paging,
     open,
   } = useAdminBoardStore();
-  
+
   const [rows, setRows] = useState<AdminBoardRow[]>(items ?? []);
-  const [openUnlock, setOpenUnlock] = useState<Boolean>(false);
+  const [openUnlock, setOpenUnlock] = useState<boolean>(false);
   const [targetId, setTargetId] = useState<string>("");
   const [targetType, setTargetType] = useState<"detail" | "edit" | "delete" | null>(null);
   const empty = useMemo(() => rows.length === 0, [rows.length]);
@@ -76,12 +76,14 @@ export default function BoardListPanel({ items }: { items: AdminBoardRow[] }) {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
-                    <div 
+                    <div
                       className="flex items-center gap-2"
                       onClick={() => {
-                        r.hasPassword ? 
-                          guardedOpen({type: "detail", id: r.id, hasPassword: true}) : 
-                          open({ type: "detail", id: r.id })
+                        if (r.hasPassword) {
+                          guardedOpen({type: "detail", id: r.id, hasPassword: true});
+                        } else {
+                          open({ type: "detail", id: r.id });
+                        }
                       }}
                     >
                       <span className={badge(r.slug)}>{r.slug}</span>
@@ -112,9 +114,11 @@ export default function BoardListPanel({ items }: { items: AdminBoardRow[] }) {
                   <div className="shrink-0 flex items-center gap-2">
                     <button
                       onClick={() => {
-                        r.hasPassword ? 
-                          guardedOpen({type: "edit", id: r.id, hasPassword: true}) : 
-                          open({ type: "edit", id: r.id })
+                        if (r.hasPassword) {
+                          guardedOpen({type: "edit", id: r.id, hasPassword: true});
+                        } else {
+                          open({ type: "edit", id: r.id });
+                        }
                       }}
                       className="rounded-full bg-white px-3 py-2 text-xs font-medium text-gray-700
                                  shadow-sm ring-1 ring-black/5 hover:bg-gray-50 cursor-pointer"
@@ -123,9 +127,11 @@ export default function BoardListPanel({ items }: { items: AdminBoardRow[] }) {
                     </button>
                     <button
                       onClick={() => {
-                        r.hasPassword ? 
-                          guardedOpen({type: "delete", id: r.id, hasPassword: true}) : 
-                          open({ type: "delete", id: r.id })
+                        if (r.hasPassword) {
+                          guardedOpen({type: "delete", id: r.id, hasPassword: true});
+                        } else {
+                          open({ type: "delete", id: r.id });
+                        }
                       }}
                       className="rounded-full bg-rose-600 px-3 py-2 text-xs font-medium text-white
                                  shadow-sm shadow-rose-600/20 ring-1 ring-rose-700/30 hover:bg-rose-700 cursor-pointer"
@@ -139,7 +145,7 @@ export default function BoardListPanel({ items }: { items: AdminBoardRow[] }) {
           </div>
         )}
       </div>
-      
+
       {/* 비밀글 비번락 모달팝업 */}
       {openUnlock && (
         <BoardUnlockModal

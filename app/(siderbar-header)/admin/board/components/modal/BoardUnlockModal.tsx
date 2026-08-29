@@ -1,40 +1,24 @@
 // app/(sidebar-header)/admin/board/components/modal/BoardUnlockModal.tsx
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { useAdminBoardStore } from "../../store";
 import { api } from "@/lib/axios";
 
-type NextAction = { type: "detail" | "edit" | "delete"; id: string } | null;
-
 type Props = {
-  isOpen: Boolean;
+  isOpen: boolean;
   id: string;
   type: "detail" | "edit" | "delete" | null;
   onClose: () => void;
 };
 export default function BoardUnlockModal({ isOpen, id, type, onClose }: Props) {
-  if (!isOpen) return null;
-
-  const [unlockOpen, setUnlockOpen] = useState<Boolean>(false);
-  const [unlockTarget, setUnlockTarget] = useState<{ type: "detail" | "edit" | "delete"; id: string } | null>(null);
   const open = useAdminBoardStore((s) => s.open);
 
   const [pw, setPw] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const target: NextAction = useMemo(() => unlockTarget ?? null, [unlockTarget]);
-
-  useEffect(() => {
-    if (!unlockOpen) {
-      setPw("");
-      setErr(null);
-      setLoading(false);
-    }
-  }, [unlockOpen]);
-
-  // if (!unlockOpen || !target) return null;
+  if (!isOpen) return null;
 
   async function confirm() {
     const password = pw.trim();

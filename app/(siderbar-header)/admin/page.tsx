@@ -106,7 +106,7 @@ export default function MainDashboardPage() {
           <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
             <div className="flex items-center gap-4">
               <div className="h-14 w-14 overflow-hidden rounded-full border border-gray-200 bg-gray-100">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+                { }
                 <img
                   src={photoURL}
                   alt={displayName}

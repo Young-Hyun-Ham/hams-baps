@@ -1,7 +1,7 @@
 // app/api/user-token/firebase/use/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/firebase"; // 이미 쓰고 있는 Firestore 인스턴스 사용
-import { useUserTokenFirebase } from "@/lib/utils/userToken";
+import { useUserTokenFirebase as consumeUserTokenFirebase } from "@/lib/utils/userToken";
 
 /**
  * POST /api/user-token/firebase/use
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    await useUserTokenFirebase(db, {
+    await consumeUserTokenFirebase(db, {
       userId,
       amount: parsedAmount,
       usageType,

@@ -26,7 +26,7 @@ export class ChatbotEngine {
     if (headerMatch) {
       const arrayPath = headerMatch[1].trim();
       const field = headerMatch[2].trim();
-  
+
       const arr = this.getDeepValue(slots, arrayPath);
       if (Array.isArray(arr)) {
         return JSON.stringify(
@@ -37,7 +37,7 @@ export class ChatbotEngine {
       }
       return null;
     }
-  
+
     // 다른 custom 문법들 여기 확장 예정
     return null; // 처리할 문법이 없으면 null
   }
@@ -199,7 +199,7 @@ export class ChatbotEngine {
 
     for (const assignment of assignments) {
       if (assignment.key) {
-        let interpolatedValue = this.interpolateMessage(assignment.value, newSlots);
+        const interpolatedValue = this.interpolateMessage(assignment.value, newSlots);
         try {
           const trimmedValue = interpolatedValue.trim();
           if ((trimmedValue.startsWith('{') && trimmedValue.endsWith('}')) || (trimmedValue.startsWith('[') && trimmedValue.endsWith(']'))) {
@@ -224,7 +224,7 @@ export class ChatbotEngine {
   async run(startNodeId: string | null | undefined, currentSlots: Record<string, any>, callbacks: EngineCallbacks = {}, { anchorNodeId }: { anchorNodeId: string | null }): Promise<{ status: 'active' | 'completed' | 'failed', currentNodeId: string | null, slots: Record<string, any> }> {
     let currentNode: ScenarioNode | null | undefined = startNodeId ? this.getNodeById(startNodeId) : null;
     let slots = { ...currentSlots };
-    let isLoopActive = !!currentNode;
+    const isLoopActive = !!currentNode;
     let loopCount = 0;
     const MAX_LOOP_ITERATIONS = 100;
 
@@ -299,7 +299,7 @@ export class ChatbotEngine {
         currentNode = this.getNextNode(currentNode.id, null, slots, anchorNodeId);
       // ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
       // selectionGroup 처리 추가 - hyh
-      } else if (currentNode.type === 'selectionGroup') { 
+      } else if (currentNode.type === 'selectionGroup') {
         const childNodes = this.scenario.nodes.filter(n => n.parentNode === currentNode?.id);
         const childNodeIds = new Set(childNodes.map(n => n.id));
 

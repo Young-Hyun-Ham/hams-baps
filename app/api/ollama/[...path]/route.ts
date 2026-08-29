@@ -1,5 +1,5 @@
 // src/app/api/ollama/[...path]/route.ts
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { type NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";

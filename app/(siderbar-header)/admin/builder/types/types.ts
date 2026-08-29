@@ -1,7 +1,7 @@
 import { Timestamp } from 'next/dist/server/lib/cache-handlers/types';
 import { Node } from 'reactflow';
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 type Scenario = {
   id?: string;
   category_id?: string;
@@ -16,7 +16,7 @@ type Scenario = {
   depn_ver_id?: any;
   [key: string]: any;
 };
-/* eslint-enable @typescript-eslint/no-explicit-any */
+
 
 type TreeItem = {
   id: string;

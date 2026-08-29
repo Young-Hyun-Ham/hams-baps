@@ -44,7 +44,7 @@ export default function MainPage() {
               {/* 간단 프로필 요약 */}
               <div className="flex items-center gap-2">
                 <div className="h-8 w-8 rounded-full overflow-hidden bg-gray-100 border border-gray-200">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  { }
                   <img
                     src={photoURL}
                     alt={displayName}
@@ -240,7 +240,7 @@ export default function MainPage() {
             <div className="rounded-2xl bg-white border border-gray-200 p-4 shadow-sm">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-full overflow-hidden bg-gray-100 border border-gray-200">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  { }
                   <img
                     src={photoURL}
                     alt={displayName}

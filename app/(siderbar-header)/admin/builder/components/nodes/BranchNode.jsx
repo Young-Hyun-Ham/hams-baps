@@ -11,6 +11,8 @@ function BranchNode(props) {
   const { id, data } = props;
   const { t } = useTranslation();
   const updateNodeInternals = useUpdateNodeInternals();
+  const nodeColor = useBuilderStore((state) => state.nodeColors.branch);
+  const textColor = useBuilderStore((state) => state.nodeTextColors.branch);
 
   useEffect(() => {
     updateNodeInternals(id);
@@ -20,9 +22,6 @@ function BranchNode(props) {
     return <YnBranchNode {...props} />;
   }
   // 2. 공통 로직 제거
-  const nodeColor = useBuilderStore((state) => state.nodeColors.branch);
-  const textColor = useBuilderStore((state) => state.nodeTextColors.branch);
-
   const isConditionType = data.evaluationType === 'CONDITION';
   // (isAnchored, isStartNode 로직 제거)
 

@@ -1,4 +1,4 @@
-/* eslint-disable jsx-a11y/no-static-element-interactions */
+
 
 'use client';
 
@@ -735,7 +735,7 @@ const Flow = ({ scenario, scenarios }: any) => {
 
   useEffect(() => {
     if (!pendingFormInput) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+
       setExecutionFormElements([]);
       setExecutionFormValues({});
       return;
@@ -2786,7 +2786,7 @@ const Flow = ({ scenario, scenarios }: any) => {
           )}
 
           <div className={styles.topRightControls}>
-            {/* 우측 상단 버튼 영역 
+            {/* 우측 상단 버튼 영역
             <div
               onClick={() => {
                 saveScenario(backend, scenario);

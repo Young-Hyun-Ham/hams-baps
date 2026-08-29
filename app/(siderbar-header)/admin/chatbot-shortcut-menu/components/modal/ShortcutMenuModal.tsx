@@ -32,13 +32,13 @@ export default function ShortcutMenuModal({
   onChange,
   onSubmit,
 }: Props) {
-  if (!isOpen) return null;
-  
   const [scenarioOptions, setScenarioOptions] = useState<any[]>([]);
   const backend = process.env.NEXT_PUBLIC_BACKEND as "firebase";
-  
+
   // 최초 로드
   useEffect(() => {
+    if (!isOpen) return;
+
     const onload = async () => {
       try {
         setScenarioOptions(await backendService.fetchScenarios(backend));
@@ -48,7 +48,9 @@ export default function ShortcutMenuModal({
       }
     };
     onload();
-  }, []);
+  }, [backend, isOpen]);
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40">

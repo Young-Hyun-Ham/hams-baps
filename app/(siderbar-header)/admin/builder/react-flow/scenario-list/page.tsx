@@ -242,7 +242,7 @@ const ScenarioList = () => {
         last_used_at: formatDateTime(createData[0]?.updated_at) ?? '',
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [mode, scenario?.id, formReset]);
 
   const handleSelectScenario = async (data?: Scenario) => {

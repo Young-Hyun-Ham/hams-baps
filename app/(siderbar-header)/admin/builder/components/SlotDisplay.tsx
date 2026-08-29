@@ -1,5 +1,5 @@
-/* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
-/* eslint-disable jsx-a11y/click-events-have-key-events */
+
+
 
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -42,7 +42,7 @@ function SlotDisplay() {
       return (
         <pre className={styles.prettyJson}>
           {/* JSON.stringify의 value 타입을 any로 임시 설정 (lint 무시) */}
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+          { }
           <code>{JSON.stringify(value as any, null, 2)}</code>
         </pre>
       );

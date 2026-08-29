@@ -79,7 +79,7 @@ export default function ScenarioPickerModal({
     if (!open) return;
     // ✅ 모달 열릴 때 1회 로드
     load("");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [open, projectId]);
 
   const active = useMemo(
@@ -91,7 +91,7 @@ export default function ScenarioPickerModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-[1px] p-4">
-      <div 
+      <div
         className="
           w-full max-w-3xl
           rounded-2xl

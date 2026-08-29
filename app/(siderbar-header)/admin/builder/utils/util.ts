@@ -71,13 +71,13 @@ export const toLocaleTimeValue = (
  * @param {string} dateString - 변환할 날짜 문자열 (예: "2025-09-18T07:41:29.425557")
  * @returns {string} 포맷팅된 날짜 문자열 (예: "2025-09-18 07:41:29")
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 export function formatDateTime(dateString: any) {
   // dateString이 유효하지 않으면 빈 문자열을 반환합니다.
   if (!dateString) {
     return '';
   }
-  
+
   let date: Date;
   if (typeof dateString === 'object') {
     const milliseconds = (dateString.seconds * 1000) + Math.floor(dateString.nanoseconds / 1000000);
@@ -104,7 +104,7 @@ export function formatDateTime(dateString: any) {
  * @param b Object B
  * @param key Property key that holds the hierarchical ID (default: "index")
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 export function compareObjectsByHierarchicalId<T extends Record<string, any>>(
   a: T,
   b: T,

@@ -157,7 +157,7 @@ async function verifyPasswordAuto(base: string, id: string, password: string) {
   // v2: GET /board/verify?id=...&password=...
   // try {
   //   const { data } = await api.get(
-  //     `${base}/board/verify`, 
+  //     `${base}/board/verify`,
   //     { params: { id, password: pw } },
   //   );
   //   if (data?.ok === false) return false;
@@ -206,7 +206,7 @@ type State = {
   openCreate: () => void;
   openEdit: (id: string) => void;
   openUpsert: () => void;
-  closeUpsert: (isSelected?: Boolean) => void;
+  closeUpsert: (isSelected?: boolean) => void;
   openDelete: () => void;
   closeDelete: () => void;
 
@@ -568,7 +568,7 @@ const usePublicBoardStore = create<State>((set, get) => ({
       const { user } = useStore.getState();
       const authorId = user?.id ?? user?.uid ?? null;
       const authorName = user?.name ?? user?.displayName ?? user?.email ?? "익명";
-      
+
       const { data } = await api.post(`${base}/board/replies`, {
         postId,
         content: text,

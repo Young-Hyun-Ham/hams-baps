@@ -59,7 +59,7 @@ function resolveTemplate(text: string, slots: Record<string, any>): string {
       }
 
       // 기존 slots[key] 대신 중첩 경로 접근
-      let value = getNestedValue(slots, key);
+      const value = getNestedValue(slots, key);
 
       if (value === undefined || value === null) return `{{${key}}}`;
 

@@ -1,6 +1,6 @@
 // app/api/user-token/postgres/use/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { useUserTokenPostgres } from "@/lib/utils/userToken";
+import { useUserTokenPostgres as consumeUserTokenPostgres } from "@/lib/utils/userToken";
 
 /**
  * POST /api/user-token/postgres/use
@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    await useUserTokenPostgres({
+    await consumeUserTokenPostgres({
       userId,
       amount: parsedAmount,
       usageType,

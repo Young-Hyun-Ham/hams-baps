@@ -55,7 +55,7 @@ export default function BoardDetailModal({ open, id, onClose }: Props) {
   useEffect(() => {
     if (!open || !id) return;
     replyFetch(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [open, id]);
 
   useEffect(() => {

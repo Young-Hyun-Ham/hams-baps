@@ -41,7 +41,7 @@ function FormNodeController({ localNode, setLocalNode }: any) {
   const saveForm = useFormEditorStore((state) => state.saveForm);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+
     setIsMounted(true);
   }, []);
 

@@ -20,7 +20,7 @@ function SlotPanel() {
       return (
         <pre className={styles.prettyJson}>
           {/* JSON.stringify의 value 타입을 any로 임시 설정 (lint 무시) */}
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+          { }
           <code>{JSON.stringify(value as any, null, 2)}</code>
         </pre>
       );
