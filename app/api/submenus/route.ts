@@ -1,6 +1,8 @@
 // app/api/submenus/route.ts
+import { getSsoUserFromRequest } from "@hams-fam/sso-client";
 import { NextResponse } from "next/server";
 
+import { getVisibleMenus } from "@/lib/menu-access";
 import { getSubMenusByBackend } from "@/lib/services";
 
 /**
@@ -13,6 +15,19 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const last = url.searchParams.get("up_menu") ?? "";
   if (!last) return NextResponse.json({ items: [] });
+
+  const user = getSsoUserFromRequest(req);
+  const visibleRoots = await getVisibleMenus(user);
+  const canAccess = visibleRoots.some(
+    (item) => item.menu_id.toLowerCase() === last.toLowerCase(),
+  );
+
+  if (!canAccess) {
+    return NextResponse.json(
+      { ok: false, error: "menu_permission_required" },
+      { status: 403 },
+    );
+  }
   
   const backend = (process.env.NEXT_PUBLIC_BACKEND as "postgres" | "firebase" | undefined) ?? "firebase";
   const items = await getSubMenusByBackend(backend, last);
