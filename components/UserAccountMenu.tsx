@@ -89,7 +89,7 @@ export default function UserAccountMenu() {
           <div className="grid gap-1 border-t border-gray-100 pt-3 text-sm">
             <a href={profileHref} className="rounded-lg px-3 py-2 hover:bg-gray-50">회원정보 수정</a>
             <a href={servicesHref} className="rounded-lg px-3 py-2 hover:bg-gray-50">사이트 등급 수정</a>
-            <a href={`/api/auth/logout?returnTo=${encodeURIComponent(returnTo)}`} className="rounded-lg px-3 py-2 text-red-600 hover:bg-red-50">로그아웃</a>
+            <a href="/api/auth/logout?returnTo=%2Fmain" className="rounded-lg px-3 py-2 text-red-600 hover:bg-red-50">로그아웃</a>
           </div>
         </div>
       ) : null}

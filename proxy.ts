@@ -13,9 +13,15 @@ function isConfiguredAdmin(email: string) {
 
 export function proxy(request: NextRequest) {
   const user = getSsoUserFromRequest(request);
+  const pathname = request.nextUrl.pathname;
+  const isApiRoute = pathname.startsWith("/api/");
+  const isAdminRoute =
+    pathname.startsWith("/admin") || pathname.startsWith("/api/admin");
+  const isChatbotRoute =
+    pathname.startsWith("/chatbot") || pathname.startsWith("/api/chatbot");
 
   if (!user) {
-    if (request.nextUrl.pathname.startsWith("/api/")) {
+    if (isApiRoute) {
       return NextResponse.json(
         { ok: false, error: "authentication_required" },
         { status: 401 },
@@ -25,13 +31,23 @@ export function proxy(request: NextRequest) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set(
       "returnTo",
-      `${request.nextUrl.pathname}${request.nextUrl.search}`,
+      `${pathname}${request.nextUrl.search}`,
     );
     return NextResponse.redirect(loginUrl);
   }
 
-  if (!isConfiguredAdmin(user.email)) {
-    if (request.nextUrl.pathname.startsWith("/api/")) {
+  if (isChatbotRoute && user.aiEnabled !== true) {
+    if (isApiRoute) {
+      return NextResponse.json(
+        { ok: false, error: "ai_permission_required" },
+        { status: 403 },
+      );
+    }
+    return NextResponse.redirect(new URL("/main", request.url));
+  }
+
+  if (isAdminRoute && !isConfiguredAdmin(user.email)) {
+    if (isApiRoute) {
       return NextResponse.json(
         { ok: false, error: "admin_permission_required" },
         { status: 403 },
@@ -44,5 +60,10 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/api/admin/:path*"],
+  matcher: [
+    "/admin/:path*",
+    "/api/admin/:path*",
+    "/chatbot/:path*",
+    "/api/chatbot/:path*",
+  ],
 };
