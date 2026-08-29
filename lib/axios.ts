@@ -5,11 +5,8 @@ declare module "axios" {
   export interface AxiosRequestConfig { _retry?: boolean }
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-
 /** 일반 클라이언트 */
 export const api = axios.create({
-  baseURL: BASE_URL,
   withCredentials: true,
 });
 
