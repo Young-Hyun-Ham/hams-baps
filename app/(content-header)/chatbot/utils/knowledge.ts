@@ -33,6 +33,7 @@ export async function fetchKnowledgeAnswer(params: {
   const backend = (process.env.NEXT_PUBLIC_BACKEND ?? "firebase").toLowerCase();
   const answerUrl = `/api/chatbot/${backend}/answer`;
 
+  // knowledge_projects 컬렉션의 문서ID 
   const projectId =
     process.env.NEXT_PUBLIC_KNOWLEDGE_PROJECT_ID ||
     "81ba67f6-7568-446a-a82e-d0d7473ce437";

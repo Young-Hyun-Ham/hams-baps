@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useMemo } from "react";
+import { usePathname } from "next/navigation";
 
 import { useStore } from "@/store";
+import UserAccountMenu from "@/components/UserAccountMenu";
 
 type ContentProps = {
   header?: React.ReactNode;
@@ -12,12 +13,8 @@ type ContentProps = {
 };
 
 export default function ConnectLayout({ header, children }: ContentProps) {
-  const router = useRouter();
   const pathname = usePathname();
-  const user = useStore((s: any) => s.user);
   const authChecked = useStore((s: any) => s.authChecked);
-  const logout = useStore((s: any) => s.logout);
-  const backend = useStore((s: any) => s.backend);
 
   const isPageScroll = useMemo(() => {
     if (!pathname) return false;
@@ -30,19 +27,6 @@ export default function ConnectLayout({ header, children }: ContentProps) {
       pathname === "/link"
     );
   }, [pathname]);
-
-  useEffect(() => {
-    if (!authChecked) return;
-
-    if (!user) {
-      router.push("/login");
-    }
-  }, [authChecked, user, router]);
-
-  async function handleLogout() {
-    await logout();
-    router.push("/login");
-  }
 
   if (!authChecked) {
     return (
@@ -57,19 +41,7 @@ export default function ConnectLayout({ header, children }: ContentProps) {
       <header className="sticky top-0 z-30 h-14 bg-white/90 backdrop-blur shadow-sm">
         <div className="h-full px-4 flex items-center justify-between">
           {header}
-          <div className="flex items-center gap-3 text-sm">
-            <span>{user?.email}</span>
-            <span className="border-l pl-3">
-              {user?.displayName ?? user?.name ?? user?.username}
-              &nbsp;({backend})
-            </span>
-            <button
-              onClick={handleLogout}
-              className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md hover:cursor-pointer"
-            >
-              Logout
-            </button>
-          </div>
+          <UserAccountMenu />
         </div>
       </header>
 

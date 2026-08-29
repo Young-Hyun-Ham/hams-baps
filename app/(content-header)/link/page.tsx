@@ -9,13 +9,6 @@ export default function IframePage() {
   const targets: TargetSite[] = useMemo(
     () => [
       {
-        key: "health",
-        label: "홈트레이닝",
-        desc: "Hams Health",
-        href: "https://hams-health.vercel.app",
-        isPopup: true,
-      },
-      {
         key: "todos",
         label: "리마인더",
         desc: "Hams Todos",
@@ -27,13 +20,6 @@ export default function IframePage() {
         label: "다이어리",
         desc: "diary",
         href: "https://hams-diary.vercel.app",
-        isPopup: true,
-      },
-      {
-        key: "hams-chat",
-        label: "Chatting",
-        desc: "Hams Chat",
-        href: "https://hams-chat.vercel.app",
         isPopup: true,
       },
       {

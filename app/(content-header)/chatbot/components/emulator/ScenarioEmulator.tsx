@@ -132,7 +132,7 @@ export default function ScenarioEmulator({
       edges,
       scenarioKey,
       scenarioRunId,
-      userId: user.id,
+      userId: user?.id ?? "guest-preview",
     }),
     [nodes, edges, scenarioKey, scenarioRunId],
   );

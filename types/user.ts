@@ -2,12 +2,23 @@
 export type roleTypes = "guest" | "admin" | "user" | "";
 export type aiChatTypes = "gpt" | "gemini" | "claude" | "";
 
+export type ServiceMembership = {
+  serviceSiteId: string;
+  clientId: string;
+  serviceName: string;
+  plan: "basic" | "standard" | "premium";
+  monthlyPrice: number;
+  joinedAt: string;
+};
+
 export type User = {
   id: string;
   sub: string;
+  uid?: string;
   email: string;
   username: string;
   name?: string | null;
+  displayName?: string | null;
   nickname?: string | null;
   loginId?: string | null;
   loginIdLower?: string | null;
@@ -16,8 +27,9 @@ export type User = {
   provider?: string;
   providerSubject?: string | null;
   phoneNumber?: string | null;
-  accessToken?: string;
-  refreshToken?: string;
+  birthDate?: string | null;
+  gender?: "male" | "female" | "other" | "prefer_not_to_say" | null;
+  serviceMemberships?: ServiceMembership[];
   aiEnabled?: boolean;
   aiChatType?: aiChatTypes;
   apiKey?: string | null;

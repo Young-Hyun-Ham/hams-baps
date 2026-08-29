@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { useStore } from "@/store";
 import { ExpandIcon, CollapseIcon } from "./Icons";
+import UserAccountMenu from "./UserAccountMenu";
 
 type SiderbarProps = {
   header?: React.ReactNode;
@@ -18,20 +19,9 @@ export default function ResizableSidebarLayout({
   children,
 }: SiderbarProps) {
   const router = useRouter();
-  const user = useStore((s: any) => s.user);
   const authChecked = useStore((s: any) => s.authChecked);
-  const logout = useStore((s: any) => s.logout);
-  const backend = useStore((s: any) => s.backend);
   const sidebarCollapsed = useStore((s: any) => s.adminSidebarCollapsed);
   const setAdminSidebarCollapsed = useStore((s: any) => s.setAdminSidebarCollapsed);
-
-  useEffect(() => {
-    if (!authChecked) return;
-
-    if (!user) {
-      router.push("/login");
-    }
-  }, [authChecked, user, router]);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [sidebarW, setSidebarW] = useState<number>(200);
@@ -67,11 +57,6 @@ export default function ResizableSidebarLayout({
       window.removeEventListener("mouseup", onUp);
     };
   }, [dragging]);
-
-  async function handleLogout() {
-    await logout();
-    router.push("/login");
-  }
 
   const handleGoMenu = (type: string) => {
     switch (type) {
@@ -109,19 +94,7 @@ export default function ResizableSidebarLayout({
       <header className="sticky top-0 z-30 h-14 bg-white/90 backdrop-blur shadow-sm">
         <div className="h-full px-4 flex items-center justify-between">
           {header}
-          <div className="flex items-center gap-3 text-sm">
-            <span>{user?.email}</span>
-            <span className="border-l pl-3">
-              {user?.displayName ?? user?.name ?? user?.username}
-              &nbsp;({backend})
-            </span>
-            <button
-              onClick={handleLogout}
-              className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md hover:cursor-pointer"
-            >
-              Logout
-            </button>
-          </div>
+          <UserAccountMenu />
         </div>
       </header>
 

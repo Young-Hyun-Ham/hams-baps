@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import type { SsoSessionUser } from "@hams-fam/sso-client";
 
 import {
   db,
@@ -11,7 +12,6 @@ import {
   setDoc,
 } from "@/lib/firebase";
 import { locales } from "@/lib/locales";
-import { createAuthSlice } from "@/store/slice/authSliceSso";
 import { createUISlice } from "@/store/slice/uiSlice";
 import { NavItem, SidebarMenu } from "@/types/nav";
 import { User } from "@/types/user";
@@ -34,6 +34,9 @@ const USER_MOCK_DATA = {
   provider: "google",
   providerSubject: null,
   phoneNumber: "01099360110",
+  birthDate: null,
+  gender: null,
+  serviceMemberships: [],
   aiEnabled: true,
   aiChatType: "gpt",
   chatModel: "gpt-3.5-turbo",
@@ -55,7 +58,6 @@ export const useStore: any = create((set: any, get: any) => ({
   user: null,
   authChecked: false,
   backend: BACKEND,
-  loginType: "sso",
 
   headerMenus: [],
   setHeaderMMenus: (data: NavItem) => {
@@ -100,7 +102,6 @@ export const useStore: any = create((set: any, get: any) => ({
     });
   },
 
-  ...createAuthSlice(set, get),
   ...createUISlice(set, get),
 
   setUserAndLoadData: async (user: any) => {
@@ -224,7 +225,6 @@ export const useStore: any = create((set: any, get: any) => ({
 
     set({
       user: null,
-      token: null,
       authChecked: true,
       theme,
       fontSize,
@@ -234,23 +234,51 @@ export const useStore: any = create((set: any, get: any) => ({
   },
 
   initAuth: () => {
-    const mePath = BACKEND === "postgres" ? "/api/auth/me/postgres" : "/api/auth/me/firebase";
-
-    fetch(mePath, {
+    fetch("/api/auth/me", {
       credentials: "include",
       cache: "no-store",
     })
       .then(async (response) => {
-        if (!response.ok) {
-          throw new Error("unauthorized");
+        if (!response.ok) throw new Error("session_lookup_failed");
+        const result = (await response.json()) as { user?: SsoSessionUser | null };
+        if (!result.user) {
+          get().clearUserAndData();
+          return;
         }
 
-        const me = await response.json();
+        const ssoUser = result.user;
+        const displayName =
+          ssoUser.nickname || ssoUser.loginId || ssoUser.email.split("@")[0];
+        const me: User = {
+          id: ssoUser.id,
+          sub: ssoUser.id,
+          uid: ssoUser.id,
+          email: ssoUser.email,
+          username: displayName,
+          name: displayName,
+          displayName,
+          nickname: displayName,
+          loginId: ssoUser.loginId,
+          loginIdLower: ssoUser.loginId.toLowerCase(),
+          emailLower: ssoUser.email.toLowerCase(),
+          roles: ["user"],
+          provider: ssoUser.provider,
+          providerSubject: ssoUser.providerSubject,
+          phoneNumber: ssoUser.phoneNumber,
+          birthDate: ssoUser.birthDate,
+          gender: ssoUser.gender,
+          serviceMemberships: ssoUser.serviceMemberships,
+          aiEnabled: ssoUser.aiEnabled,
+          aiChatType: ssoUser.aiChatType ?? "",
+          chatModel: ssoUser.chatModel,
+          termsAcceptedAt: null,
+          termsVersion: ssoUser.termsVersion,
+          createdAt: ssoUser.createdAt,
+          updatedAt: ssoUser.updatedAt,
+        };
         set({
           user: me,
-          token: me.accessToken ?? null,
           authChecked: true,
-          loginType: "sso",
         });
         await get().setUserAndLoadData(me);
       })
@@ -258,9 +286,7 @@ export const useStore: any = create((set: any, get: any) => ({
         if (DEV_MOCK_LOGIN) {
           set({
             user: USER_MOCK_DATA,
-            token: null,
             authChecked: true,
-            loginType: "mock",
           });
 
           await get().setUserAndLoadData(USER_MOCK_DATA);

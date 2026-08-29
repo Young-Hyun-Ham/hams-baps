@@ -13,7 +13,7 @@ async function loadMenus(): Promise<NavItem[]> {
     .map((c) => `${c.name}=${encodeURIComponent(c.value)}`)
     .join("; ");
 
-  const res = await fetch(`${process.env.NEXT_PUBLIC_ORIGIN ?? "http://localhost:3000"}/api/menus`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/api/menus`, {
     method: "GET",
     headers: cookieHeader ? { cookie: cookieHeader } : undefined,
     cache: "no-store",
