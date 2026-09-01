@@ -2769,7 +2769,7 @@ const Flow = ({ scenario, scenarios }: any) => {
           {isSlotDisplayVisible && (
             <div
               className={styles.slotDisplayAnchor}
-              style={{ top: `${canvasPanelHeight + 24}px` }}
+              style={{ top: `${canvasPanelHeight + 54}px` }}
             >
               <SlotDisplay />
             </div>

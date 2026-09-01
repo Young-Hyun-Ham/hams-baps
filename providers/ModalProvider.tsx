@@ -190,7 +190,7 @@ function ModalRoot({ dialog, onResolve }: { dialog?: DialogItem; onResolve: (v?:
       aria-modal
       role="dialog"
       aria-labelledby="modal-title"
-      className="fixed inset-0 z-[1500] flex items-center justify-center"
+      className="fixed inset-0 z-1500 flex items-center justify-center"
     >
       {/* Overlay */}
       <div
@@ -207,15 +207,15 @@ function ModalRoot({ dialog, onResolve }: { dialog?: DialogItem; onResolve: (v?:
 
       {/* Panel */}
       <div
-        className={`relative mx-4 w-full max-w-md rounded-2xl bg-[var(--panel,#111213)] p-5 shadow-2xl ring-1 ring-white/10 ${dialog.className ?? ""}`}
+        className={`relative mx-4 w-full max-w-md rounded-2xl bg-(--panel,#111213) p-5 shadow-2xl ring-1 ring-white/10 ${dialog.className ?? ""}`}
       >
         {dialog.title && (
-          <h2 id="modal-title" className="text-lg font-semibold text-[var(--text,#e8e8e8)]">
+          <h2 id="modal-title" className="text-lg font-semibold text-(--text,#e8e8e8)">
             {dialog.title}
           </h2>
         )}
         {dialog.message && (
-          <div className="mt-3 text-[var(--text,#e8e8e8)]/90 text-sm leading-6">
+          <div className="mt-3 text-(--text,#e8e8e8)/90 text-sm leading-6">
             {dialog.message}
           </div>
         )}

@@ -173,6 +173,16 @@ export const FORM_ELEMENT_REGISTRY = {
       rows: 2,
       columns: 2,
       displayKeys: [],
+      sampleJson: JSON.stringify(
+        {
+          data: [
+            { id: 'AL000000001', name: 'ABC Corp' },
+            { id: 'AL000000002', name: 'DEF Ltd' },
+          ],
+        },
+        null,
+        2,
+      ),
       optionsSlot: '',
     }),
   },

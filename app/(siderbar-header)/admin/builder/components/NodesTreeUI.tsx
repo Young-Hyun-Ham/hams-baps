@@ -88,6 +88,29 @@ function NodesTreeUI({
           {t('Node Library')}
         </Typography>
         <Box flex={0.5} />
+        {!isMenuCollapsed &&  (
+          <Box display={'flex'} alignItems={'center'} gap={0.5}>
+            <FormControlLabel
+              control={
+                <Switch
+                  size="small"
+                  checked={isDragMode}
+                  onChange={(_, checked) => setIsDragMode(checked)}
+                  // disabled={selectedChunk != null}
+                />
+              }
+              label={t('Drag & Drop')}
+              sx={{
+                mr: 0,
+                '& .MuiFormControlLabel-label': {
+                  fontSize: 12,
+                  fontWeight: 500,
+                  color: 'text.primary',
+                },
+              }}
+            />
+          </Box>
+        )}
         <Box display={'flex'} alignItems={'center'} gap={0.5}>
           <FormControlLabel
             control={

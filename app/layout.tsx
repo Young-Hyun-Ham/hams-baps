@@ -5,8 +5,8 @@ import AuthInit from "@/components/AuthInit";
 import ModalProvider from "@/providers/ModalProvider";
 
 export const metadata: Metadata = {
-  title: "Hams BAP",
-  description: "Hams BAP service",
+  title: "Hams BAPS",
+  description: "Hams BAPS service",
 };
 
 export default function RootLayout({

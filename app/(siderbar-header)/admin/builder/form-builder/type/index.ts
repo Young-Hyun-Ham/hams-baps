@@ -157,6 +157,7 @@ export interface GridElement extends BaseFormElement {
   optionsSlot?: string;
   selectable?: boolean;
   hasHeader?: boolean;
+  sampleJson?: string;
 }
 export interface FormElementData {
   formId?: string | null;

@@ -1,8 +1,13 @@
 import { useState } from 'react';
 import {
   Box,
+  Button,
   Checkbox,
   Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   FormControl,
   FormControlLabel,
   InputLabel,
@@ -12,6 +17,12 @@ import {
   RadioGroup,
   Select,
   Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   TextField,
   Typography,
 } from '@mui/material';
@@ -35,6 +46,17 @@ const splitList = (value: string) =>
     .filter(Boolean);
 
 const formatList = (items: string[]) => items.join('\n');
+
+const INITIAL_GRID_SAMPLE_JSON = JSON.stringify(
+  {
+    data: [
+      { id: 'AL000000001', name: 'ABC Corp' },
+      { id: 'AL000000002', name: 'DEF Ltd' },
+    ],
+  },
+  null,
+  2,
+);
 
 type DisplayOption = string | DisplayValue;
 
@@ -134,23 +156,296 @@ function OptionLayoutEditor({
   );
 }
 
-const parseDisplayKeys = (value: string): DisplayKey[] =>
-  value
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line) => {
-      const [key, ...labelParts] = line.split(':');
-      const label = labelParts.join(':').trim();
-      return {
-        key: key.trim(),
-        label: label || key.trim(),
-      };
-    })
-    .filter((item) => item.key);
+const createDefaultDisplayKey = (): DisplayKey => ({
+  key: '',
+  label: '',
+});
 
-const formatDisplayKeys = (displayKeys: DisplayKey[]) =>
-  displayKeys.map((item) => `${item.key}:${item.label}`).join('\n');
+function DisplayKeysEditor({
+  displayKeys,
+  defaultCount,
+  onChange,
+  isReadonly,
+}: {
+  displayKeys: DisplayKey[];
+  defaultCount: number;
+  onChange: (displayKeys: DisplayKey[]) => void;
+  isReadonly: boolean;
+}) {
+  const { t } = useTranslation();
+  const count = displayKeys.length || defaultCount;
+  const normalizedDisplayKeys = Array.from({ length: count }, (_, index) =>
+    displayKeys[index] ?? createDefaultDisplayKey(),
+  );
+  const countOptions = Array.from({ length: 20 }, (_, index) => index + 1);
+
+  const handleCountChange = (nextCount: number) => {
+    onChange(
+      Array.from(
+        { length: nextCount },
+        (_, index) => normalizedDisplayKeys[index] ?? createDefaultDisplayKey(),
+      ),
+    );
+  };
+
+  const handleDisplayKeyChange = (
+    index: number,
+    field: keyof DisplayKey,
+    value: string,
+  ) => {
+    onChange(
+      normalizedDisplayKeys.map((displayKey, displayKeyIndex) =>
+        displayKeyIndex === index
+          ? { ...displayKey, [field]: value }
+          : displayKey,
+      ),
+    );
+  };
+
+  return (
+    <Stack spacing={1.25}>
+      <FormControl fullWidth size="small">
+        <InputLabel id="grid-header-count-label">{t('Header Count')}</InputLabel>
+        <Select
+          labelId="grid-header-count-label"
+          label={t('Header Count')}
+          disabled={isReadonly}
+          value={count}
+          onChange={(event) => handleCountChange(Number(event.target.value))}
+        >
+          {countOptions.map((optionCount) => (
+            <MenuItem key={optionCount} value={optionCount}>
+              {optionCount}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      <Typography variant="subtitle2">{t('Display Labels')}</Typography>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: '32px minmax(0, 1fr) minmax(0, 1fr)',
+          gap: 0.75,
+          alignItems: 'center',
+        }}
+      >
+        {normalizedDisplayKeys.map((displayKey, index) => (
+          <Box key={index} sx={{ display: 'contents' }}>
+            <TextField
+              size="small"
+              value={index + 1}
+              disabled
+              inputProps={{ sx: { textAlign: 'center', px: 0.5 } }}
+            />
+            <TextField
+              size="small"
+              label={t('Key')}
+              disabled={isReadonly}
+              value={displayKey.key}
+              onChange={(event) =>
+                handleDisplayKeyChange(index, 'key', event.target.value)
+              }
+            />
+            <TextField
+              size="small"
+              label={t('Label')}
+              disabled={isReadonly}
+              value={displayKey.label}
+              onChange={(event) =>
+                handleDisplayKeyChange(index, 'label', event.target.value)
+              }
+            />
+          </Box>
+        ))}
+      </Box>
+
+    </Stack>
+  );
+}
+
+const getValueAtPath = (value: unknown, path: string): unknown =>
+  path
+    .replace(/\[(\w+)\]/g, '.$1')
+    .split('.')
+    .filter(Boolean)
+    .reduce<unknown>((current, key) => {
+      if (current && typeof current === 'object') {
+        return (current as Record<string, unknown>)[key];
+      }
+      return undefined;
+    }, value);
+
+function GridSampleDataControls({
+  element,
+  onChange,
+  isReadonly,
+}: {
+  element: GridElement;
+  onChange: (element: GridElement) => void;
+  isReadonly: boolean;
+}) {
+  const { t } = useTranslation();
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [sampleJsonError, setSampleJsonError] = useState('');
+  const sampleJson = element.sampleJson ?? INITIAL_GRID_SAMPLE_JSON;
+
+  let previewRows: Record<string, unknown>[] = [];
+  let previewError = '';
+  try {
+    const parsedJson: unknown = JSON.parse(sampleJson);
+    const data = getValueAtPath(parsedJson, element.optionsSlot?.trim() ?? '');
+    if (!Array.isArray(data)) {
+      previewError = t('Data Slot must point to an array in the sample JSON.');
+    } else {
+      previewRows = data.filter(
+        (row): row is Record<string, unknown> =>
+          Boolean(row) && typeof row === 'object' && !Array.isArray(row),
+      );
+    }
+  } catch {
+    previewError = t('Invalid JSON format');
+  }
+
+  const previewKeys = element.displayKeys.length
+    ? element.displayKeys
+    : Object.keys(previewRows[0] ?? {}).map((key) => ({ key, label: key }));
+
+  const handleFormatSampleJson = () => {
+    try {
+      onChange({
+        ...element,
+        sampleJson: JSON.stringify(JSON.parse(sampleJson), null, 2),
+      });
+      setSampleJsonError('');
+    } catch {
+      setSampleJsonError(t('Invalid JSON format'));
+    }
+  };
+
+  return (
+    <>
+      <Stack direction="row" spacing={1}>
+        <Button
+          fullWidth
+          variant="outlined"
+          disabled={isReadonly}
+          onClick={() => {
+            setSampleJsonError('');
+            setIsEditorOpen(true);
+          }}
+        >
+          {t('Sample Data')}
+        </Button>
+        <Button
+          fullWidth
+          variant="outlined"
+          onClick={() => setIsPreviewOpen(true)}
+        >
+          {t('Preview')}
+        </Button>
+      </Stack>
+
+      <Dialog
+        open={isEditorOpen}
+        onClose={() => setIsEditorOpen(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>{t('Sample JSON Data')}</DialogTitle>
+        <DialogContent dividers>
+          <TextField
+            autoFocus
+            fullWidth
+            multiline
+            minRows={14}
+            value={sampleJson}
+            error={Boolean(sampleJsonError)}
+            helperText={sampleJsonError}
+            onChange={(event) => {
+              onChange({ ...element, sampleJson: event.target.value });
+              setSampleJsonError('');
+            }}
+            onKeyDown={(event) => event.stopPropagation()}
+            inputProps={{
+              spellCheck: false,
+              sx: { fontFamily: 'monospace', fontSize: 13 },
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              onChange({ ...element, sampleJson: INITIAL_GRID_SAMPLE_JSON });
+              setSampleJsonError('');
+            }}
+          >
+            {t('Reset')}
+          </Button>
+          <Button onClick={handleFormatSampleJson}>{t('JSON Formatter')}</Button>
+          <Button variant="contained" onClick={() => setIsEditorOpen(false)}>
+            {t('Close')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        fullWidth
+        maxWidth="md"
+      >
+        <DialogTitle>{t('Grid Preview')}</DialogTitle>
+        <DialogContent dividers>
+          {previewError ? (
+            <Typography color="error">{previewError}</Typography>
+          ) : (
+            <TableContainer sx={{ maxHeight: 480 }}>
+              <Table stickyHeader size="small">
+                {element.hasHeader ? (
+                  <TableHead>
+                    <TableRow>
+                      {element.selectable ? <TableCell padding="checkbox" /> : null}
+                      {previewKeys.map((item, index) => (
+                        <TableCell key={`${item.key}-${index}`}>
+                          {item.label || item.key}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  </TableHead>
+                ) : null}
+                <TableBody>
+                  {previewRows.map((row, rowIndex) => (
+                    <TableRow key={rowIndex}>
+                      {element.selectable ? (
+                        <TableCell padding="checkbox">
+                          <Checkbox size="small" disabled />
+                        </TableCell>
+                      ) : null}
+                      {previewKeys.map((item, columnIndex) => (
+                        <TableCell key={`${item.key}-${columnIndex}`}>
+                          {typeof row[item.key] === 'object'
+                            ? JSON.stringify(row[item.key])
+                            : String(row[item.key] ?? '')}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button variant="contained" onClick={() => setIsPreviewOpen(false)}>
+            {t('Close')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
+  );
+}
 
 function DraftTextField({
   label,
@@ -1156,9 +1451,23 @@ function ElementPropertyEditor({
                 size="small"
                 checked={element.hasHeader ?? false}
                 disabled={isReadonly}
-                onChange={(event) =>
-                  onChange({ ...element, hasHeader: event.target.checked })
-                }
+                onChange={(event) => {
+                  const hasHeader = event.target.checked;
+
+                  onChange({
+                    ...element,
+                    hasHeader,
+                    displayKeys:
+                      hasHeader && !element.displayKeys.length
+                        ? Array.from(
+                            { length: Math.max(1, element.columns) },
+                            () => createDefaultDisplayKey(),
+                          )
+                        : hasHeader
+                          ? element.displayKeys
+                          : [],
+                  });
+                }}
               />
             }
             label={t('Header Row')}
@@ -1175,20 +1484,21 @@ function ElementPropertyEditor({
             }
           />
           {(element.optionsSlot ?? '').trim() ? (
-            <DraftTextField
-              label={t('Display Labels')}
-              helperText={'Enter a new line in key:label format'}
-              minRows={3}
+            <GridSampleDataControls
+              element={element}
               isReadonly={isReadonly}
-              value={formatDisplayKeys(element.displayKeys)}
-              onCommit={(value) =>
-                onChange({
-                  ...element,
-                  displayKeys: parseDisplayKeys(value),
-                })
-              }
+              onChange={onChange}
             />
-          ) : (
+          ) : null}
+          {element.hasHeader ? (
+            <DisplayKeysEditor
+              displayKeys={element.displayKeys}
+              defaultCount={Math.max(1, element.columns)}
+              isReadonly={isReadonly}
+              onChange={(displayKeys) => onChange({ ...element, displayKeys })}
+            />
+          ) : null}
+          {!(element.optionsSlot ?? '').trim() ? (
             <>
               <Stack direction="row" spacing={1}>
                 <TextField
@@ -1247,21 +1557,7 @@ function ElementPropertyEditor({
                 }
               />
             </>
-          )}
-          <DraftTextField
-            hidden
-            label={t('Display Labels')}
-            helperText={t('Enter a new line in key:label format')}
-            minRows={3}
-            isReadonly={isReadonly}
-            value={formatDisplayKeys(element.displayKeys)}
-            onCommit={(value) =>
-              onChange({
-                ...element,
-                displayKeys: parseDisplayKeys(value),
-              })
-            }
-          />
+          ) : null}
         </Stack>
       );
     default:
