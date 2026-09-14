@@ -155,7 +155,7 @@ export default function MainPage() {
     href: canUseAi
       ? "/chatbot"
       : user
-        ? "/api/auth/profile?destination=services&returnTo=%2Fmain"
+        ? "/api/auth/profile?returnTo=%2Fmain"
         : "/login?returnTo=%2Fmain",
     action: canUseAi ? "챗봇 시작" : user ? "AI 권한 설정" : "로그인 후 이용",
     icon: MessagesSquare,
@@ -166,7 +166,7 @@ export default function MainPage() {
   const primaryHref = canUseAi
     ? "/chatbot"
     : user
-      ? "/api/auth/profile?destination=services&returnTo=%2Fmain"
+      ? "/api/auth/profile?returnTo=%2Fmain"
       : "/login?returnTo=%2Fmain";
   const primaryLabel = canUseAi
     ? "AI 워크스페이스 열기"
@@ -391,7 +391,7 @@ export default function MainPage() {
             </div>
             <div className="relative mt-7 flex shrink-0 flex-col gap-3 sm:flex-row lg:mt-0">
               <Link
-                href={canUseAi ? "/chatbot" : user ? "/api/auth/profile?destination=services&returnTo=%2Fmain" : "/faq"}
+                href={canUseAi ? "/chatbot" : user ? "/api/auth/profile?returnTo=%2Fmain" : "/faq"}
                 className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-white px-5 text-sm font-bold text-slate-950 transition hover:bg-blue-50"
               >
                 {canUseAi ? "챗봇 시작" : user ? "AI 권한 설정" : "공개 화면 둘러보기"}

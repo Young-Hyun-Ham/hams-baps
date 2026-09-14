@@ -14,8 +14,10 @@ import NodesTree from './NodesTree';
 import { MOCK_UP_TREE_DATA } from '../store';
 
 import { COLORS } from '@/lib/constants/color';
-import LeftPanelOpenIcon from '@/assets/icon-left-panel-open.svg';
-import LeftPanelCloseIcon from '@/assets/icon-left-panel-close.svg';
+import Image from 'next/image';
+import leftPanelOpenIcon from '@/assets/icon-left-panel-open.svg';
+import leftPanelCloseIcon from '@/assets/icon-left-panel-close.svg';
+
 // import LeftPanelCloseIcon from '@/assets/icon-left-panel-close.svg';
 
 // [인수인계 메모]
@@ -70,7 +72,12 @@ function NodesTreeUI({
             }
           }}
         >
-          {/* {isMenuCollapsed ? <LeftPanelOpenIcon /> : <LeftPanelCloseIcon />} */}
+          <Image
+            src={isMenuCollapsed ? leftPanelOpenIcon : leftPanelCloseIcon}
+            alt=""
+            width={20}
+            height={20}
+          />
         </IconButton>
         <Typography
           fontSize={14}
@@ -111,27 +118,6 @@ function NodesTreeUI({
             />
           </Box>
         )}
-        <Box display={'flex'} alignItems={'center'} gap={0.5}>
-          <FormControlLabel
-            control={
-              <Switch
-                size="small"
-                checked={isDragMode}
-                onChange={(_, checked) => setIsDragMode(checked)}
-                // disabled={selectedChunk != null}
-              />
-            }
-            label={t('Drag & Drop')}
-            sx={{
-              mr: 0,
-              '& .MuiFormControlLabel-label': {
-                fontSize: 12,
-                fontWeight: 500,
-                color: 'text.primary',
-              },
-            }}
-          />
-        </Box>
       </Box>
       <Box
         sx={{

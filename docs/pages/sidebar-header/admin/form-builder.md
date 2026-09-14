@@ -1,5 +1,10 @@
 # `/admin/form-builder`
 
+## Runtime synchronization
+
+- Form element options are rendered with the same behavior in the builder chatbot simulator.
+- The scenario-flow Form node reuses `form-builder/components/CanvasElement.tsx`, so its canvas preview follows future form-builder UI changes.
+
 - 파일: `app/(siderbar-header)/admin/form-builder/page.tsx`
 - 목적: 관리자 레이아웃 안에서 Form Builder 샌드박스를 노출하는 화면
 - 주요 동작:
