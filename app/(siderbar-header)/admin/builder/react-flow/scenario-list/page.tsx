@@ -21,6 +21,8 @@ import { formatDateTime } from '../../utils/util';
 import { AppLoadingOverlay } from '@/components/common/AppLoadingOverlay';
 import { useModal } from '@/providers/ModalProvider';
 
+import { useStore } from "@/store";
+
 const SCENARIO_SEARCH_OPTIONS = [{ label: 'Scenario Name', value: 'scenario' }];
 
 type SearchFilter = {
@@ -50,6 +52,8 @@ const ScenarioList = () => {
   const [mode, setMode] = useState<MODE>(null);
   const [selectedScenario, setSelectedScenario] = useState(false);
   const [selectedScenarioId, setSelectedScenarioId] = useState('');
+
+  const setAdminSidebarCollapsed = useStore((s: any) => s.setAdminSidebarCollapsed);
 
   const {
     scenario,
@@ -646,6 +650,9 @@ const ScenarioList = () => {
                         variant="outlined"
                         onClick={() => {
                           handleMoveTempScenario(scenario);
+
+                          // admin sidebar를 닫는 로직 추가
+                          setAdminSidebarCollapsed(true);
                         }}
                       >
                         {t('Edit')}

@@ -3,6 +3,7 @@ import { useBuilderStore } from "../store/index";
 import styles from "./ChatbotSimulator.module.css";
 import { useChatFlow } from "./controllers/hooks/useChatFlow";
 import { interpolateMessage, validateInput } from "../utils/simulatorUtils";
+import { toLocaleTimeValue } from "../utils/util";
 import SimulatorHeader from "./simulator/SimulatorHeader";
 import MessageHistory from "./simulator/MessageHistory";
 import UserInput from "./simulator/UserInput";
@@ -35,6 +36,15 @@ const isEmptyFormValue = (value) =>
             : false
       : value == null || String(value).trim() === "";
 
+const isSameGridRow = (left, right) => {
+  if (left === right) return true;
+  try {
+    return JSON.stringify(left) === JSON.stringify(right);
+  } catch {
+    return false;
+  }
+};
+
 const transformFormValue = (element, value) => {
   if (element?.type !== "input") return value;
 
@@ -48,6 +58,106 @@ const transformFormValue = (element, value) => {
     );
   }
   return value;
+};
+
+const toDisplayDate = (timestamp) => {
+  if (!timestamp) return "";
+  const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const seconds = String(date.getSeconds()).padStart(2, "0");
+
+  return `${year}-${month}-${day} ${hours}시 ${minutes}분 ${seconds}초`;
+};
+
+const toSubmittedLocaleDate = (date, time, hasTime, locale) => {
+  const localeDate = toLocaleTimeValue(date, time, hasTime, locale);
+  return {
+    ...localeDate,
+    displayDate: toDisplayDate(localeDate.date),
+  };
+};
+
+const toGridSlotValue = (gridElement, row) => {
+  if (!row || typeof row !== "object") return row;
+  if (!Array.isArray(row)) return { ...row };
+
+  const columnCount = Math.max(
+    row.length,
+    Number(gridElement?.columns) || 0,
+    gridElement?.displayKeys?.length || 0,
+  );
+
+  return Object.fromEntries(
+    Array.from({ length: columnCount }, (_, index) => {
+      const displayKey = gridElement?.displayKeys?.[index];
+      const headerKey = gridElement?.hasHeader
+        ? gridElement?.data?.[index]
+        : undefined;
+      const key =
+        typeof displayKey === "string"
+          ? displayKey
+          : (displayKey?.key ?? headerKey ?? String(index));
+      return [String(key), row[index] ?? ""];
+    }),
+  );
+};
+
+const normalizeSubmittedDate = (element, value) => {
+  if (element?.type !== "date") return value;
+
+  const dateValue = value && typeof value === "object" ? value : {};
+  const fromDate =
+    dateValue.fromDate ??
+    dateValue.date ??
+    element.fromDateValue ??
+    element.dateValue ??
+    element.defaultFromValue ??
+    element.defaultValue ??
+    (typeof value === "string" ? value : "");
+  const toDate =
+    dateValue.toDate ?? element.toDateValue ?? element.defaultToValue ?? "";
+  const fromTime =
+    dateValue.fromTime ??
+    element.fromTimeValue ??
+    element.defaultFromTimeValue ??
+    element.defaultTimeValue ??
+    "";
+  const toTime =
+    dateValue.toTime ??
+    element.toTimeValue ??
+    element.defaultToTimeValue ??
+    element.defaultTimeValue ??
+    "";
+
+  if (element.hasFromTo) {
+    return {
+      from: toSubmittedLocaleDate(
+        String(fromDate),
+        String(fromTime),
+        element.hasTime,
+        element.locale ?? "ko",
+      ),
+      to: toSubmittedLocaleDate(
+        String(toDate),
+        String(toTime),
+        element.hasTime,
+        element.locale ?? "ko",
+      ),
+    };
+  }
+
+  return toSubmittedLocaleDate(
+    String(fromDate),
+    String(fromTime),
+    element.hasTime,
+    element.locale ?? "ko",
+  );
 };
 
 function ChatbotSimulator({
@@ -67,7 +177,7 @@ function ChatbotSimulator({
     startSimulation,
     proceedToNextNode,
   } = useChatFlow(nodes, edges);
-  const { slots, setSlots } = useBuilderStore();
+  const { slots, setSlots, setSelectedRow } = useBuilderStore();
   const [formData, setFormData] = useState({});
   const [formElementOverrides, setFormElementOverrides] = useState({});
 
@@ -104,7 +214,6 @@ function ChatbotSimulator({
 
     setHistory((prev) => [...prev, { type: "user", message: answer.display }]);
     completeCurrentInteraction();
-
     let newSlots = { ...slots };
     if (sourceNode.data.slot && sourceNode.type === "slotfilling") {
       newSlots[sourceNode.data.slot] = answer.value;
@@ -354,9 +463,75 @@ function ChatbotSimulator({
         }
       }
     }
+
+    elements.forEach((element, index) => {
+      const key = getFormElementKey(
+        element,
+        `${element?.type || "element"}-${index}`,
+      );
+      if (!key) return;
+      submittedFormData[key] = normalizeSubmittedDate(
+        element,
+        submittedFormData[key],
+      );
+    });
+
     completeCurrentInteraction();
+    const gridElements = elements.filter((element) => element?.type === "grid");
+    const gridElement = gridElements[0];
+    const gridIndex = elements.findIndex((element) => element === gridElement);
+    const gridKey = gridElement
+      ? getFormElementKey(gridElement, `grid-${gridIndex}`)
+      : "";
+    const gridValue = gridKey ? submittedFormData[gridKey] : undefined;
+    const selectedRows = Array.isArray(gridValue) ? gridValue : undefined;
+    const selectedRowIds = selectedRows
+      ?.map((row) => row?.id)
+      .filter((id) => id !== undefined && id !== null);
+    gridElements.forEach((element, index) => {
+      const elementIndex = elements.findIndex((item) => item === element);
+      const elementKey = getFormElementKey(
+        element,
+        `grid-${elementIndex >= 0 ? elementIndex : index}`,
+      );
+      const elementRows = Array.isArray(submittedFormData[elementKey])
+        ? submittedFormData[elementKey]
+        : [];
+      if (elementRows.length > 0) {
+        submittedFormData[elementKey] = elementRows.map((row) =>
+          toGridSlotValue(element, row),
+        );
+      }
+    });
+    const slotKey = currentNode?.data?.slotKey?.trim();
     const newSlots = { ...slots, ...submittedFormData };
+
+    if (
+      slotKey &&
+      !Object.prototype.hasOwnProperty.call(submittedFormData, slotKey)
+    ) {
+      const previousSlotValue = newSlots[slotKey];
+      newSlots[slotKey] = {
+        ...(previousSlotValue &&
+        typeof previousSlotValue === "object" &&
+        !Array.isArray(previousSlotValue)
+          ? previousSlotValue
+          : {}),
+        ...submittedFormData,
+        ...(selectedRows !== undefined ? { selectedRows } : {}),
+        ...(selectedRowIds?.length ? { selectedRowIds } : {}),
+      };
+    }
+
+    // selectedRow 슬롯은 생성하지 않는다. 다중 선택은 selectedRows를 사용한다.
+    // newSlots.selectedRow = ...; // 단일 selectedRow 슬롯은 생성하지 않는다.
+    delete newSlots.selectedRow;
+    delete newSlots.selectedRowId;
+    if (selectedRows !== undefined) newSlots.selectedRows = selectedRows;
+    if (selectedRowIds?.length) newSlots.selectedRowIds = selectedRowIds;
+
     setSlots(newSlots);
+    setSelectedRow(null);
     setFormData({});
     setHistory((prev) => [
       ...prev,
@@ -535,8 +710,7 @@ function ChatbotSimulator({
   );
 
   const handleGridRowClick = (rowData, gridElement) => {
-    completeCurrentInteraction();
-    // 기존 formData와 함께 selectedRow를 슬롯에 저장
+    // Keep the form active while rows are being selected. Submission advances it.
     const searchElement = getRuntimeFormElements().find(
       (element) =>
         element.type === "search" &&
@@ -548,15 +722,22 @@ function ChatbotSimulator({
         ? Object.keys(rowData)[0]
         : null);
     const selectedValue = fillKey ? rowData?.[fillKey] : undefined;
-    const newSlots = { ...slots, ...formData, selectedRow: rowData };
-    if (searchElement && selectedValue !== undefined) {
-      newSlots[getFormElementKey(searchElement)] = selectedValue;
-    }
-    setSlots(newSlots);
-    setFormData({});
-    // 사용자 액션으로 "Row selected" 메시지 추가
-    setHistory((prev) => [...prev, { type: "user", message: "Row selected." }]);
-    proceedToNextNode(null, currentId, newSlots);
+    setFormData((prev) => {
+      const gridKey = getFormElementKey(gridElement);
+      if (!gridKey) return prev;
+      const selectedRows = Array.isArray(prev[gridKey]) ? prev[gridKey] : [];
+      const isSelected = selectedRows.some((row) =>
+        isSameGridRow(row, rowData),
+      );
+      const nextSelectedRows = isSelected
+        ? selectedRows.filter((row) => !isSameGridRow(row, rowData))
+        : [...selectedRows, rowData];
+      const nextFormData = { ...prev, [gridKey]: nextSelectedRows };
+      if (searchElement && selectedValue !== undefined && !isSelected) {
+        nextFormData[getFormElementKey(searchElement)] = selectedValue;
+      }
+      return nextFormData;
+    });
   };
   // --- 💡 [추가 끝] ---
 

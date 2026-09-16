@@ -32,6 +32,9 @@ export async function runApiNode(
     }
 
     const res = await fetch(resolvedUrl, options);
+    if (!res.ok) {
+      throw new Error(`API request failed with status ${res.status}`);
+    }
     const json = await res.json();
 
     if (Array.isArray(responseMapping)) {

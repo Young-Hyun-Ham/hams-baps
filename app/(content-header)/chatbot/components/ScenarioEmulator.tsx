@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useStore } from "@/store";
 import ScenarioNodeControls from "./ScenarioNodeControls";
 import useChatbotStore from "../store";
@@ -110,13 +116,20 @@ export default function ScenarioEmulator({
 
   const [currentNodeId, setCurrentNodeId] = useState<string | null>(null);
   const currentNode = useMemo(
-    () => (currentNodeId ? nodes.find((n) => n.id === currentNodeId) ?? null : null),
+    () =>
+      currentNodeId
+        ? (nodes.find((n) => n.id === currentNodeId) ?? null)
+        : null,
     [nodes, currentNodeId],
   );
 
   const [steps, setSteps] = useState<ChatStep[]>(initialSteps ?? []);
-  const [formValues, setFormValues] = useState<Record<string, any>>(initialFormValues ?? {});
-  const [slotValues, setSlotValues] = useState<Record<string, any>>(initialSlotValues ?? {});
+  const [formValues, setFormValues] = useState<Record<string, any>>(
+    initialFormValues ?? {},
+  );
+  const [slotValues, setSlotValues] = useState<Record<string, any>>(
+    initialSlotValues ?? {},
+  );
   const [finished, setFinished] = useState<boolean>(initialFinished ?? false);
   const [llmDone, setLlmDone] = useState(false);
 
@@ -142,7 +155,7 @@ export default function ScenarioEmulator({
   // =============================================================================
   // 1) 시나리오 데이터 로딩
   // =============================================================================
-  useEffect(() => { 
+  useEffect(() => {
     let mounted = true;
 
     const fetchScenarioLoadData = async () => {
@@ -216,7 +229,14 @@ export default function ScenarioEmulator({
     resetEngineState();
     // 엔진쪽에 "run 시작" 한 번 찍기
     logToEngine({ text: "" }, engineProps);
-  }, [scenarioRunId, nodes.length, edges.length, resetEngineState, logToEngine, engineProps]);
+  }, [
+    scenarioRunId,
+    nodes.length,
+    edges.length,
+    resetEngineState,
+    logToEngine,
+    engineProps,
+  ]);
 
   // =============================================================================
   // 4) progress emit (변경 있을 때만)
@@ -230,7 +250,8 @@ export default function ScenarioEmulator({
 
     const hasAnyStep = (steps?.length ?? 0) > 0;
     const hasAnyState =
-      Object.keys(slotValues ?? {}).length > 0 || Object.keys(formValues ?? {}).length > 0;
+      Object.keys(slotValues ?? {}).length > 0 ||
+      Object.keys(formValues ?? {}).length > 0;
 
     // 완전 초기 상태는 저장/전달 안함 (빈 값 덮어쓰기 + 루프 방지)
     if (!hasAnyStep && !hasAnyState && !persistedRun) return;
@@ -304,7 +325,15 @@ export default function ScenarioEmulator({
       steps: resolvedSteps,
       runId: scenarioRunId,
     });
-  }, [finished, steps, slotValues, onHistoryAppend, scenarioKey, scenarioTitle, scenarioRunId]);
+  }, [
+    finished,
+    steps,
+    slotValues,
+    onHistoryAppend,
+    scenarioKey,
+    scenarioTitle,
+    scenarioRunId,
+  ]);
 
   // =============================================================================
   // 6) step push 유틸
@@ -403,7 +432,9 @@ export default function ScenarioEmulator({
         const ctx = { ...slotValues, ...formValues };
 
         const resolvedUrl = resolveTemplate(String(url ?? ""), ctx);
-        const resolvedBody = body ? resolveTemplate(String(body), ctx) : undefined;
+        const resolvedBody = body
+          ? resolveTemplate(String(body), ctx)
+          : undefined;
 
         let parsedHeaders: Record<string, any> = {};
         try {
@@ -412,7 +443,10 @@ export default function ScenarioEmulator({
           console.error("Header JSON parsing error:", e);
         }
 
-        const options: any = { method: method || "GET", headers: parsedHeaders };
+        const options: any = {
+          method: method || "GET",
+          headers: parsedHeaders,
+        };
         if (String(options.method).toUpperCase() !== "GET" && resolvedBody) {
           options.body = resolvedBody;
         }
@@ -451,11 +485,18 @@ export default function ScenarioEmulator({
         const res = await fetch("/api/chatbot/llm", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt, systemPrompt, model: user?.chatModel ?? null }),
+          body: JSON.stringify({
+            prompt,
+            systemPrompt,
+            model: user?.chatModel ?? null,
+          }),
         });
 
         if (!res.ok || !res.body) {
-          pushBotStep(makeStepId(`${node.id}-err`), `[LLM 오류] 상태 코드: ${res.status}`);
+          pushBotStep(
+            makeStepId(`${node.id}-err`),
+            `[LLM 오류] 상태 코드: ${res.status}`,
+          );
           return false;
         }
 
@@ -479,7 +520,9 @@ export default function ScenarioEmulator({
           accumulated += chunkText;
 
           setSteps((prev) =>
-            prev.map((s) => (s.id === stepId ? { ...s, text: accumulated } : s)),
+            prev.map((s) =>
+              s.id === stepId ? { ...s, text: accumulated } : s,
+            ),
           );
         }
 
@@ -487,7 +530,10 @@ export default function ScenarioEmulator({
         return true;
       } catch (e) {
         console.error("LLM 노드 실행 오류:", e);
-        pushBotStep(makeStepId(`${node.id}-err`), "[LLM 실행 오류가 발생했습니다.]");
+        pushBotStep(
+          makeStepId(`${node.id}-err`),
+          "[LLM 실행 오류가 발생했습니다.]",
+        );
         return false;
       }
     },
@@ -531,14 +577,22 @@ export default function ScenarioEmulator({
           if (cancelled) return;
 
           if (!ok) {
-            const failNext = findNextNode(nodes, edges, currentNode.id, "onFail");
+            const failNext = findNextNode(
+              nodes,
+              edges,
+              currentNode.id,
+              "onFail",
+            );
             if (!failNext) {
               setFinished(true);
               return;
             }
             setCurrentNodeId(failNext.id);
             if (failNext.type === "message") {
-              pushBotStep(makeStepId(failNext.id), failNext.data?.content ?? "");
+              pushBotStep(
+                makeStepId(failNext.id),
+                failNext.data?.content ?? "",
+              );
             }
             return;
           }
@@ -622,9 +676,15 @@ export default function ScenarioEmulator({
     } else if (next.type === "branch") {
       pushBotStep(makeStepId(next.id), next.data?.content ?? "");
     } else if (next.type === "form") {
-      pushBotStep(makeStepId(next.id), next.data?.title ? `폼: ${next.data.title}` : "폼을 입력해 주세요.");
+      pushBotStep(
+        makeStepId(next.id),
+        next.data?.title ? `폼: ${next.data.title}` : "폼을 입력해 주세요.",
+      );
     } else if (next.type === "link") {
-      pushBotStep(makeStepId(next.id), next.data?.content ?? "링크로 이동합니다.");
+      pushBotStep(
+        makeStepId(next.id),
+        next.data?.content ?? "링크로 이동합니다.",
+      );
     }
   }, [currentNode, nodes, edges, pushBotStep]);
 
@@ -645,14 +705,20 @@ export default function ScenarioEmulator({
       pushBotStep(makeStepId(next.id), next.data?.content ?? "");
     }
 
-    logToEngine({ action: { type: "reply", value: "continue", display: "continue" } }, engineProps);
+    logToEngine(
+      { action: { type: "reply", value: "continue", display: "continue" } },
+      engineProps,
+    );
   }, [currentNode, nodes, edges, pushBotStep, logToEngine, engineProps]);
 
   const handleBranchClick = useCallback(
     (reply: { display: string; value: string }) => {
       if (!currentNode) return;
 
-      pushUserStep(makeStepId(`${currentNode.id}-${reply.value}`), reply.display);
+      pushUserStep(
+        makeStepId(`${currentNode.id}-${reply.value}`),
+        reply.display,
+      );
 
       const next = findNextNode(nodes, edges, currentNode.id, reply.value);
       if (!next) {
@@ -665,17 +731,33 @@ export default function ScenarioEmulator({
       if (next.type === "message") {
         pushBotStep(makeStepId(next.id), next.data?.content ?? "");
       } else if (next.type === "form") {
-        pushBotStep(makeStepId(next.id), next.data?.title ? `폼: ${next.data.title}` : "폼을 입력해 주세요.");
+        pushBotStep(
+          makeStepId(next.id),
+          next.data?.title ? `폼: ${next.data.title}` : "폼을 입력해 주세요.",
+        );
       } else if (next.type === "link") {
-        pushBotStep(makeStepId(next.id), next.data?.content ?? "링크로 이동합니다.");
+        pushBotStep(
+          makeStepId(next.id),
+          next.data?.content ?? "링크로 이동합니다.",
+        );
       }
 
       logToEngine(
-        { action: { type: "reply", value: reply.value, display: reply.display } },
+        {
+          action: { type: "reply", value: reply.value, display: reply.display },
+        },
         engineProps,
       );
     },
-    [currentNode, nodes, edges, pushUserStep, pushBotStep, logToEngine, engineProps],
+    [
+      currentNode,
+      nodes,
+      edges,
+      pushUserStep,
+      pushBotStep,
+      logToEngine,
+      engineProps,
+    ],
   );
 
   const handleSubmitForm = useCallback(
@@ -691,7 +773,12 @@ export default function ScenarioEmulator({
 
       const formatAny = (v: any): string => {
         if (v === null || v === undefined) return "";
-        if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") return String(v);
+        if (
+          typeof v === "string" ||
+          typeof v === "number" ||
+          typeof v === "boolean"
+        )
+          return String(v);
         try {
           return JSON.stringify(v);
         } catch {
@@ -729,7 +816,9 @@ export default function ScenarioEmulator({
 
       pushUserStep(
         makeStepId(`${currentNode.id}-form`),
-        summaryParts.length > 0 ? summaryParts.join("\n") : "폼을 제출했습니다.",
+        summaryParts.length > 0
+          ? summaryParts.join("\n")
+          : "폼을 제출했습니다.",
       );
 
       const next = findNextNode(nodes, edges, currentNode.id, null);
@@ -743,7 +832,10 @@ export default function ScenarioEmulator({
       if (next.type === "message") {
         pushBotStep(makeStepId(next.id), next.data?.content ?? "");
       } else if (next.type === "link") {
-        pushBotStep(makeStepId(next.id), next.data?.content ?? "링크로 이동합니다.");
+        pushBotStep(
+          makeStepId(next.id),
+          next.data?.content ?? "링크로 이동합니다.",
+        );
       }
 
       logToEngine(
@@ -751,7 +843,16 @@ export default function ScenarioEmulator({
         engineProps,
       );
     },
-    [currentNode, nodes, edges, formValues, pushUserStep, pushBotStep, logToEngine, engineProps],
+    [
+      currentNode,
+      nodes,
+      edges,
+      formValues,
+      pushUserStep,
+      pushBotStep,
+      logToEngine,
+      engineProps,
+    ],
   );
 
   const handleNextFromLink = useCallback(() => {
@@ -769,7 +870,10 @@ export default function ScenarioEmulator({
       pushBotStep(makeStepId(next.id), next.data?.content ?? "");
     }
 
-    logToEngine({ action: { type: "reply", value: "continue", display: "continue" } }, engineProps);
+    logToEngine(
+      { action: { type: "reply", value: "continue", display: "continue" } },
+      engineProps,
+    );
   }, [currentNode, nodes, edges, pushBotStep, logToEngine, engineProps]);
 
   const handleContinueFromIframe = useCallback(() => {
@@ -786,20 +890,31 @@ export default function ScenarioEmulator({
     if (next.type === "message") {
       pushBotStep(makeStepId(next.id), next.data?.content ?? "");
     } else if (next.type === "link") {
-      pushBotStep(makeStepId(next.id), next.data?.content ?? "링크로 이동합니다.");
+      pushBotStep(
+        makeStepId(next.id),
+        next.data?.content ?? "링크로 이동합니다.",
+      );
     } else if (next.type === "form") {
-      pushBotStep(makeStepId(next.id), next.data?.title ? `폼: ${next.data.title}` : "폼을 입력해 주세요.");
+      pushBotStep(
+        makeStepId(next.id),
+        next.data?.title ? `폼: ${next.data.title}` : "폼을 입력해 주세요.",
+      );
     }
 
-    logToEngine({ action: { type: "reply", value: "continue", display: "continue" } }, engineProps);
+    logToEngine(
+      { action: { type: "reply", value: "continue", display: "continue" } },
+      engineProps,
+    );
   }, [currentNode, nodes, edges, pushBotStep, logToEngine, engineProps]);
 
   const handleSlotFillingClick = useCallback(
     (reply: { display: string; value: any }) => {
       if (!currentNode) return;
 
-      const slotName: string = currentNode.data?.slot ?? currentNode.data?.slotName ?? "";
-      if (slotName) setSlotValues((prev) => ({ ...prev, [slotName]: reply.value }));
+      const slotName: string =
+        currentNode.data?.slot ?? currentNode.data?.slotName ?? "";
+      if (slotName)
+        setSlotValues((prev) => ({ ...prev, [slotName]: reply.value }));
 
       const handle = String(reply.value);
       const next =
@@ -818,7 +933,9 @@ export default function ScenarioEmulator({
       }
 
       logToEngine(
-        { action: { type: "reply", value: reply.value, display: reply.display } },
+        {
+          action: { type: "reply", value: reply.value, display: reply.display },
+        },
         engineProps,
       );
     },
@@ -831,7 +948,9 @@ export default function ScenarioEmulator({
   return (
     <div className="flex h-full flex-col rounded-xl border border-emerald-100 bg-white/80 p-3 shadow-sm">
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-xs font-semibold text-emerald-700">시나리오 애뮬레이터</span>
+        <span className="text-xs font-semibold text-emerald-700">
+          시나리오 애뮬레이터
+        </span>
         <button
           className="rounded-md border border-gray-200 bg-white px-2 py-0.5 text-[11px] text-gray-500 hover:bg-gray-50"
           onClick={resetScenario}
@@ -854,7 +973,9 @@ export default function ScenarioEmulator({
               return (
                 <div
                   key={s.id}
-                  className={s.role === "bot" ? "flex justify-start" : "flex justify-end"}
+                  className={
+                    s.role === "bot" ? "flex justify-start" : "flex justify-end"
+                  }
                 >
                   <div
                     className={
@@ -879,7 +1000,6 @@ export default function ScenarioEmulator({
         setFormValues={setFormValues}
         slotValues={slotValues}
         onReset={resetScenario}
-        onContinueFromMessage={handleContinueFromMessage}
         onBranchClick={handleBranchClick}
         onSubmitForm={handleSubmitForm}
         onNextFromLink={handleNextFromLink}

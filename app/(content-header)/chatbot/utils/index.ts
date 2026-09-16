@@ -21,7 +21,10 @@ function removeUndefinedDeep(value: any): any {
 
 function getByPath(obj: any, path: string) {
   if (!obj) return undefined;
-  const parts = path.split(".").map((p) => p.trim()).filter(Boolean);
+  const parts = path
+    .split(".")
+    .map((p) => p.trim())
+    .filter(Boolean);
   let cur = obj;
   for (const p of parts) {
     if (cur == null) return undefined;
@@ -98,7 +101,9 @@ export function stripMustache(expr: string) {
 function resolveSpecialExpression(expr: string, slots: Record<string, any>) {
   // console.log("resolveSpecialExpression ======> ", stripMustache(expr));
   // header(a, b) 패턴
-  const headerMatch = /^header\(\s*([^,]+?)\s*,\s*([^)]+)\s*\)$/.exec(stripMustache(expr));
+  const headerMatch = /^header\(\s*([^,]+?)\s*,\s*([^)]+)\s*\)$/.exec(
+    stripMustache(expr),
+  );
   if (headerMatch) {
     const arrayPath = headerMatch[1].trim();
     const field = headerMatch[2].trim();
@@ -106,9 +111,7 @@ function resolveSpecialExpression(expr: string, slots: Record<string, any>) {
     const arr = getNestedValue(slots, arrayPath);
     if (Array.isArray(arr)) {
       return JSON.stringify(
-        arr
-          .map(row => row?.[field])
-          .filter(v => v !== undefined)
+        arr.map((row) => row?.[field]).filter((v) => v !== undefined),
       );
     }
     return null;
@@ -118,9 +121,16 @@ function resolveSpecialExpression(expr: string, slots: Record<string, any>) {
 // getNestedValue 함수는 변경 없음
 function getNestedValue(obj: any, path: any) {
   if (!path) return undefined;
-  const normalizedPath = path.replace(/\[(\d+)\]/g, '.$1');
-  return normalizedPath.split('.').reduce((acc: any, part: any) => (acc && acc[part] !== undefined ? acc[part] : undefined), obj);
-};
+  const normalizedPath = path.replace(/\[(\d+)\]/g, ".$1");
+  return normalizedPath.split(".").reduce((acc: any, part: any) => {
+    if (acc == null) return undefined;
+    if (acc[part] !== undefined) return acc[part];
+    if (/^\d+$/.test(part) && typeof acc === "object") {
+      return Object.values(acc)[Number(part)];
+    }
+    return undefined;
+  }, obj);
+}
 
 // 옵션 키 정규화 헬퍼 추가
 function normalizeOptionsKey(key: string): string {

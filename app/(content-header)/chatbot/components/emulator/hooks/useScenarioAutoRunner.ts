@@ -3,11 +3,13 @@
 
 import { useEffect } from "react";
 import type { AnyNode } from "../../../types";
-import { makeStepId } from "../../../utils";
 import { findNextExecutableNode } from "../core/graph";
+import { getFormNodeData } from "../core/formNode";
+import { resolveConditionBranchHandle } from "../core/conditions";
 
 export function useScenarioAutoRunner(args: {
   currentNode: AnyNode | null;
+  rootNodeId: string | null;
   finished: boolean;
 
   nodes: AnyNode[];
@@ -18,7 +20,10 @@ export function useScenarioAutoRunner(args: {
   // runners
   runApiNode: (node: AnyNode) => Promise<boolean>;
   runSetSlotNode: (node: AnyNode) => void;
-  runLlmNode: (node: AnyNode, slotSnapshot: Record<string, any>) => Promise<boolean>;
+  runLlmNode: (
+    node: AnyNode,
+    slotSnapshot: Record<string, any>,
+  ) => Promise<boolean>;
 
   // ui helpers
   pushBotStep: (id: string, text: string) => void;
@@ -45,10 +50,20 @@ export function useScenarioAutoRunner(args: {
     // ✅ "한 번만 출력" 메시지는 절대 랜덤 id 쓰면 안 됨 (입력/리렌더마다 계속 찍힘)
     const promptStepId = (nodeId: string) => `prompt:${nodeId}`;
 
-        const goNext = (handle?: string | null) => {
+    const goNext = (handle?: string | null) => {
       const next =
-        findNextExecutableNode(args.nodes, args.edges, currentNode.id, handle) ||
-        findNextExecutableNode(args.nodes, args.edges, currentNode.id, "default") ||
+        findNextExecutableNode(
+          args.nodes,
+          args.edges,
+          currentNode.id,
+          handle,
+        ) ||
+        findNextExecutableNode(
+          args.nodes,
+          args.edges,
+          currentNode.id,
+          "default",
+        ) ||
         findNextExecutableNode(args.nodes, args.edges, currentNode.id, null);
 
       if (!next) {
@@ -57,28 +72,36 @@ export function useScenarioAutoRunner(args: {
       }
 
       args.setCurrentNodeId(next.id);
-
-      if (next.type === "message") {
-        args.pushBotStep(makeStepId(next.id), next.data?.content ?? "");
-      }
     };
 
     (async () => {
       switch (currentNode.type) {
         case "message": {
+          args.pushBotStepOnce(
+            promptStepId(currentNode.id),
+            currentNode.data?.content ?? "",
+          );
+          goNext(null);
           // message는 "진입 시점"에 이미 출력된 상태(현 구조 유지)
           return;
         }
 
         case "branch": {
+          if (currentNode.data?.evaluationType === "CONDITION") {
+            goNext(
+              resolveConditionBranchHandle(currentNode.data, args.slotValues),
+            );
+            return;
+          }
           const q = currentNode.data?.content ?? "";
           args.pushBotStepOnce(promptStepId(currentNode.id), q);
           return;
         }
 
         case "form": {
-          const title = currentNode.data?.title
-            ? `폼: ${currentNode.data.title}`
+          const formNodeData = getFormNodeData(currentNode);
+          const title = formNodeData.title
+            ? `폼: ${formNodeData.title}`
             : "폼을 입력해 주세요.";
           args.pushBotStepOnce(promptStepId(currentNode.id), title);
           return;
@@ -107,12 +130,14 @@ export function useScenarioAutoRunner(args: {
           if (cancelled) return;
 
           if (!ok) {
-            const failNext = findNextExecutableNode(args.nodes, args.edges, currentNode.id, "onFail");
+            const failNext = findNextExecutableNode(
+              args.nodes,
+              args.edges,
+              currentNode.id,
+              "onFail",
+            );
             if (failNext) {
               args.setCurrentNodeId(failNext.id);
-              if (failNext.type === "message") {
-                args.pushBotStep(makeStepId(failNext.id), failNext.data?.content ?? "");
-              }
               return;
             }
             goNext("onSuccess");
@@ -159,6 +184,7 @@ export function useScenarioAutoRunner(args: {
     };
   }, [
     args.currentNode,
+    args.rootNodeId,
     args.finished,
     args.nodes,
     args.edges,

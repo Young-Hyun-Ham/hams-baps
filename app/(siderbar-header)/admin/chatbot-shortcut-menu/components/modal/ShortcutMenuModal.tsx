@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import * as backendService from '@/app/(siderbar-header)/admin/builder/services/backendService';
+import * as backendService from "@/app/(siderbar-header)/admin/builder/services/backendService";
 
 import { FormState, ShortcutGroup } from "../../types/types";
 import { ChevronDown } from "lucide-react";
@@ -13,7 +13,11 @@ type Props = {
   form: FormState;
   loading: boolean;
   onClose: () => void;
-  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
+  onChange: (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
+  ) => void;
   onSubmit: (e: React.FormEvent) => void;
 };
 
@@ -22,6 +26,16 @@ const groupOptions: { label: string; value: ShortcutGroup }[] = [
   { label: "Search", value: "SEARCH" },
   { label: "Execution", value: "EXECUTION" },
 ];
+
+const hasDeployedVersion = (scenario: any) => {
+  const deployedVersionId = scenario?.depn_ver_id;
+  return (
+    deployedVersionId !== undefined &&
+    deployedVersionId !== null &&
+    String(deployedVersionId).trim() !== "" &&
+    String(deployedVersionId) !== "0"
+  );
+};
 
 export default function ShortcutMenuModal({
   isOpen,
@@ -41,7 +55,12 @@ export default function ShortcutMenuModal({
 
     const onload = async () => {
       try {
-        setScenarioOptions(await backendService.fetchScenarios(backend));
+        const scenarios = await backendService.fetchScenarios(backend);
+        setScenarioOptions(
+          (Array.isArray(scenarios) ? scenarios : []).filter(
+            hasDeployedVersion,
+          ),
+        );
       } catch (e: any) {
         console.error(e);
       } finally {
@@ -167,7 +186,9 @@ export default function ShortcutMenuModal({
 
           {/* 순서 */}
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium text-gray-700">정렬 순서</label>
+            <label className="text-xs font-medium text-gray-700">
+              정렬 순서
+            </label>
             <input
               type="number"
               name="order"

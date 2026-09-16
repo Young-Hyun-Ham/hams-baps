@@ -9,6 +9,7 @@
 - 상태 관리: `useShortcutMenuStore`
 - 연관 구성: `ShortcutMenuModal.tsx`
 - 구현 메모: 챗봇 첫 진입 UX와 추천 액션 구성에 영향이 큰 운영 화면
+- 등록·수정 모달의 시나리오 키/preset key 선택 목록에는 `depn_ver_id`가 있는 배포된 시나리오만 표시됩니다.
 
 # `/admin/chatbot-shortcut-menu` 패키지 구조
 

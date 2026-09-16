@@ -20,6 +20,7 @@ export function useScenarioProgress(args: {
   steps: ChatStep[];
   slotValues: Record<string, any>;
   formValues: Record<string, any>;
+  deployedVersionId?: string | null;
 
   onProgress?: (payload: {
     runId: string;
@@ -28,12 +29,14 @@ export function useScenarioProgress(args: {
     currentNodeId: string | null;
     slotValues: Record<string, any>;
     formValues: Record<string, any>;
+    deployedVersionId?: string | null;
     resetting?: boolean;
   }) => void;
 
   saveScenarioRun: (runId: string, v: any) => void;
 }) {
   const lastProgressSigRef = useRef<string>("");
+  const didInitializeProgressRef = useRef(false);
 
   useEffect(() => {
     if (!args.scenarioRunId) return;
@@ -48,7 +51,13 @@ export function useScenarioProgress(args: {
       Object.keys(args.formValues ?? {}).length > 0;
 
     // 완전 초기 상태는 저장/전달 안함 (빈 값 덮어쓰기 + 루프 방지)
-    if (!hasAnyStep && !hasAnyState && !args.persistedRun) return;
+    if (
+      !hasAnyStep &&
+      !hasAnyState &&
+      !args.persistedRun &&
+      !args.deployedVersionId
+    )
+      return;
 
     const sig = stableStringify({
       scenarioRunId: args.scenarioRunId,
@@ -58,7 +67,16 @@ export function useScenarioProgress(args: {
       steps: args.steps, // raw
       slotValues: args.slotValues,
       formValues: args.formValues,
+      deployedVersionId: args.deployedVersionId,
     });
+
+    // Opening a saved run is a read operation. Treat the hydrated snapshot as
+    // the comparison baseline instead of writing it back to the message API.
+    if (!didInitializeProgressRef.current) {
+      didInitializeProgressRef.current = true;
+      lastProgressSigRef.current = sig;
+      return;
+    }
 
     if (sig === lastProgressSigRef.current) return;
     lastProgressSigRef.current = sig;
@@ -70,11 +88,13 @@ export function useScenarioProgress(args: {
       currentNodeId: nodeId,
       slotValues: args.slotValues,
       formValues: args.formValues,
+      deployedVersionId: args.deployedVersionId,
     });
 
     args.saveScenarioRun(args.scenarioRunId, {
       scenarioKey: args.scenarioKey,
       scenarioTitle: args.scenarioTitle,
+      deployedVersionId: args.deployedVersionId,
       steps: args.steps, // raw 저장
       formValues: args.formValues,
       slotValues: args.slotValues,
@@ -90,6 +110,7 @@ export function useScenarioProgress(args: {
     args.steps,
     args.slotValues,
     args.formValues,
+    args.deployedVersionId,
     args.persistedRun,
     args.onProgress,
     args.saveScenarioRun,

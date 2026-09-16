@@ -25,15 +25,15 @@ export const generateUniqueId = () =>
  * @returns {string} 슬롯 값이 치환된 문자열
  */
 export const interpolateMessage = (message, slots) => {
-  const messageStr = String(message || '');
-  if (!messageStr) return '';
+  const messageStr = String(message || "");
+  if (!messageStr) return "";
 
   // {{slotName}} 형식의 구문을 찾아 해당 슬롯 값으로 치환
   return messageStr.replace(/{{([^}]+)}}/g, (match, key) => {
     // getNestedValue를 사용하여 슬롯 내부의 객체 값에도 접근 가능하도록 수정
     const value = getNestedValue(slots, key);
     // 값이 객체나 배열인 경우 JSON 문자열로 변환하여 반환
-    if (typeof value === 'object' && value !== null) {
+    if (typeof value === "object" && value !== null) {
       return JSON.stringify(value);
     }
     // 값이 undefined가 아니면 해당 값으로, 아니면 원래 문자열({{slotName}}) 유지
@@ -46,13 +46,15 @@ export const interpolateMessage = (message, slots) => {
 // getNestedValue 함수는 변경 없음
 export const getNestedValue = (obj, path) => {
   if (!path) return undefined;
-  const normalizedPath = path.replace(/\[(\d+)\]/g, '.$1');
-  return normalizedPath
-    .split('.')
-    .reduce(
-      (acc, part) => (acc && acc[part] !== undefined ? acc[part] : undefined),
-      obj,
-    );
+  const normalizedPath = path.replace(/\[(\d+)\]/g, ".$1");
+  return normalizedPath.split(".").reduce((acc, part) => {
+    if (acc == null) return undefined;
+    if (acc[part] !== undefined) return acc[part];
+    if (/^\d+$/.test(part) && typeof acc === "object") {
+      return Object.values(acc)[Number(part)];
+    }
+    return undefined;
+  }, obj);
 };
 
 // validateInput 함수는 변경 없음
@@ -60,18 +62,18 @@ export const validateInput = (value, validation) => {
   if (!validation) return true;
 
   switch (validation.type) {
-    case 'email':
+    case "email":
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-    case 'phone number':
+    case "phone number":
       return /^\d{2,3}-\d{3,4}-\d{4}$/.test(value);
-    case 'custom':
+    case "custom":
       if (validation.regex) {
         // Input type custom
         try {
           return new RegExp(validation.regex).test(value);
         } catch {
           // 변수(_e) 제거 및 console 사용
-          console.error('Invalid regex:', validation.regex);
+          console.error("Invalid regex:", validation.regex);
           return false;
         }
       } else if (validation.startDate && validation.endDate) {
@@ -85,7 +87,7 @@ export const validateInput = (value, validation) => {
         return selectedDate >= startDate && selectedDate <= endDate;
       }
       return true;
-    case 'today after': {
+    case "today after": {
       // Fix: 중괄호 추가 (Block scope 생성)
       if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
       const selectedDateAfter = new Date(value);
@@ -93,7 +95,7 @@ export const validateInput = (value, validation) => {
       todayAfter.setHours(0, 0, 0, 0);
       return selectedDateAfter >= todayAfter;
     }
-    case 'today before': {
+    case "today before": {
       // Fix: 중괄호 추가 (Block scope 생성)
       if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
       const selectedDateBefore = new Date(value);
@@ -110,22 +112,22 @@ export const validateInput = (value, validation) => {
 export const evaluateCondition = (slotValue, operator, condition, slots) => {
   let conditionValue = condition.value;
   // valueType이 'slot'이면, slots 객체에서 값을 가져옴
-  if (condition.valueType === 'slot') {
+  if (condition.valueType === "slot") {
     conditionValue = getNestedValue(slots, condition.value);
   }
 
   const lowerCaseConditionValue = String(conditionValue).toLowerCase();
   if (
-    lowerCaseConditionValue === 'true' ||
-    lowerCaseConditionValue === 'false'
+    lowerCaseConditionValue === "true" ||
+    lowerCaseConditionValue === "false"
   ) {
-    const boolConditionValue = lowerCaseConditionValue === 'true';
-    const boolSlotValue = String(slotValue).toLowerCase() === 'true';
+    const boolConditionValue = lowerCaseConditionValue === "true";
+    const boolSlotValue = String(slotValue).toLowerCase() === "true";
 
     switch (operator) {
-      case '==':
+      case "==":
         return boolSlotValue === boolConditionValue;
-      case '!=':
+      case "!=":
         return boolSlotValue !== boolConditionValue;
       default:
         return false;
@@ -136,37 +138,37 @@ export const evaluateCondition = (slotValue, operator, condition, slots) => {
   const numConditionValue = parseFloat(conditionValue);
 
   switch (operator) {
-    case '==':
+    case "==":
       return slotValue == conditionValue;
-    case '!=':
+    case "!=":
       return slotValue != conditionValue;
-    case '>':
+    case ">":
       return (
         !isNaN(numSlotValue) &&
         !isNaN(numConditionValue) &&
         numSlotValue > numConditionValue
       );
-    case '<':
+    case "<":
       return (
         !isNaN(numSlotValue) &&
         !isNaN(numConditionValue) &&
         numSlotValue < numConditionValue
       );
-    case '>=':
+    case ">=":
       return (
         !isNaN(numSlotValue) &&
         !isNaN(numConditionValue) &&
         numSlotValue >= numConditionValue
       );
-    case '<=':
+    case "<=":
       return (
         !isNaN(numSlotValue) &&
         !isNaN(numConditionValue) &&
         numSlotValue <= numConditionValue
       );
-    case 'contains':
+    case "contains":
       return slotValue && String(slotValue).includes(conditionValue);
-    case '!contains':
+    case "!contains":
       return !slotValue || !String(slotValue).includes(conditionValue);
     default:
       return false;

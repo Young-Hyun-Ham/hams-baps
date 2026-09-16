@@ -230,9 +230,12 @@ function FormNodeController({ localNode, setLocalNode }: any) {
         </div>
         <div className={styles.elementTabs}>
           {FORM_ELEMENT_TYPES.map((type: ElementType) => (
-            <button key={type} onClick={() => addElement(type)}>
-              {type}
-            </button>
+            // search type is not supported in the current implementation
+            type !== 'search' ? ( 
+              <button key={type} onClick={() => addElement(type)}>
+                {type}
+              </button>
+            ) : null
           ))}
         </div>
       </div>

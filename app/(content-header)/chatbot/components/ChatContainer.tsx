@@ -61,13 +61,13 @@ export default function ChatContainer() {
     setSystemPrompt,
     syncReady,
   } = useChatbotStore();
-  // const [isSending, setIsSending] = useState(false);  
+  // const [isSending, setIsSending] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [historyOpen, setHistoryOpen] = useState(true);
 
   // ▶ 세션 컨텍스트 메뉴 상태
   const [sessionMenuOpenId, setSessionMenuOpenId] = useState<string | null>(
-    null
+    null,
   );
   const [sessionMenuPos, setSessionMenuPos] = useState<MenuPosition>(null);
 
@@ -80,10 +80,10 @@ export default function ChatContainer() {
     title: "",
     content: null,
   });
-  
+
   // ==================== 설정 Popover start ====================
   const [settingsAnchor, setSettingsAnchor] = useState<HTMLElement | null>(
-    null
+    null,
   );
   const settingsOpen = Boolean(settingsAnchor);
   const onOpenSettings = (e: React.MouseEvent<HTMLElement>) =>
@@ -111,7 +111,9 @@ export default function ChatContainer() {
   const messages = activeSession?.messages ?? [];
   const [scenarioOpen, setScenarioOpen] = useState(false);
   // 지금 패널에 연결된 runId
-  const [currentScenarioRunId, setCurrentScenarioRunId] = useState<string | null>(null);
+  const [currentScenarioRunId, setCurrentScenarioRunId] = useState<
+    string | null
+  >(null);
   // 현재 패널에 연결된 시나리오 메시지 & 상태
   const currentScenarioMessage = currentScenarioRunId
     ? messages.find((m) => m.id === currentScenarioRunId)
@@ -198,76 +200,86 @@ export default function ChatContainer() {
     }));
   };
 
-  const handleScenarioProgress = useCallback(({
-    runId,
-    steps,
-    finished,
-    currentNodeId,
-    slotValues,
-    formValues,
-    resetting,
-  }: {
-    runId: string;
-    steps: ScenarioStep[];
-    finished: boolean;
-    slotValues: any;
-    formValues: any;
-    currentNodeId: string | null;
-    resetting?: boolean;
-  }) => {
-    if (!activeSessionId) return;
+  const handleScenarioProgress = useCallback(
+    ({
+      runId,
+      steps,
+      finished,
+      currentNodeId,
+      slotValues,
+      formValues,
+      deployedVersionId,
+      resetting,
+    }: {
+      runId: string;
+      steps: ScenarioStep[];
+      finished: boolean;
+      slotValues: any;
+      formValues: any;
+      deployedVersionId?: string | null;
+      currentNodeId: string | null;
+      resetting?: boolean;
+    }) => {
+      if (!activeSessionId) return;
 
-    patchMessage(activeSessionId, runId, (prev) => {
-      const prevState: any = (prev as any).scenarioRunState ?? null;
+      patchMessage(activeSessionId, runId, (prev) => {
+        const prevState: any = (prev as any).scenarioRunState ?? null;
 
-      // “초기화성” progress 방지:
-      // currentNodeId가 없고 slot/form이 비어있으면 => 기존 값을 유지
-      const incomingEmpty =
-        !currentNodeId &&
-        (!slotValues || Object.keys(slotValues).length === 0) &&
-        (!formValues || Object.keys(formValues).length === 0);
+        // “초기화성” progress 방지:
+        // currentNodeId가 없고 slot/form이 비어있으면 => 기존 값을 유지
+        const incomingEmpty =
+          !currentNodeId &&
+          (!slotValues || Object.keys(slotValues).length === 0) &&
+          (!formValues || Object.keys(formValues).length === 0);
 
-      // 초기화(reset) 이벤트면 방어 로직을 무시하고 바로 덮어쓴다
-      const shouldKeepPrevState = !resetting && incomingEmpty;
+        // 초기화(reset) 이벤트면 방어 로직을 무시하고 바로 덮어쓴다
+        const shouldKeepPrevState = !resetting && incomingEmpty;
 
-      return {
-        ...prev,
+        return {
+          ...prev,
 
-        // 빈 steps로 덮어쓰지 않기
-        scenarioSteps: steps.length > 0 ? steps : prev.scenarioSteps ?? [],
+          // 빈 steps로 덮어쓰지 않기
+          scenarioSteps: steps.length > 0 ? steps : (prev.scenarioSteps ?? []),
 
-        // 한번 done이면 다시 running 으로 돌아가지 않게
-        scenarioStatus: finished
-          ? "done"
-          : prev.scenarioStatus === "done"
-          ? "done"
-          : "running",
+          // 한번 done이면 다시 running 으로 돌아가지 않게
+          scenarioStatus: finished
+            ? "done"
+            : prev.scenarioStatus === "done"
+              ? "done"
+              : "running",
 
-        scenarioRunState: {
-          scenarioKey: prev.scenarioKey ?? "",
-          scenarioTitle: prev.scenarioTitle,
+          scenarioRunState: {
+            scenarioKey: prev.scenarioKey ?? "",
+            scenarioTitle: prev.scenarioTitle,
+            deployedVersionId:
+              prevState?.deployedVersionId ?? deployedVersionId ?? null,
 
-          // 빈 값이 들어오면 기존 값을 유지해서 덮어쓰기 방지
-          currentNodeId: shouldKeepPrevState
-            ? (prevState?.currentNodeId ?? currentNodeId)
-            : currentNodeId,
+            // 빈 값이 들어오면 기존 값을 유지해서 덮어쓰기 방지
+            currentNodeId: shouldKeepPrevState
+              ? (prevState?.currentNodeId ?? currentNodeId)
+              : currentNodeId,
 
-          slotValues: shouldKeepPrevState
-            ? (prevState?.slotValues ?? slotValues)
-            : slotValues,
+            slotValues: shouldKeepPrevState
+              ? (prevState?.slotValues ?? slotValues)
+              : slotValues,
 
-          formValues: shouldKeepPrevState
-            ? (prevState?.formValues ?? formValues)
-            : formValues,
+            formValues: shouldKeepPrevState
+              ? (prevState?.formValues ?? formValues)
+              : formValues,
 
-          finished,
-        },
-      };
-    });
-  }, [activeSessionId, patchMessage]);
+            finished,
+          },
+        };
+      });
+    },
+    [activeSessionId, patchMessage],
+  );
 
   // 1) 새 실행 (shortcut 메뉴에서만 사용)
-  const startNewScenarioRun = ({ scenarioKey, scenarioTitle }: {
+  const startNewScenarioRun = ({
+    scenarioKey,
+    scenarioTitle,
+  }: {
     scenarioKey: string;
     scenarioTitle: string;
   }) => {
@@ -322,7 +334,7 @@ export default function ChatContainer() {
   }) => {
     setCurrentScenarioRunId(runId);
 
-    const runState = messages.find(m => m.id === runId)?.scenarioRunState;
+    const runState = messages.find((m) => m.id === runId)?.scenarioRunState;
 
     // 여기서는 상태를 "running" 으로 바꾸거나 clear 하지 않는다
     setScenarioData({
@@ -338,10 +350,10 @@ export default function ChatContainer() {
           // 메시지에 저장된 실행 로그를 그대로 넘겨줌
           initialSteps={initialSteps}
           initialFinished={initialFinished}
-
           initialCurrentNodeId={runState?.currentNodeId ?? null}
           initialSlotValues={runState?.slotValues ?? {}}
           initialFormValues={runState?.formValues ?? {}}
+          initialDeployedVersionId={runState?.deployedVersionId ?? null}
           // 재시작 시 메시지 상태 강제 리셋
           onResetRun={handleScenarioResetRun}
         />
@@ -383,12 +395,10 @@ export default function ChatContainer() {
   }, [user, initFirebaseSync]);
 
   const handleNewChat = () => {
-
     const welcomeMsg: ChatMessage = {
       id: `welcome-${Date.now()}`,
       role: "assistant",
-      content:
-        "새 채팅을 시작했습니다. 아래에 메시지를 입력해 보세요.",
+      content: "새 채팅을 시작했습니다. 아래에 메시지를 입력해 보세요.",
       createdAt: new Date().toISOString(),
     };
     createSession("새 채팅", [welcomeMsg]);
@@ -442,7 +452,8 @@ export default function ChatContainer() {
       const welcomeMsg: ChatMessage = {
         id: `welcome-${Date.now()}`,
         role: "assistant",
-        content: "새 채팅을 시작했습니다. 시나리오에 맞게 메시지를 입력해 보세요.",
+        content:
+          "새 채팅을 시작했습니다. 시나리오에 맞게 메시지를 입력해 보세요.",
         createdAt: new Date().toISOString(),
       };
 
@@ -452,11 +463,14 @@ export default function ChatContainer() {
     return sid!;
   }, [activeSessionId, createSession, setActiveSession]);
 
-  const addMessage = useCallback((m: ChatMessage) => {
-    // ensureSession()이 먼저 activeSession을 보장/세팅하므로
-    // 기존 addMessageToActive 그대로 사용 가능
-    addMessageToActive(m);
-  }, [addMessageToActive]);
+  const addMessage = useCallback(
+    (m: ChatMessage) => {
+      // ensureSession()이 먼저 activeSession을 보장/세팅하므로
+      // 기존 addMessageToActive 그대로 사용 가능
+      addMessageToActive(m);
+    },
+    [addMessageToActive],
+  );
 
   const { send } = useChatOrchestrator({
     systemPrompt,
@@ -493,14 +507,14 @@ export default function ChatContainer() {
         className={cn(
           "flex h-full flex-col border-r border-gray-200 bg-white/95 shadow-sm transition-all duration-200",
           "overflow-x-hidden",
-          sidebarOpen ? "w-60" : "w-16"
+          sidebarOpen ? "w-60" : "w-16",
         )}
       >
         {/* 사이드바 헤더 */}
         <div
           className={cn(
             "flex items-center border-b border-gray-100 px-2 py-3",
-            sidebarOpen ? "justify-between" : "justify-center"
+            sidebarOpen ? "justify-between" : "justify-center",
           )}
         >
           {sidebarOpen && (
@@ -527,7 +541,7 @@ export default function ChatContainer() {
               "flex items-center gap-2 rounded-lg px-2 py-2 text-sm",
               "text-gray-700 hover:bg-gray-50 border border-transparent",
               "w-full max-w-full overflow-hidden min-w-0",
-              !sidebarOpen && "justify-center"
+              !sidebarOpen && "justify-center",
             )}
           >
             <NewChatIcon width={20} height={20} />
@@ -543,7 +557,7 @@ export default function ChatContainer() {
               className={cn(
                 "flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm",
                 "text-gray-700 hover:bg-gray-50 border border-transparent",
-                !sidebarOpen && "justify-center"
+                !sidebarOpen && "justify-center",
               )}
             >
               <HistoryIcon width={20} height={20} />
@@ -553,7 +567,7 @@ export default function ChatContainer() {
                   <span
                     className={cn(
                       "ml-auto text-gray-400 transition-transform",
-                      historyOpen ? "rotate-90" : "rotate-0"
+                      historyOpen ? "rotate-90" : "rotate-0",
                     )}
                   >
                     <SmallChevronRightIcon />
@@ -614,7 +628,7 @@ export default function ChatContainer() {
                                   className={cn(
                                     "flex-1 min-w-0 rounded-md px-2 py-1.5 text-left hover:bg-gray-50",
                                     s.id === activeSessionId &&
-                                      "bg-emerald-50 text-emerald-700"
+                                      "bg-emerald-50 text-emerald-700",
                                   )}
                                 >
                                   <div className="truncate text-[13px] font-medium">
@@ -639,7 +653,7 @@ export default function ChatContainer() {
                                     const y = rect.top + 4;
 
                                     setSessionMenuOpenId((prev) =>
-                                      prev === s.id ? null : s.id
+                                      prev === s.id ? null : s.id,
                                     );
                                     setSessionMenuPos({ x, y });
                                   }}
@@ -736,7 +750,7 @@ export default function ChatContainer() {
                 />
               ))
             )}
-            
+
             {/* ▼ 스크롤 anchor */}
             <div ref={messagesEndRef} />
             <div className="h-[10px]" />
@@ -763,10 +777,7 @@ export default function ChatContainer() {
           textareaRef={textareaRef}
         />
         */}
-        <ChatInput
-          onSend={send}
-          textareaRef={textareaRef}
-        />
+        <ChatInput onSend={send} textareaRef={textareaRef} />
       </div>
 
       {/* 우측 시나리오 패널 */}
@@ -777,7 +788,7 @@ export default function ChatContainer() {
         status={currentScenarioStatus}
         onClose={() => setScenarioOpen(false)}
       />
-      
+
       {/* ===== 세션 컨텍스트 메뉴 (ChatGPT 사이드바 스타일) ===== */}
       {sessionMenuOpenId &&
         sessionMenuPos &&

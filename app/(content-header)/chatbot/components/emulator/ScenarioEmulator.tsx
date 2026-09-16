@@ -2,7 +2,7 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState } from "react";
-import { useStore } from "@/store"
+import { useStore } from "@/store";
 import ScenarioNodeControls from "../ScenarioNodeControls";
 import useChatbotStore from "../../store";
 import type { AnyNode, ChatStep } from "../../types";
@@ -16,7 +16,7 @@ import { useScenarioHistoryAppend } from "./hooks/useScenarioHistoryAppend";
 import { useScenarioReset } from "./hooks/useScenarioReset";
 import { useScenarioAutoRunner } from "./hooks/useScenarioAutoRunner";
 
-import { findRootNode } from "./core/graph";
+import { findRootNode, resolveExecutableNode } from "./core/graph";
 
 import { runSetSlotNode as runSetSlotNodeImpl } from "./runners/runSetSlotNode";
 import { runApiNode as runApiNodeImpl } from "./runners/runApiNode";
@@ -44,6 +44,7 @@ export type ScenarioEmulatorProps = {
     currentNodeId: string | null;
     slotValues: Record<string, any>;
     formValues: Record<string, any>;
+    deployedVersionId?: string | null;
     resetting?: boolean;
   }) => void;
 
@@ -54,6 +55,7 @@ export type ScenarioEmulatorProps = {
   initialCurrentNodeId?: string | null;
   initialSlotValues?: Record<string, any>;
   initialFormValues?: Record<string, any>;
+  initialDeployedVersionId?: string | null;
 };
 
 export default function ScenarioEmulator({
@@ -68,11 +70,13 @@ export default function ScenarioEmulator({
   initialCurrentNodeId,
   initialSlotValues,
   initialFormValues,
+  initialDeployedVersionId,
 }: ScenarioEmulatorProps) {
   // =============================================================================
   // 1) 시나리오 데이터 로드
   // =============================================================================
-  const { nodes, edges } = useScenarioDefinition(scenarioKey);
+  const { nodes, edges, startNodeId, deployedVersionId } =
+    useScenarioDefinition(scenarioKey, initialDeployedVersionId);
 
   // =============================================================================
   // 2) store persistence
@@ -86,13 +90,26 @@ export default function ScenarioEmulator({
   // =============================================================================
   // 3) 로컬 상태
   // =============================================================================
-  // const rootNode = useMemo(() => findRootNode(nodes, edges), [nodes, edges]);
-  const rootNode = findRootNode(nodes, edges);
+  const rootNode = useMemo(() => {
+    const configuredStartNode = startNodeId
+      ? (nodes.find((node) => node.id === startNodeId) ?? null)
+      : null;
+    return (
+      resolveExecutableNode(nodes, edges, configuredStartNode) ??
+      findRootNode(nodes, edges)
+    );
+  }, [nodes, edges, startNodeId]);
 
-  const [currentNodeId, setCurrentNodeId] = useState<string | null>(initialCurrentNodeId ?? null);
+  const [currentNodeId, setCurrentNodeId] = useState<string | null>(
+    initialCurrentNodeId ?? null,
+  );
   const [steps, setSteps] = useState<ChatStep[]>(initialSteps ?? []);
-  const [formValues, setFormValues] = useState<Record<string, any>>(initialFormValues ?? {});
-  const [slotValues, setSlotValues] = useState<Record<string, any>>(initialSlotValues ?? {});
+  const [formValues, setFormValues] = useState<Record<string, any>>(
+    initialFormValues ?? {},
+  );
+  const [slotValues, setSlotValues] = useState<Record<string, any>>(
+    initialSlotValues ?? {},
+  );
   const [finished, setFinished] = useState<boolean>(initialFinished ?? false);
   const [llmDone, setLlmDone] = useState(false);
 
@@ -105,7 +122,7 @@ export default function ScenarioEmulator({
   // =============================================================================
   // 4) hydration (persisted > initial > root) - 1회만
   // =============================================================================
-  const { didHydrateRef } = useScenarioHydration({
+  const { didHydrate } = useScenarioHydration({
     nodesReady: nodes.length > 0,
     rootNode,
     persistedRun,
@@ -132,25 +149,32 @@ export default function ScenarioEmulator({
       edges,
       scenarioKey,
       scenarioRunId,
+      deployedVersionId,
       userId: user?.id ?? "guest-preview",
     }),
-    [nodes, edges, scenarioKey, scenarioRunId],
+    [nodes, edges, scenarioKey, scenarioRunId, deployedVersionId],
   );
 
   // =============================================================================
-  // 6) step push 유틸 
+  // 6) step push 유틸
   // text에 {{key}} 그래도 디비에 저장 하고 싶으면?
   // - resolveTemplate(text, slotValues) 제거
   // - display에서 치환 - ChatMessageItem.tsx에서 detailText를 resolveTemplate() 함수를 사용해서 치환 처리
   // =============================================================================
   const pushBotStep = useCallback((id: string, text: string) => {
-    setSteps((prev) => [...prev, { id, role: "bot", text: resolveTemplate(text, slotValues) }]);
+    setSteps((prev) => [
+      ...prev,
+      { id, role: "bot", text: resolveTemplate(text, slotValues) },
+    ]);
   }, []);
 
   const pushBotStepOnce = useCallback((id: string, text: string) => {
     setSteps((prev) => {
       if (prev.some((s) => s.id === id)) return prev;
-      return [...prev, { id, role: "bot", text: resolveTemplate(text, slotValues) }];
+      return [
+        ...prev,
+        { id, role: "bot", text: resolveTemplate(text, slotValues) },
+      ];
     });
   }, []);
 
@@ -169,7 +193,8 @@ export default function ScenarioEmulator({
   );
 
   const runApiNode = useCallback(
-    async (node: AnyNode) => runApiNodeImpl(node, { slotValues, formValues, setSlotValues }),
+    async (node: AnyNode) =>
+      runApiNodeImpl(node, { slotValues, formValues, setSlotValues }),
     [slotValues, formValues],
   );
 
@@ -193,7 +218,7 @@ export default function ScenarioEmulator({
     scenarioRunId,
     scenarioKey,
     scenarioTitle,
-    didHydrate: didHydrateRef.current,
+    didHydrate,
     resetInFlightRef,
     persistedRun,
     currentNodeId,
@@ -201,6 +226,7 @@ export default function ScenarioEmulator({
     steps,
     slotValues,
     formValues,
+    deployedVersionId,
     onProgress,
     saveScenarioRun,
   });
@@ -245,6 +271,7 @@ export default function ScenarioEmulator({
   // =============================================================================
   useScenarioAutoRunner({
     currentNode,
+    rootNodeId: rootNode?.id ?? null,
     finished,
     nodes,
     edges,
@@ -269,7 +296,6 @@ export default function ScenarioEmulator({
   // 12) UI handlers (ScenarioNodeControls 연동)
   // =============================================================================
   const {
-    handleContinueFromMessage,
     handleContinueFromLlm,
     handleBranchClick,
     handleSubmitForm,
@@ -286,7 +312,6 @@ export default function ScenarioEmulator({
         setFinished,
         formValues,
         setSlotValues,
-        pushBotStep,
         pushUserStep,
         logToEngine,
         engineProps,
@@ -297,7 +322,6 @@ export default function ScenarioEmulator({
       currentNode,
       formValues,
       setSlotValues,
-      pushBotStep,
       pushUserStep,
       logToEngine,
       engineProps,
@@ -310,7 +334,9 @@ export default function ScenarioEmulator({
   return (
     <div className="flex h-full flex-col rounded-xl border border-emerald-100 bg-white/80 p-3 shadow-sm">
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-xs font-semibold text-emerald-700">시나리오 애뮬레이터</span>
+        <span className="text-xs font-semibold text-emerald-700">
+          시나리오 애뮬레이터
+        </span>
         <button
           className="rounded-md border border-gray-200 bg-white px-2 py-0.5 text-[11px] text-gray-500 hover:bg-gray-50"
           onClick={resetScenario}
@@ -333,7 +359,9 @@ export default function ScenarioEmulator({
               return (
                 <div
                   key={s.id}
-                  className={s.role === "bot" ? "flex justify-start" : "flex justify-end"}
+                  className={
+                    s.role === "bot" ? "flex justify-start" : "flex justify-end"
+                  }
                 >
                   <div
                     className={
@@ -358,7 +386,6 @@ export default function ScenarioEmulator({
         setFormValues={setFormValues}
         slotValues={slotValues}
         onReset={resetScenario}
-        onContinueFromMessage={handleContinueFromMessage}
         onBranchClick={handleBranchClick}
         onSubmitForm={handleSubmitForm}
         onNextFromLink={handleNextFromLink}

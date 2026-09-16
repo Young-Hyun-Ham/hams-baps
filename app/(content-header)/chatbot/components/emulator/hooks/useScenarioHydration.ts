@@ -1,7 +1,7 @@
 // app/(content-header)/chatbot/components/emulator/hooks/useScenarioHydration.ts
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { AnyNode, ChatStep } from "../../../types";
 
 type PersistedRun = {
@@ -32,6 +32,7 @@ export function useScenarioHydration(args: {
   setFinished: (v: boolean) => void;
 }) {
   const didHydrateRef = useRef(false);
+  const [didHydrate, setDidHydrate] = useState(false);
 
   useEffect(() => {
     if (!args.nodesReady) return;
@@ -58,6 +59,7 @@ export function useScenarioHydration(args: {
     }
 
     didHydrateRef.current = true;
+    setDidHydrate(true);
   }, [
     args.nodesReady,
     args.rootNode?.id,
@@ -69,5 +71,5 @@ export function useScenarioHydration(args: {
     args.initialFinished,
   ]);
 
-  return { didHydrateRef };
+  return { didHydrate };
 }

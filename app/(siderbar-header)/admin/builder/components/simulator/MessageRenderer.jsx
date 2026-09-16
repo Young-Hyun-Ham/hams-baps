@@ -101,7 +101,17 @@ const BotMessagePart = ({
   handleFormElementApiCall,
 }) => {
   const { t } = useTranslation();
-  const setSelectedRow = useBuilderStore((state) => state.setSelectedRow);
+  const isGridRowSelected = (rowData, gridKey) =>
+    (Array.isArray(formData[gridKey]) ? formData[gridKey] : []).some(
+      (selectedRow) => {
+        if (selectedRow === rowData) return true;
+        try {
+          return JSON.stringify(selectedRow) === JSON.stringify(rowData);
+        } catch {
+          return false;
+        }
+      },
+    );
 
   const normalizeOption = (option, fallbackIndex) => {
     if (option && typeof option === "object") {
@@ -181,17 +191,6 @@ const BotMessagePart = ({
 
   if (type === "form") {
     const elements = formElementOverrides?.[nodeId] || data.elements || [];
-    const hasSlotBoundGrid = elements.some(
-      (el) =>
-        el.type === "grid" &&
-        el.selectable &&
-        el.optionsSlot &&
-        Array.isArray(slots[el.optionsSlot]) &&
-        slots[el.optionsSlot].length > 0 &&
-        typeof slots[el.optionsSlot][0] === "object" &&
-        slots[el.optionsSlot][0] !== null,
-    );
-
     return (
       <div className={styles.formContainer} style={{ width: "100%" }}>
         <h3>{interpolateMessage(data.title, slots)}</h3>
@@ -284,7 +283,14 @@ const BotMessagePart = ({
                           >
                             {el.selectable && (
                               <td>
-                                <input type="radio" readOnly checked={false} />
+                                <input
+                                  type="checkbox"
+                                  readOnly
+                                  checked={isGridRowSelected(
+                                    dataObject,
+                                    elementKey,
+                                  )}
+                                />
                               </td>
                             )}
                             {filteredKeyObjects.map((kObj) => (
@@ -335,7 +341,14 @@ const BotMessagePart = ({
                         >
                           {el.selectable && (
                             <td>
-                              <input type="radio" readOnly checked={false} />
+                              <input
+                                type="checkbox"
+                                readOnly
+                                checked={isGridRowSelected(
+                                  gridDataFromSlot[r],
+                                  elementKey,
+                                )}
+                              />
                             </td>
                           )}
                           {[...Array(columns)].map((_, c) => {
@@ -399,7 +412,11 @@ const BotMessagePart = ({
                         >
                           {el.selectable && (
                             <td>
-                              <input type="radio" readOnly checked={false} />
+                              <input
+                                type="checkbox"
+                                readOnly
+                                checked={isGridRowSelected(rowData, elementKey)}
+                              />
                             </td>
                           )}
                           {[...Array(columns)].map((_, c) => {
@@ -803,28 +820,26 @@ const BotMessagePart = ({
           );
           // --- 💡 [수정] 끝 ---
         })}
-        {!hasSlotBoundGrid && (
-          <div className={styles.formButtonContainer}>
-            {/* <<< [추가] 엑셀 업로드 버튼 >>> */}
-            {data.enableExcelUpload && !isCompleted && (
-              <button
-                className={styles.formExcelButton}
-                onClick={onExcelUpload}
-                disabled={isCompleted}
-              >
-                {t("Excel Upload")}
-              </button>
-            )}
-            {/* <<< [수정] Default 버튼 완전 제거 >>> */}
+        <div className={styles.formButtonContainer}>
+          {/* <<< [추가] 엑셀 업로드 버튼 >>> */}
+          {data.enableExcelUpload && !isCompleted && (
             <button
-              className={styles.formSubmitButton}
-              onClick={onFormSubmit}
+              className={styles.formExcelButton}
+              onClick={onExcelUpload}
               disabled={isCompleted}
             >
-              {t("Submit")}
+              {t("Excel Upload")}
             </button>
-          </div>
-        )}
+          )}
+          {/* <<< [수정] Default 버튼 완전 제거 >>> */}
+          <button
+            className={styles.formSubmitButton}
+            onClick={onFormSubmit}
+            disabled={isCompleted}
+          >
+            {t("Submit")}
+          </button>
+        </div>
       </div>
     );
   }
