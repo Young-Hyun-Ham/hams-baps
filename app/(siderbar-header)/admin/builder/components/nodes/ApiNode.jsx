@@ -53,7 +53,6 @@ function ApiNode({ id, data }) {
       onClick={handleApiTest}
       className={styles.playButton}
       title={t('Test API')}
-      style={{ color: textColor }}
       disabled={isTesting}
     >
       {isTesting ? <span className={styles.buttonSpinner} /> : <PlayIcon />}

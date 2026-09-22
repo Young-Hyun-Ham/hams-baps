@@ -4,7 +4,7 @@ import { NodeResizer } from '@reactflow/node-resizer';
 import styles from './ChatNodes.module.css';
 import { useBuilderStore } from '../../store/index';
 import { CollapseNodeIcon, ExpandNodeIcon } from '../icons/Icons';
-import { Split } from 'lucide-react';
+import { Plus, Split } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import NodeWrapper from './NodeWrapper';
 
@@ -86,6 +86,23 @@ function GroupNode({ id, data, selected }) {
       <p className={styles.groupNodeDescription}>
         {t('This group contains selected nodes from the current scenario')}.
       </p>
+      {!isCollapsed && (
+        <button
+          type="button"
+          className={`${styles.groupAddNodeButton} nodrag nopan`}
+          onClick={(event) => {
+            event.stopPropagation();
+            window.dispatchEvent(
+              new CustomEvent('flow-uipath:add-group-node', {
+                detail: { groupId: id },
+              }),
+            );
+          }}
+        >
+          <Plus size={15} />
+          <span>{t('Add Node')}</span>
+        </button>
+      )}
     </NodeWrapper>
   );
 }

@@ -26,8 +26,26 @@
   min-width: 420px;
   min-height: 260px;
   background-color: rgba(226, 232, 240, 0.45);
-  border: 1px solid #94a3b8;
+  border: 1px dashed rgba(100, 116, 139, 0.55);
   box-sizing: border-box;
+  transition:
+    border-color 0.18s ease,
+    background-color 0.18s ease;
+}
+
+.groupNodeWrapper:hover {
+  border-color: rgba(71, 85, 105, 0.75);
+  background-color: rgba(226, 232, 240, 0.58);
+}
+
+/* Keep the group hovered while the pointer crosses the gap to Add Node. */
+.groupNodeWrapper::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: -10px;
+  left: 0;
+  height: 12px;
 }
 
 .groupNodeWrapperCollapsed {
@@ -51,6 +69,48 @@
   font-size: 0.8rem;
   color: #475569;
   font-style: italic;
+}
+
+.groupAddNodeButton {
+  position: absolute;
+  left: 8px;
+  bottom: -38px;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: calc(100% - 16px);
+  height: 30px;
+  padding: 0 12px;
+  border: 1px dashed rgba(148, 163, 184, 0.55);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-3px);
+  transition:
+    opacity 0.16s ease,
+    transform 0.16s ease,
+    background-color 0.16s ease,
+    border-color 0.16s ease;
+}
+
+.groupNodeWrapper:hover .groupAddNodeButton,
+.groupAddNodeButton:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.groupAddNodeButton:hover {
+  background: #fff;
+  border-color: rgba(100, 116, 139, 0.45);
 }
 
 /* <<< [추가] 시작 노드 스타일 >>> */
@@ -95,16 +155,43 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0px 12px;
+  min-height: 38px;
+  padding: 0 12px;
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
-  color: white;
+  border-bottom: 1px solid #e2e8f0;
+  background-color: #fff;
+  color: #334155;
+  box-sizing: border-box;
 }
 
 .headerLeft {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.headerIcon {
+  display: inline-flex;
+  flex: 0 0 28px;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+}
+
+.headerIcon > svg {
+  width: 16px;
+  height: 16px;
+}
+
+.headerColorIndicator {
+  display: inline-block;
+  flex: 0 0 5px;
+  width: 5px;
+  height: 20px;
+  border-radius: 999px;
 }
 
 .headerTextContent {
@@ -166,6 +253,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #94a3b8;
 }
 .playButton:hover {
   opacity: 0.8;
@@ -207,7 +295,7 @@
   cursor: pointer;
   background: none;
   border: none;
-  color: white;
+  color: #94a3b8;
   /* font-size: 0.7rem;
   margin-right: -10px; */
   /* 수정 */

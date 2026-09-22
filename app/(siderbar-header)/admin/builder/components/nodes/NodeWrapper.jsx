@@ -16,8 +16,8 @@ import { useTranslation } from 'react-i18next';
  * @param {string} props.id - 노드 ID
  * @param {string} props.typeLabel - 헤더에 표시될 노드 타입 (예: "Message")
  * @param {React.ReactNode} props.icon - 헤더에 표시될 아이콘
- * @param {string} props.nodeColor - 노드 헤더 배경색
- * @param {string} props.textColor - 노드 헤더 텍스트/아이콘 색상
+ * @param {string} props.nodeColor - 노드 아이콘 영역 배경색
+ * @param {string} props.textColor - 노드 아이콘 영역 색상
  * @param {React.ReactNode} props.children - 노드의 본문(body) 컨텐츠
  * @param {React.ReactNode} [props.handles=null] - (선택) 커스텀 핸들 (제공 시 기본 출력 핸들 대체)
  * @param {React.ReactNode} [props.headerButtons=null] - (선택) 헤더에 추가할 커스텀 버튼 (예: ApiNode의 테스트 버튼)
@@ -66,6 +66,12 @@ function NodeWrapper({
   const storeNodeData = useBuilderStore(
     (state) => state.nodes.find((n) => n.id === id)?.data,
   );
+  const isSelectionGroupChild = useBuilderStore((state) => {
+    const node = state.nodes.find((item) => item.id === id);
+    if (!node?.parentNode) return false;
+    return state.nodes.find((item) => item.id === node.parentNode)?.type ===
+      'selectionGroup';
+  });
   const inputPos =
     storeNodeData?.inputPosition === 'top' ? Position.Top : Position.Left;
   const outputPos =
@@ -81,7 +87,12 @@ function NodeWrapper({
   return (
     <div
       className={`${styles.nodeWrapper} ${isAnchored ? styles.anchored : ''} ${isStartNode ? styles.startNode : ''} ${customClassName}`}
-      style={style}
+      style={{
+        ...style,
+        ...(isSelectionGroupChild
+          ? { width: '100%', boxSizing: 'border-box' }
+          : {}),
+      }}
     >
       {nodeChrome}
 
@@ -117,12 +128,23 @@ function NodeWrapper({
       />
 
       {/* 2. 공통 헤더 */}
-      <div
-        className={styles.nodeHeader}
-        style={{ backgroundColor: nodeColor, color: textColor }}
-      >
+      <div className={styles.nodeHeader}>
         <div className={styles.headerLeft}>
-          {icon}
+          {icon && (
+            <span
+              className={styles.headerIcon}
+              style={{ backgroundColor: nodeColor, color: textColor }}
+            >
+              {icon}
+            </span>
+          )}
+          {!icon && (
+            <span
+              className={styles.headerColorIndicator}
+              style={{ backgroundColor: nodeColor }}
+              aria-hidden="true"
+            />
+          )}
           <span className={styles.headerTextContent}>{typeLabel}</span>
         </div>
         <div className={styles.headerButtons}>
@@ -154,7 +176,6 @@ function NodeWrapper({
               deleteNode(id);
             }}
             className={styles.deleteButton}
-            style={{ color: textColor }}
           >
             X
           </button>

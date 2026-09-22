@@ -16,7 +16,15 @@ function IframeNode({ id, data }) {
   // (isAnchored, isStartNode 로직 제거)
 
   // 4. 동적 너비 계산
-  const nodeWidth = Math.max(parseInt(data.width || '250', 10) + 40, 250);
+  const currentNode = nodes.find((node) => node.id === id);
+  const isSelectionGroupChild = Boolean(
+    currentNode?.parentNode &&
+      nodes.find((node) => node.id === currentNode.parentNode)?.type ===
+        'selectionGroup',
+  );
+  const nodeWidth = isSelectionGroupChild
+    ? 520
+    : Math.max(parseInt(data.width || '250', 10) + 40, 250);
 
   // URL을 안전하게 변환해주는 헬퍼 함수
   const encodeUrlParamsKeepingTemplates = (originalUrl) => {
@@ -72,12 +80,14 @@ function IframeNode({ id, data }) {
         {data.url ? (
           <iframe
             src={encodeUrlParamsKeepingTemplates(data.url)}
-            width={data.width || '100%'}
+            width={isSelectionGroupChild ? '100%' : data.width || '100%'}
             height={data.height || '200'}
             style={{
               border: '1px solid #ccc',
               borderRadius: '4px',
               overflowX: 'hidden',
+              maxWidth: '100%',
+              boxSizing: 'border-box',
             }}
             title="iframe-preview"
             onError={(e) => console.warn('Iframe preview error:', e)}

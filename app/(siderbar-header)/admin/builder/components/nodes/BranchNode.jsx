@@ -13,19 +13,49 @@ function BranchNode(props) {
   const updateNodeInternals = useUpdateNodeInternals();
   const nodeColor = useBuilderStore((state) => state.nodeColors.branch);
   const textColor = useBuilderStore((state) => state.nodeTextColors.branch);
+  const isSelectionGroupChild = useBuilderStore((state) => {
+    const node = state.nodes.find((item) => item.id === id);
+    if (!node?.parentNode) return false;
+    return state.nodes.find((item) => item.id === node.parentNode)?.type ===
+      'selectionGroup';
+  });
 
   useEffect(() => {
     updateNodeInternals(id);
-  }, [id, data?.outputPositions, data?.outputPosition, updateNodeInternals]);
+  }, [
+    id,
+    data?.outputPositions,
+    data?.outputPosition,
+    isSelectionGroupChild,
+    updateNodeInternals,
+  ]);
 
   if (data?.isSimpleYN) {
-    return <YnBranchNode {...props} />;
+    return (
+      <YnBranchNode
+        {...props}
+        data={
+          isSelectionGroupChild
+            ? {
+                ...data,
+                outputPosition: 'right',
+                outputPositions: {
+                  ...data.outputPositions,
+                  Y: 'right',
+                  N: 'right',
+                },
+              }
+            : data
+        }
+      />
+    );
   }
   // 2. 공통 로직 제거
   const isConditionType = data.evaluationType === 'CONDITION';
   // (isAnchored, isStartNode 로직 제거)
 
   const getHandlePosition = (hId) => {
+    if (isSelectionGroupChild) return 'right';
     return data?.outputPositions?.[hId] || data?.outputPosition || 'right';
   };
 

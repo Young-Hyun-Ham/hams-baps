@@ -35,6 +35,7 @@ function MessageNode({ id, data }) {
           rows={3}
         />
       </div>
+      {/* Quick Replies 메세지에서 사용 하지 않음.
       <div className={styles.section}>
         <span className={styles.sectionTitle}>{t('Quick Replies')}:</span>
         {data.replies?.map((reply, index) => (
@@ -59,6 +60,7 @@ function MessageNode({ id, data }) {
           </div>
         )}
       </div>
+      */}
     </NodeWrapper>
   );
 }

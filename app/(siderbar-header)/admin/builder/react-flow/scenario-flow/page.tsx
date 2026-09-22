@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useTranslation } from 'react-i18next';
@@ -349,26 +347,60 @@ const Flow = ({ scenario, scenarios }: any) => {
   const [viewMode, setViewMode] = useState<'flow' | 'orkes'>('flow');
 
   const formattedEdges = useMemo(() => {
-    return edges.map((edge: Edge) => {
-      const sourceNode = nodes.find((n: Node) => n.id === edge.source);
-      if (!sourceNode) return edge;
+    const nodeById = new Map(nodes.map((node: Node) => [node.id, node]));
 
-      let computedLabel: string | undefined = undefined;
+    return edges
+      .filter((edge: Edge) => {
+        const sourceNode = nodeById.get(edge.source);
+        const targetNode = nodeById.get(edge.target);
+        const sharedParentId = sourceNode?.parentNode;
 
-      if (sourceNode.type === 'branch') {
-        const isConditionType = sourceNode.data?.evaluationType === 'CONDITION';
+        // Group children are ordered by their vertical position. Their edges
+        // remain in state for execution, but the sequence line is not rendered.
+        return !(
+          sharedParentId &&
+          sharedParentId === targetNode?.parentNode &&
+          nodeById.get(sharedParentId)?.type === 'selectionGroup'
+        );
+      })
+      .map((edge: Edge) => {
+        const sourceNode = nodes.find((n: Node) => n.id === edge.source);
+        if (!sourceNode) return edge;
 
-        if (isConditionType) {
-          const conds = sourceNode.data?.conditions || [];
-          if (edge.sourceHandle === 'default') {
-            computedLabel = 'Default';
+        let computedLabel: string | undefined = undefined;
+
+        if (sourceNode.type === 'branch') {
+          const isConditionType =
+            sourceNode.data?.evaluationType === 'CONDITION';
+
+          if (isConditionType) {
+            const conds = sourceNode.data?.conditions || [];
+            if (edge.sourceHandle === 'default') {
+              computedLabel = 'Default';
+            } else {
+              const index = conds.findIndex(
+                (c: any, idx: number) =>
+                  (c.id || idx) === edge.sourceHandle ||
+                  c.slot === edge.sourceHandle ||
+                  String(c.id) === String(edge.sourceHandle) ||
+                  sourceNode.data?.replies?.[idx]?.value === edge.sourceHandle,
+              );
+              if (index !== -1) {
+                computedLabel = String(index + 1);
+              } else {
+                const branchEdges = edges.filter(
+                  (e) => e.source === sourceNode.id,
+                );
+                const edgeIdx = branchEdges.findIndex((e) => e.id === edge.id);
+                if (edgeIdx !== -1) {
+                  computedLabel = String(edgeIdx + 1);
+                }
+              }
+            }
           } else {
-            const index = conds.findIndex(
-              (c: any, idx: number) =>
-                (c.id || idx) === edge.sourceHandle ||
-                c.slot === edge.sourceHandle ||
-                String(c.id) === String(edge.sourceHandle) ||
-                sourceNode.data?.replies?.[idx]?.value === edge.sourceHandle,
+            const replies = sourceNode.data?.replies || [];
+            const index = replies.findIndex(
+              (r: any) => String(r.value) === String(edge.sourceHandle),
             );
             if (index !== -1) {
               computedLabel = String(index + 1);
@@ -382,53 +414,38 @@ const Flow = ({ scenario, scenarios }: any) => {
               }
             }
           }
-        } else {
-          const replies = sourceNode.data?.replies || [];
-          const index = replies.findIndex(
-            (r: any) => String(r.value) === String(edge.sourceHandle),
-          );
-          if (index !== -1) {
-            computedLabel = String(index + 1);
+        } else if (sourceNode.type === 'ynBranch') {
+          if (edge.sourceHandle === 'Y') computedLabel = 'Y';
+          else if (edge.sourceHandle === 'N') computedLabel = 'N';
+        } else if (sourceNode.type === 'llm') {
+          const conds = sourceNode.data?.conditions || [];
+          if (edge.sourceHandle === 'default') {
+            computedLabel = 'Default';
           } else {
-            const branchEdges = edges.filter((e) => e.source === sourceNode.id);
-            const edgeIdx = branchEdges.findIndex((e) => e.id === edge.id);
-            if (edgeIdx !== -1) {
-              computedLabel = String(edgeIdx + 1);
+            const index = conds.findIndex(
+              (c: any, idx: number) =>
+                (c.id || idx) === edge.sourceHandle ||
+                String(c.id) === String(edge.sourceHandle),
+            );
+            if (index !== -1) {
+              computedLabel = String(index + 1);
             }
           }
         }
-      } else if (sourceNode.type === 'ynBranch') {
-        if (edge.sourceHandle === 'Y') computedLabel = 'Y';
-        else if (edge.sourceHandle === 'N') computedLabel = 'N';
-      } else if (sourceNode.type === 'llm') {
-        const conds = sourceNode.data?.conditions || [];
-        if (edge.sourceHandle === 'default') {
-          computedLabel = 'Default';
-        } else {
-          const index = conds.findIndex(
-            (c: any, idx: number) =>
-              (c.id || idx) === edge.sourceHandle ||
-              String(c.id) === String(edge.sourceHandle),
-          );
-          if (index !== -1) {
-            computedLabel = String(index + 1);
-          }
-        }
-      }
 
-      if (computedLabel !== undefined) {
-        return {
-          ...edge,
-          label: computedLabel,
-          data: {
-            ...(edge.data || {}),
+        if (computedLabel !== undefined) {
+          return {
+            ...edge,
             label: computedLabel,
-          },
-        };
-      }
+            data: {
+              ...(edge.data || {}),
+              label: computedLabel,
+            },
+          };
+        }
 
-      return edge;
-    });
+        return edge;
+      });
   }, [edges, nodes]);
 
   const tabsRef = useRef(tabs);
@@ -735,7 +752,6 @@ const Flow = ({ scenario, scenarios }: any) => {
 
   useEffect(() => {
     if (!pendingFormInput) {
-
       setExecutionFormElements([]);
       setExecutionFormValues({});
       return;
@@ -1424,6 +1440,16 @@ const Flow = ({ scenario, scenarios }: any) => {
 
   const handleNodeDrag = useCallback(
     (_: React.MouseEvent, draggedNode: Node) => {
+      const parentNode = draggedNode.parentNode
+        ? nodes.find((node: Node) => node.id === draggedNode.parentNode)
+        : null;
+
+      if (parentNode?.type === 'selectionGroup') {
+        // Keep the child free while dragging so it can cross the group border.
+        // Alignment is restored only when it is dropped inside a group.
+        return;
+      }
+
       const connectedEdges = edges.filter(
         (e: Edge) => e.source === draggedNode.id || e.target === draggedNode.id,
       );
@@ -1620,6 +1646,274 @@ const Flow = ({ scenario, scenarios }: any) => {
 
   const handleNodeDragStop = useCallback(
     (_: React.MouseEvent, draggedNode: Node) => {
+      const liveNodes = getNodes();
+      const groupNode = draggedNode.parentNode
+        ? liveNodes.find((node: Node) => node.id === draggedNode.parentNode)
+        : null;
+
+      const draggedWidth =
+        draggedNode.width ||
+        (draggedNode as any).measured?.width ||
+        Number((draggedNode.style as any)?.width) ||
+        250;
+      const draggedHeight =
+        draggedNode.height ||
+        (draggedNode as any).measured?.height ||
+        Number((draggedNode.style as any)?.height) ||
+        150;
+      const absolutePosition =
+        draggedNode.positionAbsolute ||
+        (groupNode
+          ? {
+              x: groupNode.position.x + draggedNode.position.x,
+              y: groupNode.position.y + draggedNode.position.y,
+            }
+          : draggedNode.position);
+      const center = {
+        x: absolutePosition.x + draggedWidth / 2,
+        y: absolutePosition.y + draggedHeight / 2,
+      };
+      const targetGroup = liveNodes
+        .filter(
+          (node: Node) =>
+            node.type === 'selectionGroup' &&
+            node.id !== draggedNode.id &&
+            !node.data?.isCollapsed,
+        )
+        .find((node: Node) => {
+          const position = node.positionAbsolute || node.position;
+          const width =
+            node.width ||
+            (node as any).measured?.width ||
+            Number((node.style as any)?.width) ||
+            420;
+          const height =
+            node.height ||
+            (node as any).measured?.height ||
+            Number((node.style as any)?.height) ||
+            260;
+
+          return (
+            center.x >= position.x &&
+            center.x <= position.x + width &&
+            center.y >= position.y &&
+            center.y <= position.y + height
+          );
+        });
+
+      if (
+        draggedNode.type !== 'selectionGroup' &&
+        targetGroup?.id !== groupNode?.id
+      ) {
+        const targetPosition = targetGroup
+          ? targetGroup.positionAbsolute || targetGroup.position
+          : null;
+        const nextNode = targetGroup
+          ? {
+              ...draggedNode,
+              parentNode: targetGroup.id,
+              extent: undefined,
+              position: {
+                x: absolutePosition.x - targetPosition!.x,
+                y: absolutePosition.y - targetPosition!.y,
+              },
+              style: { ...draggedNode.style, width: 520 },
+              data: {
+                ...draggedNode.data,
+                inputPosition: 'top',
+                outputPosition: 'bottom',
+              },
+            }
+          : {
+              ...draggedNode,
+              parentNode: undefined,
+              extent: undefined,
+              position: absolutePosition,
+              data: { ...draggedNode.data, groupOrder: undefined },
+            };
+
+        const nodesWithoutDragged = liveNodes.filter(
+          (node: Node) => node.id !== draggedNode.id,
+        );
+        const nextNodes = targetGroup
+          ? nodesWithoutDragged.flatMap((node: Node) =>
+              node.id === targetGroup.id ? [node, nextNode] : [node],
+            )
+          : [...nodesWithoutDragged, nextNode];
+
+        let nextEdges = edges;
+        if (groupNode?.type === 'selectionGroup') {
+          const previousGroupChildren = liveNodes
+            .filter((node: Node) => node.parentNode === groupNode.id)
+            .slice()
+            .sort((a: Node, b: Node) => {
+              if (a.type === 'branch' && b.type !== 'branch') return 1;
+              if (a.type !== 'branch' && b.type === 'branch') return -1;
+              return a.position.y - b.position.y;
+            });
+          const removedIndex = previousGroupChildren.findIndex(
+            (node: Node) => node.id === draggedNode.id,
+          );
+          const previousNode = previousGroupChildren[removedIndex - 1];
+          const followingNode = previousGroupChildren[removedIndex + 1];
+
+          // The extracted node becomes independent. Remove its old sequence
+          // edges and bridge the gap left between its neighbours.
+          nextEdges = edges.filter(
+            (edge: Edge) =>
+              edge.source !== draggedNode.id && edge.target !== draggedNode.id,
+          );
+
+          if (
+            previousNode &&
+            followingNode &&
+            !nextEdges.some(
+              (edge: Edge) =>
+                edge.source === previousNode.id &&
+                edge.target === followingNode.id,
+            )
+          ) {
+            nextEdges = [
+              ...nextEdges,
+              createWorkflowEdge({
+                source: previousNode.id,
+                target: followingNode.id,
+                sourceHandle:
+                  previousNode.type === 'api' ? 'onSuccess' : null,
+              }),
+            ];
+          }
+        }
+
+        // React Flow requires a parent to appear before its children.
+        setNodes(nextNodes);
+        setEdges(nextEdges);
+        useBuilderHistoryStore
+          .getState()
+          .push(makeSnapshot(useBuilderStore.getState()));
+        return;
+      }
+
+      if (
+        groupNode?.type === 'selectionGroup' &&
+        targetGroup?.id === groupNode.id
+      ) {
+        const GROUP_CHILD_X = 60;
+        const GROUP_FIRST_Y = 82;
+        const GROUP_CHILD_GAP = 24;
+        const GROUP_CHILD_WIDTH = 520;
+        const GROUP_BOTTOM_PADDING = 60;
+        const groupChildren = nodes
+          .filter((node: Node) => node.parentNode === groupNode.id)
+          .map((node: Node) =>
+            node.id === draggedNode.id
+              ? { ...node, position: draggedNode.position }
+              : node,
+          )
+          .sort((a: Node, b: Node) => {
+            if (a.type === 'branch' && b.type !== 'branch') return 1;
+            if (a.type !== 'branch' && b.type === 'branch') return -1;
+            return a.position.y - b.position.y;
+          });
+        const childIds = new Set(groupChildren.map((node: Node) => node.id));
+        let nextY = GROUP_FIRST_Y;
+
+        const orderedChildren = groupChildren.map(
+          (node: Node, index: number) => {
+            const height =
+              node.height ||
+              (node as any).measured?.height ||
+              Number((node.style as any)?.height) ||
+              150;
+            const orderedNode = {
+              ...node,
+              position: { x: GROUP_CHILD_X, y: nextY },
+              style: { ...node.style, width: GROUP_CHILD_WIDTH },
+              data: {
+                ...node.data,
+                groupOrder: index + 1,
+                inputPosition: 'top',
+                outputPosition: 'bottom',
+              },
+            };
+            nextY += height + GROUP_CHILD_GAP;
+            return orderedNode;
+          },
+        );
+        const orderedNodeById = new Map(
+          orderedChildren.map((node: Node) => [node.id, node]),
+        );
+        const nextNodes = nodes.map((node: Node) => {
+          const orderedNode = orderedNodeById.get(node.id);
+          if (orderedNode) return orderedNode;
+          if (node.id !== groupNode.id) return node;
+          return {
+            ...node,
+            style: {
+              ...node.style,
+              width: GROUP_CHILD_WIDTH + GROUP_CHILD_X * 2,
+              height: nextY - GROUP_CHILD_GAP + GROUP_BOTTOM_PADDING,
+            },
+            data: {
+              ...node.data,
+              entryNodeId: orderedChildren[0]?.id || null,
+              exitNodeIds: orderedChildren.length
+                ? [orderedChildren[orderedChildren.length - 1].id]
+                : [],
+            },
+          };
+        });
+        const nonSequenceEdges = edges
+          .filter(
+            (edge: Edge) =>
+              !(childIds.has(edge.source) && childIds.has(edge.target)),
+          )
+          .map((edge: Edge) => {
+            if (
+              edge.source === groupNode.id &&
+              edge.data?.groupedBy === groupNode.id
+            ) {
+              return {
+                ...edge,
+                data: {
+                  ...edge.data,
+                  groupedSourceId:
+                    orderedChildren[orderedChildren.length - 1]?.id || null,
+                  groupedSourceHandle: null,
+                },
+              };
+            }
+            if (
+              edge.target === groupNode.id &&
+              edge.data?.groupedBy === groupNode.id
+            ) {
+              return {
+                ...edge,
+                data: {
+                  ...edge.data,
+                  groupedTargetId: orderedChildren[0]?.id || null,
+                  groupedTargetHandle: null,
+                },
+              };
+            }
+            return edge;
+          });
+        const sequenceEdges = orderedChildren.slice(0, -1).map((node, index) =>
+          createWorkflowEdge({
+            source: node.id,
+            target: orderedChildren[index + 1].id,
+            sourceHandle: node.type === 'api' ? 'onSuccess' : null,
+          }),
+        );
+
+        setNodes(nextNodes);
+        setEdges([...nonSequenceEdges, ...sequenceEdges]);
+        useBuilderHistoryStore
+          .getState()
+          .push(makeSnapshot(useBuilderStore.getState()));
+        return;
+      }
+
       const connectedEdges = edges.filter(
         (e: Edge) => e.source === draggedNode.id || e.target === draggedNode.id,
       );
@@ -1800,7 +2094,7 @@ const Flow = ({ scenario, scenarios }: any) => {
           .push(makeSnapshot(useBuilderStore.getState()));
       }
     },
-    [edges, nodes, setNodes, setEdges],
+    [edges, getNodes, nodes, setNodes, setEdges],
   );
 
   const getSelectedNodeIds = useCallback(() => {
@@ -1817,9 +2111,9 @@ const Flow = ({ scenario, scenarios }: any) => {
 
     return Boolean(
       isSelectionPane ||
-      target.closest('.react-flow__nodesselection') ||
-      target.closest('.react-flow__nodesselection-rect') ||
-      target.closest('.react-flow__selection'),
+        target.closest('.react-flow__nodesselection') ||
+        target.closest('.react-flow__nodesselection-rect') ||
+        target.closest('.react-flow__selection'),
     );
   }, []);
 
@@ -2099,10 +2393,216 @@ const Flow = ({ scenario, scenarios }: any) => {
         .map((n: any) => n.id),
     );
     return safeNodes.filter(
-      (n: any) => !n.parentNode,
-      // (n: any) => !n.parentNode || !collapsedGroupIds.has(n.parentNode),
+      (n: any) => !n.parentNode || !collapsedGroupIds.has(n.parentNode),
     );
   }, [safeNodes]);
+
+  const selectionGroupLayoutSignature = useMemo(() => {
+    const groupIds = new Set(
+      nodes
+        .filter((node: any) => node.type === 'selectionGroup')
+        .map((node: any) => node.id),
+    );
+
+    return nodes
+      .filter((node: any) => node.parentNode && groupIds.has(node.parentNode))
+      .map((node: any) =>
+        [
+          node.parentNode,
+          node.id,
+          node.height || node.measured?.height || 0,
+          node.width || node.measured?.width || 0,
+        ].join(':'),
+      )
+      .sort()
+      .join('|');
+  }, [nodes]);
+
+  useEffect(() => {
+    const GROUP_CHILD_X = 60;
+    const GROUP_FIRST_Y = 82;
+    const GROUP_CHILD_GAP = 24;
+    const GROUP_CHILD_WIDTH = 520;
+    const GROUP_BOTTOM_PADDING = 60;
+    const currentNodes = useBuilderStore.getState().nodes;
+    const groups = currentNodes.filter(
+      (node: any) => node.type === 'selectionGroup' && !node.data?.isCollapsed,
+    );
+    if (!groups.length) return;
+
+    const measuredNodeById = new Map(
+      getNodes().map((node: any) => [node.id, node]),
+    );
+    const nodeUpdates = new Map<string, any>();
+    const groupEndpoints = new Map<
+      string,
+      { entryNodeId: string | null; exitNodeId: string | null }
+    >();
+    const orderedChildrenByGroup = new Map<string, any[]>();
+    let hasNodeChanges = false;
+
+    groups.forEach((group: any) => {
+      const children = currentNodes
+        .filter((node: any) => node.parentNode === group.id)
+        .slice()
+        .sort((a: any, b: any) => {
+          if (a.type === 'branch' && b.type !== 'branch') return 1;
+          if (a.type !== 'branch' && b.type === 'branch') return -1;
+          return (a.position?.y || 0) - (b.position?.y || 0);
+        });
+      orderedChildrenByGroup.set(group.id, children);
+      let nextY = GROUP_FIRST_Y;
+
+      children.forEach((child: any, index: number) => {
+        const measuredNode: any = measuredNodeById.get(child.id);
+        const height =
+          measuredNode?.measured?.height ||
+          measuredNode?.height ||
+          child.measured?.height ||
+          child.height ||
+          Number(child.style?.height) ||
+          150;
+        const nextChild = {
+          ...child,
+          extent: undefined,
+          position: { x: GROUP_CHILD_X, y: nextY },
+          style: { ...child.style, width: GROUP_CHILD_WIDTH },
+          data: { ...child.data, groupOrder: index + 1 },
+        };
+        if (
+          child.position.x !== nextChild.position.x ||
+          child.position.y !== nextChild.position.y ||
+          child.extent !== undefined ||
+          Number(child.style?.width) !== GROUP_CHILD_WIDTH ||
+          child.data?.groupOrder !== index + 1
+        ) {
+          hasNodeChanges = true;
+        }
+        nodeUpdates.set(child.id, nextChild);
+        nextY += height + GROUP_CHILD_GAP;
+      });
+
+      const groupWidth = GROUP_CHILD_WIDTH + GROUP_CHILD_X * 2;
+      const groupHeight = children.length
+        ? nextY - GROUP_CHILD_GAP + GROUP_BOTTOM_PADDING
+        : 260;
+      const entryNodeId = children[0]?.id || null;
+      const exitNodeIds = children.length
+        ? [children[children.length - 1].id]
+        : [];
+      groupEndpoints.set(group.id, {
+        entryNodeId,
+        exitNodeId: exitNodeIds[0] || null,
+      });
+      const nextGroup = {
+        ...group,
+        style: { ...group.style, width: groupWidth, height: groupHeight },
+        data: { ...group.data, entryNodeId, exitNodeIds },
+      };
+      if (
+        Number(group.style?.width) !== groupWidth ||
+        Number(group.style?.height) !== groupHeight ||
+        group.data?.entryNodeId !== entryNodeId ||
+        group.data?.exitNodeIds?.[0] !== exitNodeIds[0] ||
+        (group.data?.exitNodeIds?.length || 0) !== exitNodeIds.length
+      ) {
+        hasNodeChanges = true;
+      }
+      nodeUpdates.set(group.id, nextGroup);
+    });
+
+    if (hasNodeChanges) {
+      setNodes(
+        currentNodes.map((node: any) => nodeUpdates.get(node.id) || node),
+      );
+    }
+
+    const currentEdges = useBuilderStore.getState().edges;
+    const currentNodeById = new Map(
+      currentNodes.map((node: any) => [node.id, node]),
+    );
+    const groupsToReconnect = new Set<string>();
+
+    orderedChildrenByGroup.forEach((children, groupId) => {
+      const desiredPairs = children
+        .slice(0, -1)
+        .map((child, index) => `${child.id}>${children[index + 1].id}`)
+        .sort();
+      const actualPairs = currentEdges
+        .filter((edge: any) => {
+          const sourceNode: any = currentNodeById.get(edge.source);
+          const targetNode: any = currentNodeById.get(edge.target);
+          return (
+            sourceNode?.parentNode === groupId &&
+            targetNode?.parentNode === groupId
+          );
+        })
+        .map((edge: any) => `${edge.source}>${edge.target}`)
+        .sort();
+
+      if (desiredPairs.join('|') !== actualPairs.join('|')) {
+        groupsToReconnect.add(groupId);
+      }
+    });
+
+    let hasEdgeChanges = false;
+    const nextEdges = currentEdges.flatMap((edge: any) => {
+      const sourceNode: any = currentNodeById.get(edge.source);
+      const targetNode: any = currentNodeById.get(edge.target);
+      const internalGroupId =
+        sourceNode?.parentNode &&
+        sourceNode.parentNode === targetNode?.parentNode
+          ? sourceNode.parentNode
+          : null;
+      if (internalGroupId && groupsToReconnect.has(internalGroupId)) {
+        hasEdgeChanges = true;
+        return [];
+      }
+
+      const groupedBy = edge.data?.groupedBy;
+      const endpoints = groupedBy ? groupEndpoints.get(groupedBy) : null;
+      if (!endpoints) return [edge];
+
+      if (
+        edge.source === groupedBy &&
+        edge.data?.groupedSourceId !== endpoints.exitNodeId
+      ) {
+        hasEdgeChanges = true;
+        return [
+          {
+            ...edge,
+            data: { ...edge.data, groupedSourceId: endpoints.exitNodeId },
+          },
+        ];
+      }
+      if (
+        edge.target === groupedBy &&
+        edge.data?.groupedTargetId !== endpoints.entryNodeId
+      ) {
+        hasEdgeChanges = true;
+        return [
+          {
+            ...edge,
+            data: { ...edge.data, groupedTargetId: endpoints.entryNodeId },
+          },
+        ];
+      }
+      return [edge];
+    });
+    groupsToReconnect.forEach((groupId) => {
+      const children = orderedChildrenByGroup.get(groupId) || [];
+      children.slice(0, -1).forEach((child, index) => {
+        nextEdges.push(
+          createWorkflowEdge({
+            source: child.id,
+            target: children[index + 1].id,
+            sourceHandle: child.type === 'api' ? 'onSuccess' : null,
+          }),
+        );
+      });
+    });
+    if (hasEdgeChanges) setEdges(nextEdges);
+  }, [getNodes, selectionGroupLayoutSignature, setEdges, setNodes]);
 
   const handleNodeClick = async (event: any, node: any) => {
     // 노드 클릭 시 shift 키로 다중 노드 선택 가능 하도록 수정
@@ -2119,9 +2619,7 @@ const Flow = ({ scenario, scenarios }: any) => {
     } else {
       const userInfo = await loadingUserData();
       if (userInfo.unuseNodes?.includes(node.type)) {
-        showAlert(
-          `${t('The node does not have modification privileges')}`,
-        );
+        showAlert(`${t('The node does not have modification privileges')}`);
         return;
       }
       setSelectedNodes((prev: any) => {
@@ -2224,9 +2722,265 @@ const Flow = ({ scenario, scenarios }: any) => {
         return;
       }
 
+      const droppedOnNode = getNodes()
+        .slice()
+        .reverse()
+        .find((node: any) => {
+          if (node.type === 'scenario') return false;
+
+          const nodePosition = node.positionAbsolute || node.position;
+          const width = node.width || Number(node.style?.width) || 250;
+          const height = node.height || Number(node.style?.height) || 150;
+
+          return (
+            position.x >= nodePosition.x &&
+            position.x <= nodePosition.x + width &&
+            position.y >= nodePosition.y &&
+            position.y <= nodePosition.y + height
+          );
+        });
+
+      if (droppedOnNode) {
+        const existingParentId =
+          droppedOnNode.type === 'selectionGroup'
+            ? droppedOnNode.id
+            : droppedOnNode.parentNode;
+        const groupNode = existingParentId
+          ? nodes.find((node: any) => node.id === existingParentId)
+          : null;
+
+        // Dropping on an existing group (or one of its children) appends a
+        // vertically connected child to that group.
+        if (groupNode?.type === 'selectionGroup') {
+          const children = nodes
+            .filter((node: any) => node.parentNode === groupNode.id)
+            .slice()
+            .sort((a: any, b: any) => {
+              if (a.type === 'branch' && b.type !== 'branch') return 1;
+              if (a.type !== 'branch' && b.type === 'branch') return -1;
+              return (a.position?.y || 0) - (b.position?.y || 0);
+            });
+          const previousChild = children[children.length - 1];
+          const previousHeight =
+            previousChild?.height ||
+            Number(previousChild?.style?.height) ||
+            150;
+          const data = createNodeData(type) as BuilderNodeData;
+          const newNodeId = data.id || `${type}-${Date.now()}`;
+          const newNode: BuilderNode = {
+            id: newNodeId,
+            type,
+            position: {
+              x: previousChild?.position?.x ?? 60,
+              y: previousChild
+                ? previousChild.position.y + previousHeight + 36
+                : 82,
+            },
+            parentNode: groupNode.id,
+            extent: undefined,
+            style: { width: 520 },
+            data: {
+              ...data,
+              groupOrder: children.length + 1,
+              inputPosition: 'top',
+              outputPosition: 'bottom',
+            },
+          };
+          const requiredWidth = 640;
+          const requiredHeight = newNode.position.y + 150 + 60;
+
+          pushHistory();
+          setNodes(
+            nodes
+              .map((node: any) =>
+                node.id === groupNode.id
+                  ? {
+                      ...node,
+                      style: {
+                        ...node.style,
+                        width: requiredWidth,
+                        height: Math.max(
+                          Number(node.style?.height) || 260,
+                          requiredHeight,
+                        ),
+                      },
+                      data: {
+                        ...node.data,
+                        exitNodeIds: [newNodeId],
+                      },
+                    }
+                  : node.parentNode === groupNode.id
+                    ? {
+                        ...node,
+                        position: { ...node.position, x: 60 },
+                        style: { ...node.style, width: 520 },
+                        data: {
+                          ...node.data,
+                          groupOrder:
+                            children.findIndex(
+                              (child) => child.id === node.id,
+                            ) + 1,
+                        },
+                      }
+                    : node,
+              )
+              .concat(newNode),
+          );
+          if (previousChild) {
+            const nextEdges = edges.map((edge: any) =>
+              edge.source === groupNode.id &&
+              edge.data?.groupedBy === groupNode.id
+                ? {
+                    ...edge,
+                    data: {
+                      ...edge.data,
+                      groupedSourceId: newNode.id,
+                      groupedSourceHandle: null,
+                    },
+                  }
+                : edge,
+            );
+            setEdges([
+              ...nextEdges,
+              createWorkflowEdge({
+                source: previousChild.id,
+                target: newNode.id,
+                sourceHandle: previousChild.type === 'api' ? 'onSuccess' : null,
+              }),
+            ]);
+          }
+          setSelectedNodeId(newNode.id);
+          return;
+        }
+
+        // A drop directly on a top-level node creates a group containing the
+        // existing node and the newly dropped node, arranged top-to-bottom.
+        if (
+          !droppedOnNode.parentNode &&
+          droppedOnNode.type !== 'selectionGroup'
+        ) {
+          const data = createNodeData(type) as BuilderNodeData;
+          const newNodeId = data.id || `${type}-${Date.now()}`;
+          const groupId = `group-drop-${Date.now()}`;
+          const existingHeight =
+            droppedOnNode.height || Number(droppedOnNode.style?.height) || 150;
+          const paddingX = 60;
+          const firstY = 82;
+          const gapY = 36;
+          const secondY = firstY + existingHeight + gapY;
+          const groupWidth = 520 + paddingX * 2;
+          const groupHeight = secondY + 150 + 60;
+          const groupPosition =
+            droppedOnNode.positionAbsolute || droppedOnNode.position;
+          const group: BuilderNode = {
+            id: groupId,
+            type: 'selectionGroup',
+            position: {
+              x: groupPosition.x - paddingX,
+              y: groupPosition.y - firstY,
+            },
+            data: {
+              label: t('Selected Group'),
+              title: t('Selected Group'),
+              isCollapsed: false,
+              entryNodeId: droppedOnNode.id,
+              exitNodeIds: [newNodeId],
+            },
+            style: { width: groupWidth, height: groupHeight },
+          };
+          const firstChild: BuilderNode = {
+            ...droppedOnNode,
+            parentNode: groupId,
+            extent: undefined,
+            position: { x: paddingX, y: firstY },
+            style: { ...droppedOnNode.style, width: 520 },
+            selected: false,
+            data: {
+              ...droppedOnNode.data,
+              groupOrder: 1,
+              inputPosition: 'top',
+              outputPosition: 'bottom',
+            },
+          };
+          const secondChild: BuilderNode = {
+            id: newNodeId,
+            type,
+            position: { x: paddingX, y: secondY },
+            parentNode: groupId,
+            extent: undefined,
+            style: { width: 520 },
+            data: {
+              ...data,
+              groupOrder: 2,
+              inputPosition: 'top',
+              outputPosition: 'bottom',
+            },
+          };
+
+          pushHistory();
+          setNodes([
+            group,
+            ...nodes.map((node: any) =>
+              node.id === droppedOnNode.id ? firstChild : node,
+            ),
+            secondChild,
+          ]);
+          const groupedEdges = edges.map((edge: any) => {
+            if (edge.target === firstChild.id) {
+              return {
+                ...edge,
+                target: groupId,
+                targetHandle: null,
+                data: {
+                  ...(edge.data || {}),
+                  groupedTargetId: firstChild.id,
+                  groupedTargetHandle: edge.targetHandle || null,
+                  groupedBy: groupId,
+                },
+              };
+            }
+            if (edge.source === firstChild.id) {
+              return {
+                ...edge,
+                source: groupId,
+                sourceHandle: null,
+                data: {
+                  ...(edge.data || {}),
+                  groupedSourceId: firstChild.id,
+                  groupedSourceHandle: edge.sourceHandle || null,
+                  groupedBy: groupId,
+                },
+              };
+            }
+            return edge;
+          });
+          setEdges([
+            ...groupedEdges,
+            createWorkflowEdge({
+              source: firstChild.id,
+              target: secondChild.id,
+              sourceHandle: firstChild.type === 'api' ? 'onSuccess' : null,
+            }),
+          ]);
+          setSelectedNodeId(secondChild.id);
+          return;
+        }
+      }
+
       addNode(type, position);
     },
-    [project, addNode],
+    [
+      addNode,
+      edges,
+      getNodes,
+      nodes,
+      project,
+      pushHistory,
+      setEdges,
+      setNodes,
+      setSelectedNodeId,
+      t,
+    ],
   );
 
   // ========================================================================================================
@@ -2558,7 +3312,7 @@ const Flow = ({ scenario, scenarios }: any) => {
           y: 88 + groupChildren.length * 120,
         },
         parentNode: parentNode.id,
-        extent: 'parent',
+        extent: undefined,
         data: {
           ...data,
           flowCollapsed: false,
