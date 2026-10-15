@@ -1,8 +1,8 @@
 // src/components/simulator/MessageHistory.jsx
 
-import React, { useRef, useEffect } from 'react';
-import MessageRenderer from './MessageRenderer';
-import styles from '../ChatbotSimulator.module.css';
+import React, { useRef, useEffect } from "react";
+import MessageRenderer from "./MessageRenderer";
+import styles from "../ChatbotSimulator.module.css";
 
 // 💡 [수정된 부분] handleGridRowClick, onExcelUpload 프롭 추가
 const MessageHistory = ({

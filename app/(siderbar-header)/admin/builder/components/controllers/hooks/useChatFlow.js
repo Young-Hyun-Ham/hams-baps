@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { useTranslation } from 'react-i18next';
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { useBuilderStore } from '../../../store';
-import { generateUniqueId } from '../../../utils/simulatorUtils';
+import { useTranslation } from "react-i18next";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useBuilderStore } from "../../../store";
+import { generateUniqueId } from "../../../utils/simulatorUtils";
 // import * as scenarioCore from '@clt-chatbot/scenario-core';
-import * as scenarioCore from '@/core/scenario-core/src/index';
+import * as scenarioCore from "@/core/scenario-core/src/index";
 
 const { ChatbotEngine } = scenarioCore;
 
-const GEMINI_API_KEY = '';
+const GEMINI_API_KEY = "";
 
 export const useChatFlow = (nodes, edges) => {
   const { t } = useTranslation();
@@ -23,14 +23,14 @@ export const useChatFlow = (nodes, edges) => {
   const engine = useRef(null);
 
   if (!engine.current) {
-    const eng = new ChatbotEngine({ nodes, edges, version: '1.0' });
+    const eng = new ChatbotEngine({ nodes, edges, version: "1.0" });
     const originalGetNextNode = eng.getNextNode.bind(eng);
     eng.getNextNode = (currentNodeId, sourceHandle = null, slots = {}) => {
       const sourceNode = eng.getNodeById(currentNodeId);
       let effectiveHandle = sourceHandle;
       if (
         sourceNode &&
-        (sourceNode.type === 'ynBranch' || sourceNode.data?.isSimpleYN) &&
+        (sourceNode.type === "ynBranch" || sourceNode.data?.isSimpleYN) &&
         !effectiveHandle
       ) {
         const rawInput = sourceNode.data?.slotKey
@@ -39,18 +39,18 @@ export const useChatFlow = (nodes, edges) => {
             slots?.input ??
             slots?.user_input ??
             slots?.text ??
-            '');
-        const strInput = String(rawInput ?? '')
+            "");
+        const strInput = String(rawInput ?? "")
           .trim()
           .toUpperCase();
         const isN =
-          strInput === 'N' ||
-          strInput === 'NO' ||
-          strInput === 'ㄴ' ||
-          strInput === 'FALSE' ||
-          strInput === '0';
-        const replyYId = sourceNode.data?.replies?.[0]?.value || 'Y';
-        const replyNId = sourceNode.data?.replies?.[1]?.value || 'N';
+          strInput === "N" ||
+          strInput === "NO" ||
+          strInput === "ㄴ" ||
+          strInput === "FALSE" ||
+          strInput === "0";
+        const replyYId = sourceNode.data?.replies?.[0]?.value || "Y";
+        const replyNId = sourceNode.data?.replies?.[1]?.value || "N";
         effectiveHandle = isN ? replyNId : replyYId;
       }
       return originalGetNextNode(currentNodeId, effectiveHandle, slots);
@@ -58,17 +58,15 @@ export const useChatFlow = (nodes, edges) => {
     engine.current = eng;
   }
 
-  
-
   useEffect(() => {
-    const eng = new ChatbotEngine({ nodes, edges, version: '1.0' });
+    const eng = new ChatbotEngine({ nodes, edges, version: "1.0" });
     const originalGetNextNode = eng.getNextNode.bind(eng);
     eng.getNextNode = (currentNodeId, sourceHandle = null, slots = {}) => {
       const sourceNode = eng.getNodeById(currentNodeId);
       let effectiveHandle = sourceHandle;
       if (
         sourceNode &&
-        (sourceNode.type === 'ynBranch' || sourceNode.data?.isSimpleYN) &&
+        (sourceNode.type === "ynBranch" || sourceNode.data?.isSimpleYN) &&
         !effectiveHandle
       ) {
         const rawInput = sourceNode.data?.slotKey
@@ -77,18 +75,18 @@ export const useChatFlow = (nodes, edges) => {
             slots?.input ??
             slots?.user_input ??
             slots?.text ??
-            '');
-        const strInput = String(rawInput ?? '')
+            "");
+        const strInput = String(rawInput ?? "")
           .trim()
           .toUpperCase();
         const isN =
-          strInput === 'N' ||
-          strInput === 'NO' ||
-          strInput === 'ㄴ' ||
-          strInput === 'FALSE' ||
-          strInput === '0';
-        const replyYId = sourceNode.data?.replies?.[0]?.value || 'Y';
-        const replyNId = sourceNode.data?.replies?.[1]?.value || 'N';
+          strInput === "N" ||
+          strInput === "NO" ||
+          strInput === "ㄴ" ||
+          strInput === "FALSE" ||
+          strInput === "0";
+        const replyYId = sourceNode.data?.replies?.[0]?.value || "Y";
+        const replyNId = sourceNode.data?.replies?.[1]?.value || "N";
         effectiveHandle = isN ? replyNId : replyYId;
       }
       return originalGetNextNode(currentNodeId, effectiveHandle, slots);
@@ -122,12 +120,12 @@ export const useChatFlow = (nodes, edges) => {
         nextEdge =
           edges.find(
             (edge) =>
-              edge.source === sourceNodeId && edge.sourceHandle === 'default',
+              edge.source === sourceNodeId && edge.sourceHandle === "default",
           ) ||
           edges.find(
             (edge) =>
               edge.source === sourceNodeId &&
-              (edge.sourceHandle == null || edge.sourceHandle === ''),
+              (edge.sourceHandle == null || edge.sourceHandle === ""),
           );
       }
 
@@ -146,8 +144,8 @@ export const useChatFlow = (nodes, edges) => {
         if (!parentNode) break;
 
         if (
-          parentNode.type === 'scenario' ||
-          parentNode.type === 'selectionGroup'
+          parentNode.type === "scenario" ||
+          parentNode.type === "selectionGroup"
         ) {
           return findNextNodeByEdge(parentNode.id);
         }
@@ -163,8 +161,8 @@ export const useChatFlow = (nodes, edges) => {
   const findGroupEntryNode = useCallback(
     (groupNode) => {
       if (
-        groupNode?.type !== 'scenario' &&
-        groupNode?.type !== 'selectionGroup'
+        groupNode?.type !== "scenario" &&
+        groupNode?.type !== "selectionGroup"
       ) {
         return null;
       }
@@ -174,7 +172,7 @@ export const useChatFlow = (nodes, edges) => {
       );
       if (!childNodes.length) return null;
 
-      if (groupNode.type === 'selectionGroup' && groupNode.data?.entryNodeId) {
+      if (groupNode.type === "selectionGroup" && groupNode.data?.entryNodeId) {
         const explicitEntryNode = childNodes.find(
           (node) => node.id === groupNode.data.entryNodeId,
         );
@@ -221,7 +219,7 @@ export const useChatFlow = (nodes, edges) => {
 
       if (
         sourceNode &&
-        (sourceNode.type === 'ynBranch' || sourceNode.data?.isSimpleYN) &&
+        (sourceNode.type === "ynBranch" || sourceNode.data?.isSimpleYN) &&
         !effectiveHandle
       ) {
         const rawInput = sourceNode.data?.slotKey
@@ -230,18 +228,18 @@ export const useChatFlow = (nodes, edges) => {
             updatedSlots?.input ??
             updatedSlots?.user_input ??
             updatedSlots?.text ??
-            '');
-        const strInput = String(rawInput ?? '')
+            "");
+        const strInput = String(rawInput ?? "")
           .trim()
           .toUpperCase();
         const isN =
-          strInput === 'N' ||
-          strInput === 'NO' ||
-          strInput === 'ㄴ' ||
-          strInput === 'FALSE' ||
-          strInput === '0';
-        const replyYId = sourceNode.data?.replies?.[0]?.value || 'Y';
-        const replyNId = sourceNode.data?.replies?.[1]?.value || 'N';
+          strInput === "N" ||
+          strInput === "NO" ||
+          strInput === "ㄴ" ||
+          strInput === "FALSE" ||
+          strInput === "0";
+        const replyYId = sourceNode.data?.replies?.[0]?.value || "Y";
+        const replyNId = sourceNode.data?.replies?.[1]?.value || "N";
         effectiveHandle = isN ? replyNId : replyYId;
       }
 
@@ -269,12 +267,12 @@ export const useChatFlow = (nodes, edges) => {
   // 20260318 - onMessage 로직을 헬퍼로 빼서 재사용
   const pushBotNode = useCallback(
     (node, updatedSlots) => {
-      if (!node || node.type === 'ynBranch' || node.data?.isSimpleYN) {
+      if (!node || node.type === "ynBranch" || node.data?.isSimpleYN) {
         return;
       }
 
       const interpolatedText = engine.current.interpolateMessage(
-        node.data?.content || node.data?.title || '',
+        node.data?.content || node.data?.title || "",
         updatedSlots,
       );
 
@@ -308,7 +306,7 @@ export const useChatFlow = (nodes, edges) => {
         setHistory((prev) => [
           ...prev,
           {
-            type: 'bot',
+            type: "bot",
             id: newId,
             nodeId: node.id,
             combinedData: [nodeDataPacket],
@@ -339,7 +337,7 @@ export const useChatFlow = (nodes, edges) => {
       // targetNodeId가 null이면 라이브러리의 종료 시퀀스가 실행됩니다.
 
       // 시뮬레이터 특화: 실행 전 로딩 상태가 있다면 제거
-      setHistory((prev) => prev.filter((item) => item.type !== 'loading'));
+      setHistory((prev) => prev.filter((item) => item.type !== "loading"));
 
       const result = await engine.current.run(
         resolvedTargetNodeId,
@@ -358,7 +356,7 @@ export const useChatFlow = (nodes, edges) => {
           onApi: async (node, slots) => {
             markExecutedNode(node);
             const loadingId = generateUniqueId();
-            setHistory((prev) => [...prev, { type: 'loading', id: loadingId }]);
+            setHistory((prev) => [...prev, { type: "loading", id: loadingId }]);
 
             try {
               const { isMulti, apis } = node.data;
@@ -369,19 +367,19 @@ export const useChatFlow = (nodes, edges) => {
                 );
                 const headers = JSON.parse(
                   engine.current.interpolateMessage(
-                    apiCall.headers || '{}',
+                    apiCall.headers || "{}",
                     slots,
                   ),
                 );
                 const body = engine.current.interpolateMessage(
-                  apiCall.body || '{}',
+                  apiCall.body || "{}",
                   slots,
                 );
 
                 const res = await globalThis.fetch(url, {
                   method: apiCall.method,
-                  headers: { 'Content-Type': 'application/json', ...headers },
-                  body: apiCall.method !== 'GET' ? body : undefined,
+                  headers: { "Content-Type": "application/json", ...headers },
+                  body: apiCall.method !== "GET" ? body : undefined,
                 });
                 if (!res.ok) throw new Error(`Status ${res.status}`);
                 const data = await res.json();
@@ -413,7 +411,7 @@ export const useChatFlow = (nodes, edges) => {
               setHistory((prev) => [
                 ...prev,
                 {
-                  type: 'bot',
+                  type: "bot",
                   message: `API Error: ${error.message}`,
                   id: generateUniqueId(),
                 },
@@ -427,16 +425,16 @@ export const useChatFlow = (nodes, edges) => {
               setHistory((prev) => [
                 ...prev,
                 {
-                  type: 'bot',
-                  message: t('LLM Error: API key not configured.'),
+                  type: "bot",
+                  message: t("LLM Error: API key not configured."),
                   id: generateUniqueId(),
                 },
               ]);
               return { success: false, newSlots: slots };
             }
             const loadingId = generateUniqueId();
-            setHistory((prev) => [...prev, { type: 'loading', id: loadingId }]);
-            let accumulatedContent = '';
+            setHistory((prev) => [...prev, { type: "loading", id: loadingId }]);
+            let accumulatedContent = "";
             try {
               const interpolatedPrompt = engine.current.interpolateMessage(
                 node.data.prompt,
@@ -444,8 +442,8 @@ export const useChatFlow = (nodes, edges) => {
               );
               const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent?key=${GEMINI_API_KEY}&alt=sse`;
               const response = await globalThis.fetch(apiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                   contents: [{ parts: [{ text: interpolatedPrompt }] }],
                 }),
@@ -454,7 +452,7 @@ export const useChatFlow = (nodes, edges) => {
               const reader = response.body
                 .pipeThrough(new globalThis.TextDecoderStream())
                 .getReader();
-              let buffer = '';
+              let buffer = "";
               while (true) {
                 const { value, done } = await reader.read();
                 if (value) buffer += value;
@@ -462,13 +460,13 @@ export const useChatFlow = (nodes, edges) => {
                 while ((boundaryIndex = buffer.search(/\r?\n\r?\n/)) !== -1) {
                   const message = buffer.substring(0, boundaryIndex);
                   buffer = buffer.substring(boundaryIndex + 4);
-                  if (message.startsWith('data: ')) {
+                  if (message.startsWith("data: ")) {
                     const jsonString = message.substring(6).trim();
                     try {
                       const jsonData = JSON.parse(jsonString);
                       const chunk =
                         jsonData.candidates?.[0]?.content?.parts?.[0]?.text ||
-                        '';
+                        "";
                       accumulatedContent += chunk;
                     } catch {
                       // ignore invalid SSE chunk
@@ -486,8 +484,8 @@ export const useChatFlow = (nodes, edges) => {
               setHistory((prev) => [
                 ...prev,
                 {
-                  type: 'bot',
-                  message: `${t('LLM Error')}: ${error.message}`,
+                  type: "bot",
+                  message: `${t("LLM Error")}: ${error.message}`,
                   id: generateUniqueId(),
                 },
               ]);
@@ -510,7 +508,7 @@ export const useChatFlow = (nodes, edges) => {
               node.data.content,
               slots,
             );
-            if (url) globalThis.window?.open(url, '_blank');
+            if (url) globalThis.window?.open(url, "_blank");
           },
           onEnd: () => {
             // 종료 시 추가 로직이 필요하다면 여기에 작성 (이미 라이브러리에서 메시지를 보냅니다)
@@ -523,7 +521,7 @@ export const useChatFlow = (nodes, edges) => {
       // 20260318 - runScenario 종료 후 active 노드를 직접 렌더링 + 슬롯 동기화
       setSlots(result.slots);
 
-      if (result.status !== 'active') {
+      if (result.status !== "active") {
         const nextNode = lastExecutedNodeRef.current?.id
           ? getNextNode(lastExecutedNodeRef.current.id, null, result.slots)
           : null;
@@ -534,7 +532,7 @@ export const useChatFlow = (nodes, edges) => {
         }
       }
 
-      if (result.status === 'active') {
+      if (result.status === "active") {
         const node = engine.current.getNodeById(result.currentNodeId);
         const executableNode = resolveExecutableNode(node);
 
@@ -543,7 +541,7 @@ export const useChatFlow = (nodes, edges) => {
           return;
         }
 
-        if (node?.type === 'fixedmenu') {
+        if (node?.type === "fixedmenu") {
           setFixedMenu({ nodeId: node.id, ...node.data });
           setHistory([]);
         } else if (node) {
@@ -559,9 +557,9 @@ export const useChatFlow = (nodes, edges) => {
       }
       // ================================================================
 
-      if (result.status === 'active') {
+      if (result.status === "active") {
         const node = engine.current.getNodeById(result.currentNodeId);
-        if (node?.type === 'fixedmenu') {
+        if (node?.type === "fixedmenu") {
           setFixedMenu({ nodeId: node.id, ...node.data });
           setHistory([]);
         }
@@ -591,7 +589,7 @@ export const useChatFlow = (nodes, edges) => {
         setCurrentId(null);
         return;
       }
-      engine.current.interpolateMessage('');
+      engine.current.interpolateMessage("");
       // console.log('before proceed', updatedSlots);
       const nextNode = getNextNode(sourceNodeId, sourceHandle, updatedSlots);
       // nextNode가 null이더라도 runScenario(null)을 호출하여 라이브러리의 종료 시퀀스를 트리거합니다.
@@ -606,7 +604,7 @@ export const useChatFlow = (nodes, edges) => {
     let startId = startNodeId;
     if (!startId) {
       const startNode =
-        nodes.find((n) => n.type === 'start') ||
+        nodes.find((n) => n.type === "start") ||
         nodes.find(
           (n) => !edges.some((e) => e.target === n.id) && !n.parentNode,
         );

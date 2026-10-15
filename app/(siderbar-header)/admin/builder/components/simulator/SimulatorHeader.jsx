@@ -1,16 +1,16 @@
-import React from 'react';
-import styles from '../ChatbotSimulator.module.css';
-import { ExpandIcon, CollapseIcon } from '../icons/Icons';
-import { useTranslation } from 'react-i18next';
+import React from "react";
+import styles from "../ChatbotSimulator.module.css";
+import { ExpandIcon, CollapseIcon } from "../icons/Icons";
+import { useTranslation } from "react-i18next";
 
 const SimulatorHeader = ({ isVisible, isExpanded, setIsExpanded, onStart }) => {
   const { t } = useTranslation();
   return (
-    <div className={`${styles.header} ${isExpanded ? styles.expanded : ''}`}>
+    <div className={`${styles.header} ${isExpanded ? styles.expanded : ""}`}>
       <div className={styles.headerContent}>
         <img
           src="/images/icon.png"
-          alt={t('AI Chatbot Icon')}
+          alt={t("AI Chatbot Icon")}
           className={styles.headerIcon}
         />
         <div className={styles.headerTextContainer}>
@@ -23,18 +23,18 @@ const SimulatorHeader = ({ isVisible, isExpanded, setIsExpanded, onStart }) => {
           <div
             className={styles.headerButton}
             onClick={() => setIsExpanded(!isExpanded)}
-            title={isExpanded ? 'Collapse' : 'Expand'}
+            title={isExpanded ? "Collapse" : "Expand"}
           >
             <img
               src="/images/expand.png"
-              alt={t('expand')}
+              alt={t("expand")}
               className={!isExpanded ? styles.expandIcon : styles.collapseIcon}
             />
           </div>
         )}
         {isVisible && (
           <button className={styles.headerRestartButton} onClick={onStart}>
-            {t('Start')}
+            {t("Start")}
           </button>
         )}
       </div>

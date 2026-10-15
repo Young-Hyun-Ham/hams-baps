@@ -1,14 +1,14 @@
-import { useState, useEffect } from 'react';
-import useAlert from '@/lib/hooks/useAlert';
+import { useState, useEffect } from "react";
+import useAlert from "@/lib/hooks/useAlert";
 
-import styles from '../NodeController.module.css';
-import * as backendService from '../../services/backendService';
-import FormTemplateModal from '../modals/FormTemplateModal';
+import styles from "../NodeController.module.css";
+import * as backendService from "../../services/backendService";
+import FormTemplateModal from "../modals/FormTemplateModal";
 
-import { createFormElement } from '../../utils/nodeFactory';
-import { formatDisplayKeys, parseDisplayKeys } from '../../utils/gridUtils';
-import { useNodeController } from './hooks/useNodeController';
-import { useTranslation } from 'react-i18next';
+import { createFormElement } from "../../utils/nodeFactory";
+import { formatDisplayKeys, parseDisplayKeys } from "../../utils/gridUtils";
+import { useNodeController } from "./hooks/useNodeController";
+import { useTranslation } from "react-i18next";
 
 // ElementEditor 컴포넌트
 function ElementEditor({
@@ -62,62 +62,62 @@ function ElementEditor({
   return (
     <div className={styles.elementEditor}>
       <h4>
-        {t('Edit')} {element.type}
+        {t("Edit")} {element.type}
       </h4>
       <div className={styles.formGroup}>
-        <label>{t('Label')}</label>
+        <label>{t("Label")}</label>
         <input
           type="text"
-          value={element.label || ''}
-          onChange={(e) => handleInputChange('label', e.target.value)}
+          value={element.label || ""}
+          onChange={(e) => handleInputChange("label", e.target.value)}
         />
       </div>
       <div className={styles.formGroup}>
         <label>
-          {t('Name')} ({t('Slot Key')})
+          {t("Name")} ({t("Slot Key")})
         </label>
         <input
           type="text"
-          value={element.name || ''}
-          onChange={(e) => handleInputChange('name', e.target.value)}
+          value={element.name || ""}
+          onChange={(e) => handleInputChange("name", e.target.value)}
         />
       </div>
 
-      {element.type === 'input' && (
+      {element.type === "input" && (
         <>
           <div className={styles.formGroup}>
             <label>
-              {t('Default Value')} ({t('Optional')})
+              {t("Default Value")} ({t("Optional")})
             </label>
             <input
               type="text"
-              placeholder={t('Enter default value or {slot_name}')}
-              value={element.defaultValue || ''}
+              placeholder={t("Enter default value or {slot_name}")}
+              value={element.defaultValue || ""}
               onChange={(e) =>
-                handleInputChange('defaultValue', e.target.value)
+                handleInputChange("defaultValue", e.target.value)
               }
             />
             <p
               className={styles.instructionText}
-              style={{ marginTop: '4px', fontSize: '0.75rem' }}
+              style={{ marginTop: "4px", fontSize: "0.75rem" }}
             >
-              Use <code>{'{slotName}'}</code> to reference a slot value,
+              Use <code>{"{slotName}"}</code> to reference a slot value,
               otherwise treated as literal text.
             </p>
           </div>
           <div className={styles.formGroup}>
-            <label>{t('Placeholder')}</label>
+            <label>{t("Placeholder")}</label>
             <input
               type="text"
-              value={element.placeholder || ''}
-              onChange={(e) => handleInputChange('placeholder', e.target.value)}
+              value={element.placeholder || ""}
+              onChange={(e) => handleInputChange("placeholder", e.target.value)}
             />
           </div>
           <div className={styles.formGroup}>
-            <label>{t('Validation')}</label>
+            <label>{t("Validation")}</label>
             <select
-              value={element.validation?.type || 'text'}
-              onChange={(e) => handleValidationChange('type', e.target.value)}
+              value={element.validation?.type || "text"}
+              onChange={(e) => handleValidationChange("type", e.target.value)}
             >
               <option value="text">Text</option>
               <option value="email">Email</option>
@@ -125,14 +125,14 @@ function ElementEditor({
               <option value="custom">Custom (Regex)</option>
             </select>
           </div>
-          {element.validation?.type === 'custom' && (
+          {element.validation?.type === "custom" && (
             <div className={styles.formGroup}>
-              <label>{t('Regex')}</label>
+              <label>{t("Regex")}</label>
               <input
                 type="text"
-                value={element.validation?.regex || ''}
+                value={element.validation?.regex || ""}
                 onChange={(e) =>
-                  handleValidationChange('regex', e.target.value)
+                  handleValidationChange("regex", e.target.value)
                 }
               />
             </div>
@@ -140,24 +140,24 @@ function ElementEditor({
         </>
       )}
 
-      {(element.type === 'checkbox' || element.type === 'dropbox') && (
+      {(element.type === "checkbox" || element.type === "dropbox") && (
         <>
-          {element.type === 'dropbox' && (
+          {element.type === "dropbox" && (
             <div className={styles.formGroup}>
-              <label>{t('Options Slot')}</label>
+              <label>{t("Options Slot")}</label>
               <input
                 type="text"
                 placeholder="Bind to array in slot"
-                value={element.optionsSlot || ''}
+                value={element.optionsSlot || ""}
                 onChange={(e) =>
-                  handleInputChange('optionsSlot', e.target.value)
+                  handleInputChange("optionsSlot", e.target.value)
                 }
               />
             </div>
           )}
           <div className={styles.formGroup}>
             <label>
-              {t('Options')} ({t('Fallback')})
+              {t("Options")} ({t("Fallback")})
             </label>
             <div className={styles.repliesContainer}>
               {(element.options || []).map((opt, i) => (
@@ -182,47 +182,47 @@ function ElementEditor({
                 className={styles.addReplyButton}
                 disabled={!!element.optionsSlot}
               >
-                + {t('Add Option')}
+                + {t("Add Option")}
               </button>
             </div>
           </div>
         </>
       )}
 
-      {element.type === 'grid' && (
+      {element.type === "grid" && (
         <>
           <div className={styles.formGroup}>
-            <label>{t('Data Slot')}</label>
+            <label>{t("Data Slot")}</label>
             <input
               type="text"
               placeholder="Bind to array in slot"
-              value={element.optionsSlot || ''}
-              onChange={(e) => handleInputChange('optionsSlot', e.target.value)}
+              value={element.optionsSlot || ""}
+              onChange={(e) => handleInputChange("optionsSlot", e.target.value)}
             />
           </div>
           {element.optionsSlot && (
             <>
               <div className={styles.formGroup}>
                 <label>
-                  {t('Display Labels')} ({t('comma-separated')})
+                  {t("Display Labels")} ({t("comma-separated")})
                 </label>
                 <input
                   type="text"
-                  placeholder={t('e.g., name(My Name),email')}
+                  placeholder={t("e.g., name(My Name),email")}
                   value={displayKeysString}
                   onChange={(e) => {
                     setDisplayKeysString(e.target.value);
                   }}
                   onBlur={(e) => {
                     handleInputChange(
-                      'displayKeys',
+                      "displayKeys",
                       parseDisplayKeys(e.target.value),
                     );
                   }}
                 />
                 <p
                   className={styles.instructionText}
-                  style={{ marginTop: '4px', fontSize: '0.75rem' }}
+                  style={{ marginTop: "4px", fontSize: "0.75rem" }}
                 >
                   Use <code>key(Label)</code> syntax. If <code>(Label)</code> is
                   omitted, the key will be used as the label.
@@ -231,20 +231,20 @@ function ElementEditor({
               <div className={styles.formGroup}>
                 <label
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    cursor: 'pointer',
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    cursor: "pointer",
                   }}
                 >
                   <input
                     type="checkbox"
                     checked={element.hideNullColumns || false}
                     onChange={(e) =>
-                      handleInputChange('hideNullColumns', e.target.checked)
+                      handleInputChange("hideNullColumns", e.target.checked)
                     }
                   />
-                  {t('Hide Columns with Null Values')}
+                  {t("Hide Columns with Null Values")}
                 </label>
               </div>
             </>
@@ -258,7 +258,7 @@ function ElementEditor({
                     type="number"
                     value={element.rows || 2}
                     onChange={(e) =>
-                      handleInputChange('rows', parseInt(e.target.value) || 1)
+                      handleInputChange("rows", parseInt(e.target.value) || 1)
                     }
                   />
                 </div>
@@ -269,7 +269,7 @@ function ElementEditor({
                     value={element.columns || 2}
                     onChange={(e) =>
                       handleInputChange(
-                        'columns',
+                        "columns",
                         parseInt(e.target.value) || 1,
                       )
                     }
@@ -278,7 +278,7 @@ function ElementEditor({
               </div>
               <div className={styles.formGroup}>
                 <label>
-                  {t('Grid Content')} ({t('Fallback')})
+                  {t("Grid Content")} ({t("Fallback")})
                 </label>
                 <div
                   className={styles.gridContentEditor}
@@ -295,7 +295,7 @@ function ElementEditor({
                       <textarea
                         key={i}
                         className={styles.gridCellEditor}
-                        value={element.data?.[i] || ''}
+                        value={element.data?.[i] || ""}
                         onChange={(e) =>
                           onGridCellChange(
                             index,
@@ -319,7 +319,7 @@ function ElementEditor({
           className={styles.deleteElementButton}
           onClick={() => onDelete(index)}
         >
-          {t('Delete Element')}
+          {t("Delete Element")}
         </button>
       </div>
     </div>
@@ -400,7 +400,7 @@ function FormNodeController({ localNode, setLocalNode, backend }) {
     setLocalNode((prev) => {
       const newElements = JSON.parse(JSON.stringify(prev.data.elements));
       const gridElement = newElements[elementIndex];
-      if (gridElement && gridElement.type === 'grid') {
+      if (gridElement && gridElement.type === "grid") {
         const index = rowIndex * gridElement.columns + colIndex;
         gridElement.data[index] = value;
         return {
@@ -425,10 +425,10 @@ function FormNodeController({ localNode, setLocalNode, backend }) {
       );
       setFormTemplates((prev) => [...prev, savedTemplate]);
       setIsTemplateModalOpen(false);
-      await showAlert(t('Form template saved successfully!'));
+      await showAlert(t("Form template saved successfully!"));
     } catch (error) {
-      console.error('Failed to save form template:', error);
-      await showAlert(t('Failed to save template.'));
+      console.error("Failed to save form template:", error);
+      await showAlert(t("Failed to save template."));
     }
   };
 
@@ -447,15 +447,15 @@ function FormNodeController({ localNode, setLocalNode, backend }) {
 
   const handleDeleteTemplate = async (templateId) => {
     const confirmed = await showConfirm(
-      t('Are you sure you want to delete this form template?'),
+      t("Are you sure you want to delete this form template?"),
     );
     if (confirmed) {
       try {
         await backendService.deleteFormTemplate(backend, templateId);
         setFormTemplates((prev) => prev.filter((t) => t.id !== templateId));
       } catch (error) {
-        console.error('Failed to delete form template:', error);
-        await showAlert(t('Failed to delete template.'));
+        console.error("Failed to delete form template:", error);
+        await showAlert(t("Failed to delete template."));
       }
     }
   };
@@ -477,7 +477,7 @@ function FormNodeController({ localNode, setLocalNode, backend }) {
   };
 
   const { data } = localNode;
-  const elementTabs = ['input', 'date', 'grid', 'checkbox', 'dropbox'];
+  const elementTabs = ["input", "date", "grid", "checkbox", "dropbox"];
   const elements = data.elements || [];
   const selectedElementIndex = elements.findIndex(
     (el) => el.id === selectedElementId,
@@ -504,8 +504,8 @@ function FormNodeController({ localNode, setLocalNode, backend }) {
         <label>Form Title</label>
         <input
           type="text"
-          value={data.title || ''}
-          onChange={(e) => handleLocalDataChange('title', e.target.value)}
+          value={data.title || ""}
+          onChange={(e) => handleLocalDataChange("title", e.target.value)}
         />
       </div>
 
@@ -515,35 +515,35 @@ function FormNodeController({ localNode, setLocalNode, backend }) {
       >
         <label
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            cursor: 'pointer',
-            fontWeight: '500',
-            fontSize: '0.85rem',
-            color: '#555',
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            cursor: "pointer",
+            fontWeight: "500",
+            fontSize: "0.85rem",
+            color: "#555",
           }}
         >
           <input
             type="checkbox"
             checked={data.enableExcelUpload || false}
             onChange={(e) =>
-              handleLocalDataChange('enableExcelUpload', e.target.checked)
+              handleLocalDataChange("enableExcelUpload", e.target.checked)
             }
             style={{
-              width: '16px',
-              height: '16px',
+              width: "16px",
+              height: "16px",
               margin: 0,
               flexShrink: 0,
-              accentColor: '#3498db',
+              accentColor: "#3498db",
             }}
           />
-          {t('Enable Excel Upload Button')}
+          {t("Enable Excel Upload Button")}
         </label>
       </div>
 
       <div className={styles.formGroup}>
-        <label>{t('Add Element')}</label>
+        <label>{t("Add Element")}</label>
         <div className={styles.elementTabs}>
           {elementTabs.map((type) => (
             <button key={type} onClick={() => localAddElement(type)}>
@@ -554,13 +554,13 @@ function FormNodeController({ localNode, setLocalNode, backend }) {
       </div>
       <div className={styles.separator} />
       <div className={styles.formGroup}>
-        <label>{t('Elements List')}</label>
+        <label>{t("Elements List")}</label>
         <div className={styles.elementsContainer}>
           {elements.length > 0 ? (
             elements.map((el, index) => (
               <div
                 key={el.id}
-                className={`${styles.elementItem} ${el.id === selectedElementId ? styles.selected : ''}`}
+                className={`${styles.elementItem} ${el.id === selectedElementId ? styles.selected : ""}`}
                 onClick={() => setSelectedElementId(el.id)}
                 draggable
                 onDragStart={(e) => handleDragStart(e, index)}
@@ -587,7 +587,7 @@ function FormNodeController({ localNode, setLocalNode, backend }) {
               </div>
             ))
           ) : (
-            <p className={styles.placeholder}>{t('No elements added yet')}.</p>
+            <p className={styles.placeholder}>{t("No elements added yet")}.</p>
           )}
         </div>
       </div>

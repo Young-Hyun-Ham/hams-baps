@@ -28,12 +28,12 @@ export const useNodeController = (setLocalNode) => {
       const nodeType = prev.type;
       const newReply = {
         display:
-          nodeType === 'branch'
-            ? 'New Branch'
-            : nodeType === 'fixedmenu'
-              ? 'New Menu'
-              : 'New Reply',
-        value: `${nodeType === 'branch' ? 'cond' : nodeType === 'fixedmenu' ? 'menu' : 'val'}_${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+          nodeType === "branch"
+            ? "New Branch"
+            : nodeType === "fixedmenu"
+              ? "New Menu"
+              : "New Reply",
+        value: `${nodeType === "branch" ? "cond" : nodeType === "fixedmenu" ? "menu" : "val"}_${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
       };
       const newReplies = [...(prev.data.replies || []), newReply];
       return { ...prev, data: { ...prev.data, replies: newReplies } };
@@ -78,10 +78,10 @@ export const useNodeController = (setLocalNode) => {
         ...(prev.data.conditions || []),
         {
           id: `cond-${Date.now()}`,
-          slot: '',
-          operator: '==',
-          value: '',
-          valueType: 'value',
+          slot: "",
+          operator: "==",
+          value: "",
+          valueType: "value",
         },
       ];
       // --- 💡 수정된 부분 끝 ---

@@ -1,5 +1,5 @@
-import styles from '../../NodeController.module.css';
-import { useTranslation } from 'react-i18next';
+import styles from "../../NodeController.module.css";
+import { useTranslation } from "react-i18next";
 
 /**
  * Node Controller에서 공통으로 사용되는 'Chain with next node' 체크박스
@@ -10,24 +10,24 @@ import { useTranslation } from 'react-i18next';
 function ChainNextCheckbox({ checked, onChange }) {
   const { t } = useTranslation();
   return (
-    <div className={styles.formGroup} style={{ paddingTop: '10px' }}>
+    <div className={styles.formGroup} style={{ paddingTop: "10px" }}>
       <label
         style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          cursor: 'pointer',
-          fontWeight: '500',
-          fontSize: '0.85rem',
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          cursor: "pointer",
+          fontWeight: "500",
+          fontSize: "0.85rem",
         }}
       >
         <input
           type="checkbox"
           checked={checked || false}
           onChange={(e) => onChange(e.target.checked)}
-          style={{ width: '16px', height: '16px', margin: 0, flexShrink: 0 }}
+          style={{ width: "16px", height: "16px", margin: 0, flexShrink: 0 }}
         />
-        {`${t('Chain with next node')} (${t('no new bubble')})`}
+        {`${t("Chain with next node")} (${t("no new bubble")})`}
       </label>
     </div>
   );

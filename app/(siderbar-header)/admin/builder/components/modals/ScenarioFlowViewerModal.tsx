@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import CloseIcon from '@mui/icons-material/Close';
+import { useEffect, useState } from "react";
+import CloseIcon from "@mui/icons-material/Close";
 import {
   Box,
   CircularProgress,
@@ -10,8 +10,8 @@ import {
   DialogTitle,
   IconButton,
   Typography,
-} from '@mui/material';
-import { useTranslation } from 'react-i18next';
+} from "@mui/material";
+import { useTranslation } from "react-i18next";
 import ReactFlow, {
   Background,
   Controls,
@@ -19,26 +19,26 @@ import ReactFlow, {
   ReactFlowProvider,
   type Edge,
   type Node,
-} from 'reactflow';
-import 'reactflow/dist/style.css';
-import '@reactflow/node-resizer/dist/style.css';
+} from "reactflow";
+import "reactflow/dist/style.css";
+import "@reactflow/node-resizer/dist/style.css";
 
-import ApiNode from '../nodes/ApiNode';
-import BranchNode from '../nodes/BranchNode';
-import DelayNode from '../nodes/DelayNode';
-import FixedMenuNode from '../nodes/FixedMenuNode';
-import FormNode from '../nodes/FormNode';
-import GroupNode from '../nodes/GroupNode';
-import IframeNode from '../nodes/IframeNode';
-import LinkNode from '../nodes/LinkNode';
-import LlmNode from '../nodes/LlmNode';
-import MessageNode from '../nodes/MessageNode';
-import ScenarioNode from '../nodes/ScenarioNode';
-import SetSlotNode from '../nodes/SetSlotNode';
-import SlotFillingNode from '../nodes/SlotFillingNode';
-import ToastNode from '../nodes/ToastNode';
-import CustomOrthogonalEdge from '../edges/CustomOrthogonalEdge';
-import { getScenarioVersion } from '../../services/fastApi';
+import ApiNode from "../nodes/ApiNode";
+import BranchNode from "../nodes/BranchNode";
+import DelayNode from "../nodes/DelayNode";
+import FixedMenuNode from "../nodes/FixedMenuNode";
+import FormNode from "../nodes/FormNode";
+import GroupNode from "../nodes/GroupNode";
+import IframeNode from "../nodes/IframeNode";
+import LinkNode from "../nodes/LinkNode";
+import LlmNode from "../nodes/LlmNode";
+import MessageNode from "../nodes/MessageNode";
+import ScenarioNode from "../nodes/ScenarioNode";
+import SetSlotNode from "../nodes/SetSlotNode";
+import SlotFillingNode from "../nodes/SlotFillingNode";
+import ToastNode from "../nodes/ToastNode";
+import CustomOrthogonalEdge from "../edges/CustomOrthogonalEdge";
+import { getScenarioVersion } from "../../services/fastApi";
 
 const nodeTypes = {
   message: MessageNode,
@@ -78,7 +78,7 @@ export default function ScenarioViewModal({
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (!isOpen || !scenario?.id || !scenario.ltst_ver_id) return;
@@ -87,7 +87,7 @@ export default function ScenarioViewModal({
       .then(() => {
         if (!active) return null;
         setLoading(true);
-        setError('');
+        setError("");
         return getScenarioVersion({
           scenario_id: scenario.id,
           version_id: scenario.ltst_ver_id,
@@ -102,7 +102,7 @@ export default function ScenarioViewModal({
         if (!active) return;
         setNodes([]);
         setEdges([]);
-        setError(t('Failed to load scenario data.'));
+        setError(t("Failed to load scenario data."));
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -116,30 +116,30 @@ export default function ScenarioViewModal({
     <Dialog open={isOpen} onClose={onClose} fullScreen>
       <DialogTitle
         sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
           borderBottom: 1,
-          borderColor: 'divider',
+          borderColor: "divider",
           py: 1,
           pr: 1,
         }}
       >
-        {scenario?.name || scenario?.scenario_nm || t('Scenario Viewer')}
+        {scenario?.name || scenario?.scenario_nm || t("Scenario Viewer")}
 
-        <IconButton onClick={onClose} aria-label={t('Close')}>
+        <IconButton onClick={onClose} aria-label={t("Close")}>
           <CloseIcon />
         </IconButton>
       </DialogTitle>
-      <DialogContent sx={{ display: 'flex', flex: 1, minHeight: 0, p: 0 }}>
+      <DialogContent sx={{ display: "flex", flex: 1, minHeight: 0, p: 0 }}>
         {!scenario ? (
-          <Typography color="text.secondary" sx={{ m: 'auto' }}>
-            {t('Please select a scenario.')}
+          <Typography color="text.secondary" sx={{ m: "auto" }}>
+            {t("Please select a scenario.")}
           </Typography>
         ) : loading ? (
-          <CircularProgress sx={{ m: 'auto' }} />
+          <CircularProgress sx={{ m: "auto" }} />
         ) : error ? (
-          <Typography color="error" sx={{ m: 'auto' }}>
+          <Typography color="error" sx={{ m: "auto" }}>
             {error}
           </Typography>
         ) : (

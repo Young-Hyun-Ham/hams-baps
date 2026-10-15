@@ -1,6 +1,6 @@
-import styles from '../NodeController.module.css';
-import { useNodeController } from './hooks/useNodeController';
-import { useTranslation } from 'react-i18next';
+import styles from "../NodeController.module.css";
+import { useNodeController } from "./hooks/useNodeController";
+import { useTranslation } from "react-i18next";
 
 function FixedMenuNodeController({ localNode, setLocalNode }) {
   const { t } = useTranslation();
@@ -12,23 +12,23 @@ function FixedMenuNodeController({ localNode, setLocalNode }) {
   return (
     <>
       <div className={styles.formGroup}>
-        <label>{t('Menu Title')}</label>
+        <label>{t("Menu Title")}</label>
         <textarea
-          value={data.content || ''}
-          onChange={(e) => handleLocalDataChange('content', e.target.value)}
+          value={data.content || ""}
+          onChange={(e) => handleLocalDataChange("content", e.target.value)}
           rows={4}
         />
       </div>
       <div className={styles.formGroup}>
-        <label>{t('Menus')}</label>
+        <label>{t("Menus")}</label>
         <div className={styles.repliesContainer}>
           {data.replies?.map((reply, index) => (
             <div key={reply.value || index} className={styles.quickReply}>
               <input
                 className={styles.quickReplyInput}
                 value={reply.display}
-                onChange={(e) => updateReply(index, 'display', e.target.value)}
-                placeholder={t('Display text')}
+                onChange={(e) => updateReply(index, "display", e.target.value)}
+                placeholder={t("Display text")}
               />
               <button
                 onClick={() => deleteReply(index)}
@@ -39,7 +39,7 @@ function FixedMenuNodeController({ localNode, setLocalNode }) {
             </div>
           ))}
           <button onClick={addReply} className={styles.addReplyButton}>
-            + {t('Add Menu')}
+            + {t("Add Menu")}
           </button>
         </div>
       </div>

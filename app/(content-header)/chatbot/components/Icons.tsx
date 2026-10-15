@@ -29,7 +29,7 @@ export const SidebarToggleIcon = ({
       width="22"
       height="20"
       rx="5"
-      stroke="#6B7280"   /* gray-500 */
+      stroke="#6B7280" /* gray-500 */
       strokeWidth="1.6"
     />
 
@@ -39,7 +39,7 @@ export const SidebarToggleIcon = ({
       y1="6"
       x2="14"
       y2="22"
-      stroke="#9CA3AF"   /* gray-400 */
+      stroke="#9CA3AF" /* gray-400 */
       strokeWidth="1.4"
       strokeLinecap="round"
       className="transition-opacity duration-150 group-hover:opacity-0"
@@ -70,16 +70,9 @@ export const SidebarToggleIcon = ({
   </svg>
 );
 
-
 export function NewChatIcon(props: IconProps) {
   return (
-    <svg
-      width={24}
-      height={24}
-      viewBox="0 0 24 24"
-      fill="none"
-      {...props}
-    >
+    <svg width={24} height={24} viewBox="0 0 24 24" fill="none" {...props}>
       {/* 문서 */}
       <rect
         x={6}
@@ -121,21 +114,9 @@ export function NewChatIcon(props: IconProps) {
 
 export function HistoryIcon(props: IconProps) {
   return (
-    <svg
-      width={24}
-      height={24}
-      viewBox="0 0 24 24"
-      fill="none"
-      {...props}
-    >
+    <svg width={24} height={24} viewBox="0 0 24 24" fill="none" {...props}>
       {/* 바깥 원 */}
-      <circle
-        cx={12}
-        cy={12}
-        r={6}
-        stroke={iconColor}
-        strokeWidth={1.6}
-      />
+      <circle cx={12} cy={12} r={6} stroke={iconColor} strokeWidth={1.6} />
       {/* 시계 바늘 */}
       <path
         d="M12 9v3l2 1"
@@ -145,10 +126,7 @@ export function HistoryIcon(props: IconProps) {
         strokeLinejoin="round"
       />
       {/* 되감기 화살표 */}
-      <path
-        d="M8.5 5.5L7 4v3h3L8.5 5.5z"
-        fill={iconColor}
-      />
+      <path d="M8.5 5.5L7 4v3h3L8.5 5.5z" fill={iconColor} />
       <path
         d="M7 4a8 8 0 0 1 11 2"
         stroke={iconColor}

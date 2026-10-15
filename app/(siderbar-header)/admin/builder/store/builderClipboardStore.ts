@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { MarkerType, type Edge, type Node } from 'reactflow';
+import { create } from "zustand";
+import { MarkerType, type Edge, type Node } from "reactflow";
 
 type ClipboardPayload = {
   nodes: Node<any>[];
@@ -41,13 +41,13 @@ const makeNodeId = (type: string, index: number) =>
   `${type}-${Date.now()}-${Math.random().toString(36).slice(2, 9)}-${index}`;
 
 const makeEdgeId = (source: string, target: string, edge: Edge<any>) =>
-  `reactflow__edge-${source}${edge.sourceHandle || ''}-${target}${edge.targetHandle || ''}`;
+  `reactflow__edge-${source}${edge.sourceHandle || ""}-${target}${edge.targetHandle || ""}`;
 
 const makeWorkflowEdgeId = (
   source: string,
   target: string,
   sourceHandle?: string | null,
-) => `reactflow__edge-${source}${sourceHandle || ''}-${target}`;
+) => `reactflow__edge-${source}${sourceHandle || ""}-${target}`;
 
 const getLastAppendableNode = (nodes: Node<any>[], edges: Edge<any>[]) => {
   const topLevelNodes = nodes.filter((node) => !node.parentNode);
@@ -149,7 +149,7 @@ export const builderClipboardStore = create<BuilderClipboardState>(
         : { x: 40, y: 40 };
 
       const pastedNodes: Node<any>[] = clipboard.nodes.map((node, index) => {
-        const nextId = makeNodeId(node.type || 'node', index);
+        const nextId = makeNodeId(node.type || "node", index);
         idMap.set(node.id, nextId);
 
         const isChildOfCopiedParent =
@@ -203,11 +203,11 @@ export const builderClipboardStore = create<BuilderClipboardState>(
             );
           }
 
-          if (typeof nextData.controlX === 'number') {
+          if (typeof nextData.controlX === "number") {
             nextData.controlX += baseOffset.x;
           }
 
-          if (typeof nextData.controlY === 'number') {
+          if (typeof nextData.controlY === "number") {
             nextData.controlY += baseOffset.y;
           }
 
@@ -240,9 +240,9 @@ export const builderClipboardStore = create<BuilderClipboardState>(
                 target: appendTargetNode.id,
                 sourceHandle: null,
                 targetHandle: null,
-                type: 'smoothstep',
-                markerEnd: { type: MarkerType.ArrowClosed, color: '#b8c2cc' },
-                style: { stroke: '#b8c2cc', strokeWidth: 1.4 },
+                type: "smoothstep",
+                markerEnd: { type: MarkerType.ArrowClosed, color: "#b8c2cc" },
+                style: { stroke: "#b8c2cc", strokeWidth: 1.4 },
               } as Edge<any>,
             ]
           : [];

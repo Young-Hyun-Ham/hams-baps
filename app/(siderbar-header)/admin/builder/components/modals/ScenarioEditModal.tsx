@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { Controller, useForm } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
-import BuildIcon from '@mui/icons-material/Build';
+import { useEffect } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import BuildIcon from "@mui/icons-material/Build";
 import {
   Box,
   Button,
@@ -12,13 +12,13 @@ import {
   DialogTitle,
   IconButton,
   Typography,
-} from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import { format } from 'date-fns';
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import { format } from "date-fns";
 
-import InputWithLabel from '@/components/common/Input';
-import { COLORS } from '@/lib/constants/color';
-import { formatDateTime } from '../../utils/util';
+import InputWithLabel from "@/components/common/Input";
+import { COLORS } from "@/lib/constants/color";
+import { formatDateTime } from "../../utils/util";
 
 type ScenarioEditModalProps = {
   open: boolean;
@@ -38,12 +38,12 @@ export default function ScenarioEditModal({
   const { t } = useTranslation();
   const { control, handleSubmit, reset, register } = useForm<any>({
     defaultValues: {
-      id: '',
-      name: '',
-      description: '',
-      created_at: '',
-      updated_at: '',
-      last_used_at: '',
+      id: "",
+      name: "",
+      description: "",
+      created_at: "",
+      updated_at: "",
+      last_used_at: "",
     },
   });
 
@@ -51,13 +51,13 @@ export default function ScenarioEditModal({
     if (!open) return;
     // console.log('===================> ', scenario);
     reset({
-      id: scenario?.id ?? '',
-      name: scenario?.name ?? '',
-      description: scenario?.description ?? '',
-      created_at: formatDateTime(scenario?.created_at) ?? '',
-      updated_at: formatDateTime(scenario?.updated_at) ?? '',
+      id: scenario?.id ?? "",
+      name: scenario?.name ?? "",
+      description: scenario?.description ?? "",
+      created_at: formatDateTime(scenario?.created_at) ?? "",
+      updated_at: formatDateTime(scenario?.updated_at) ?? "",
       last_used_at:
-        formatDateTime(scenario?.last_used_at ?? scenario?.updated_at) ?? '',
+        formatDateTime(scenario?.last_used_at ?? scenario?.updated_at) ?? "",
     });
   }, [open, reset, scenario]);
 
@@ -73,17 +73,17 @@ export default function ScenarioEditModal({
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle
         sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
           py: 1.25,
           pr: 1,
         }}
       >
         <Typography fontSize={14} fontWeight={500} color="text.primary">
-          {scenario?.id ? t('Edit Data') : t('Add Data')}
+          {scenario?.id ? t("Edit Data") : t("Add Data")}
         </Typography>
-        <IconButton size="small" onClick={onClose} aria-label={t('CLOSE')}>
+        <IconButton size="small" onClick={onClose} aria-label={t("CLOSE")}>
           <CloseIcon fontSize="small" />
         </IconButton>
       </DialogTitle>
@@ -102,8 +102,8 @@ export default function ScenarioEditModal({
             <form
               onSubmit={handleSubmit(submit)}
               style={{
-                display: 'flex',
-                flexDirection: 'column',
+                display: "flex",
+                flexDirection: "column",
                 flexGrow: 1,
                 minHeight: 0,
               }}
@@ -115,9 +115,9 @@ export default function ScenarioEditModal({
                 gap={2}
                 p={2}
                 sx={{
-                  borderRadius: '8px 8px 0px 0px',
-                  background: 'linear-gradient(180deg, #FFF 0%, #F7F6FF 100%)',
-                  overflow: 'auto',
+                  borderRadius: "8px 8px 0px 0px",
+                  background: "linear-gradient(180deg, #FFF 0%, #F7F6FF 100%)",
+                  overflow: "auto",
                 }}
               >
                 <Controller
@@ -128,9 +128,9 @@ export default function ScenarioEditModal({
                       {...field}
                       fullWidth
                       disabled={scenario ? true : false}
-                      label={`${t('Name')} *`}
+                      label={`${t("Name")} *`}
                       size="medium"
-                      placeholder={t('Please enter your search scenario name')}
+                      placeholder={t("Please enter your search scenario name")}
                       sx={{ mb: 2 }}
                     />
                   )}
@@ -144,14 +144,14 @@ export default function ScenarioEditModal({
                       {...field}
                       multiline
                       fullWidth
-                      label={t('Description')}
+                      label={t("Description")}
                       size="medium"
                       placeholder={t(
-                        'Please enter your search scenario description',
+                        "Please enter your search scenario description",
                       )}
                       sx={{
                         mb: 2,
-                        '& .MuiInputBase-inputMultiline': {
+                        "& .MuiInputBase-inputMultiline": {
                           padding: 0,
                         },
                       }}
@@ -162,12 +162,12 @@ export default function ScenarioEditModal({
                 {scenario?.id && (
                   <>
                     <InputWithLabel
-                      label={t('Last Used Date')}
+                      label={t("Last Used Date")}
                       InputProps={{
                         readOnly: true,
                       }}
                       sx={{ mb: 2 }}
-                      {...register('last_used_at')}
+                      {...register("last_used_at")}
                     />
 
                     <Box
@@ -183,7 +183,7 @@ export default function ScenarioEditModal({
                           color="text.primary"
                           mb={0.5}
                         >
-                          {t('Latest Version')}
+                          {t("Latest Version")}
                         </Typography>
                         <Box
                           display="flex"
@@ -211,7 +211,7 @@ export default function ScenarioEditModal({
                           color="text.primary"
                           mb={0.5}
                         >
-                          {t('Deploy Version')}
+                          {t("Deploy Version")}
                         </Typography>
                         <Box
                           display="flex"
@@ -258,17 +258,17 @@ export default function ScenarioEditModal({
                 borderTop={1}
                 borderColor={COLORS.blueGrey[100]}
                 sx={{
-                  borderRadius: '0px 0px 8px 8px',
+                  borderRadius: "0px 0px 8px 8px",
                   backgroundColor: COLORS.blueGrey[50],
                 }}
               >
                 <Typography variant="caption" color="text.secondary">
-                  {format(new Date(), 'yyyy-MM-dd HH:mm:ss')}
+                  {format(new Date(), "yyyy-MM-dd HH:mm:ss")}
                 </Typography>
 
                 <Box display="flex" gap={1}>
                   <Button variant="contained" color="primary" type="submit">
-                    {t('SAVE')}
+                    {t("SAVE")}
                   </Button>
 
                   <Button
@@ -277,7 +277,7 @@ export default function ScenarioEditModal({
                     color="inherit"
                     onClick={onClose}
                   >
-                    {t('CLOSE')}
+                    {t("CLOSE")}
                   </Button>
                 </Box>
               </Box>

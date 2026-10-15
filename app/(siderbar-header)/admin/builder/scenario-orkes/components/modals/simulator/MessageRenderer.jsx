@@ -1,10 +1,10 @@
 // src/components/simulator/MessageRenderer.jsx
 
-import React, { useRef, useEffect } from 'react';
-import { useBuilderStore } from '../../../../store/index';
-import styles from './ChatbotSimulator.module.css';
-import { interpolateMessage } from '../../../../utils/simulatorUtils';
-import { useTranslation } from 'react-i18next';
+import React, { useRef, useEffect } from "react";
+import { useBuilderStore } from "../../../../store/index";
+import styles from "./ChatbotSimulator.module.css";
+import { interpolateMessage } from "../../../../utils/simulatorUtils";
+import { useTranslation } from "react-i18next";
 
 const BotMessagePart = ({
   part,
@@ -25,7 +25,7 @@ const BotMessagePart = ({
   const setSelectedRow = useBuilderStore((state) => state.setSelectedRow);
 
   const normalizeOption = (option, fallbackIndex) => {
-    if (option && typeof option === 'object') {
+    if (option && typeof option === "object") {
       const value = option.value ?? `Option ${fallbackIndex + 1}`;
       return {
         value,
@@ -40,37 +40,37 @@ const BotMessagePart = ({
     };
   };
 
-  const getFormElementKey = (element, fallback = '') =>
+  const getFormElementKey = (element, fallback = "") =>
     element?.name || element?.id || fallback;
 
   if (!part) return null;
   const { type, data, nodeId, linkData } = part; // part에서 데이터 추출
 
-  if (type === 'ynBranch' || data?.isSimpleYN) {
+  if (type === "ynBranch" || data?.isSimpleYN) {
     return null;
   }
 
-  if (type === 'iframe') {
+  if (type === "iframe") {
     return (
       <div
         className={`${styles.message} ${styles.botMessage} ${styles.iframeContainer}`}
       >
         <iframe
           src={interpolateMessage(data.url, slots)}
-          width={data.width || '100%'}
-          height={data.height || '250'}
-          style={{ border: 'none', borderRadius: '18px' }}
-          title={t('chatbot-iframe')}
+          width={data.width || "100%"}
+          height={data.height || "250"}
+          style={{ border: "none", borderRadius: "18px" }}
+          title={t("chatbot-iframe")}
         ></iframe>
       </div>
     );
   }
 
-  if (type === 'link') {
+  if (type === "link") {
     if (linkData) {
       return (
-        <div style={{ marginTop: '8px' }}>
-          <span>{t('Opening link')}: </span>
+        <div style={{ marginTop: "8px" }}>
+          <span>{t("Opening link")}: </span>
           <a href={linkData.url} target="_blank" rel="noopener noreferrer">
             {linkData.display || linkData.url}
           </a>
@@ -80,37 +80,37 @@ const BotMessagePart = ({
     return null;
   }
 
-  if (type === 'form') {
+  if (type === "form") {
     const elements = formElementOverrides?.[nodeId] || data.elements || [];
     const hasSlotBoundGrid = elements.some(
       (el) =>
-        el.type === 'grid' &&
+        el.type === "grid" &&
         el.optionsSlot &&
         Array.isArray(slots[el.optionsSlot]) &&
         slots[el.optionsSlot].length > 0 &&
-        typeof slots[el.optionsSlot][0] === 'object' &&
+        typeof slots[el.optionsSlot][0] === "object" &&
         slots[el.optionsSlot][0] !== null,
     );
 
     return (
-      <div className={styles.formContainer} style={{ width: '100%' }}>
+      <div className={styles.formContainer} style={{ width: "100%" }}>
         <h3>{interpolateMessage(data.title, slots)}</h3>
         {elements.map((el, elementIndex) => {
           const elementKey = getFormElementKey(el, `element-${elementIndex}`);
           const dateProps = {};
-          if (el.type === 'date') {
-            if (el.validation?.type === 'today after')
-              dateProps.min = new Date().toISOString().split('T')[0];
-            else if (el.validation?.type === 'today before')
-              dateProps.max = new Date().toISOString().split('T')[0];
-            else if (el.validation?.type === 'custom') {
+          if (el.type === "date") {
+            if (el.validation?.type === "today after")
+              dateProps.min = new Date().toISOString().split("T")[0];
+            else if (el.validation?.type === "today before")
+              dateProps.max = new Date().toISOString().split("T")[0];
+            else if (el.validation?.type === "custom") {
               if (el.validation.startDate)
                 dateProps.min = el.validation.startDate;
               if (el.validation.endDate) dateProps.max = el.validation.endDate;
             }
           }
 
-          if (el.type === 'grid') {
+          if (el.type === "grid") {
             const gridDataFromSlot = el.optionsSlot
               ? slots[el.optionsSlot]
               : null;
@@ -119,7 +119,7 @@ const BotMessagePart = ({
 
             if (hasSlotData) {
               const isDynamicObjectArray =
-                typeof gridDataFromSlot[0] === 'object' &&
+                typeof gridDataFromSlot[0] === "object" &&
                 gridDataFromSlot[0] !== null &&
                 !Array.isArray(gridDataFromSlot[0]);
               if (isDynamicObjectArray) {
@@ -135,8 +135,8 @@ const BotMessagePart = ({
                     : Object.keys(gridDataFromSlot[0] || {})
                 )
                   .map((k) => {
-                    if (typeof k === 'string') return { key: k, label: k }; // 이전 포맷(string 배열) 호환
-                    if (k && typeof k === 'object' && k.key) return k; // 새 포맷({key, label} 객체)
+                    if (typeof k === "string") return { key: k, label: k }; // 이전 포맷(string 배열) 호환
+                    if (k && typeof k === "object" && k.key) return k; // 새 포맷({key, label} 객체)
                     return null;
                   })
                   .filter(Boolean); // null 값 제거
@@ -148,14 +148,14 @@ const BotMessagePart = ({
                         (obj) =>
                           obj[kObj.key] !== null &&
                           obj[kObj.key] !== undefined &&
-                          obj[kObj.key] !== '',
+                          obj[kObj.key] !== "",
                       ),
                     )
                   : keyObjects;
                 // --- [수정 끝] ---
 
                 return (
-                  <div key={el.id} style={{ overflowX: 'auto' }}>
+                  <div key={el.id} style={{ overflowX: "auto" }}>
                     <table className={styles.formGridTable}>
                       <thead>
                         <tr>
@@ -177,7 +177,7 @@ const BotMessagePart = ({
                             {filteredKeyObjects.map((kObj) => (
                               <td key={kObj.key}>
                                 {interpolateMessage(
-                                  dataObject[kObj.key] || '',
+                                  dataObject[kObj.key] || "",
                                   slots,
                                 )}
                               </td>
@@ -199,13 +199,13 @@ const BotMessagePart = ({
                           {[...Array(columns)].map((_, c) => {
                             const cellValue = gridDataFromSlot[r]
                               ? gridDataFromSlot[r][c]
-                              : '';
+                              : "";
                             {
                               /* --- [수정] interpolateMessage 사용 --- */
                             }
                             return (
                               <td key={c}>
-                                {interpolateMessage(cellValue || '', slots)}
+                                {interpolateMessage(cellValue || "", slots)}
                               </td>
                             );
                             {
@@ -231,13 +231,13 @@ const BotMessagePart = ({
                           const cellValue =
                             el.data && el.data[cellIndex]
                               ? el.data[cellIndex]
-                              : '';
+                              : "";
                           {
                             /* --- [수정] interpolateMessage 사용 --- */
                           }
                           return (
                             <td key={c}>
-                              {interpolateMessage(cellValue || '', slots)}
+                              {interpolateMessage(cellValue || "", slots)}
                             </td>
                           );
                           {
@@ -255,25 +255,25 @@ const BotMessagePart = ({
           // --- [수정] 시작: input을 제어 컴포넌트로 변경하고 onDoubleClick 핸들러 추가 ---
 
           // 1. input, date, dropbox, checkbox의 현재 값과 기본값을 별도로 계산
-          let currentValue = '';
-          let resolvedDefaultValue = ''; // input의 더블클릭에 사용
+          let currentValue = "";
+          let resolvedDefaultValue = ""; // input의 더블클릭에 사용
 
-          if (el.type === 'input') {
-            const defaultValueConfig = el.defaultValue || '';
+          if (el.type === "input") {
+            const defaultValueConfig = el.defaultValue || "";
             resolvedDefaultValue = interpolateMessage(
               defaultValueConfig,
               slots,
             ); // 순수 기본값 (슬롯 보간)
             currentValue = formData[elementKey] ?? resolvedDefaultValue; // 현재 값 (state 우선)
-          } else if (el.type === 'date' || el.type === 'dropbox') {
+          } else if (el.type === "date" || el.type === "dropbox") {
             currentValue =
-              el.type === 'dropbox' && el.selectKind === 'multi'
+              el.type === "dropbox" && el.selectKind === "multi"
                 ? (formData[elementKey] ?? el.defaultValue ?? [])
-                : (formData[elementKey] ?? el.defaultValue ?? '');
-          } else if (el.type === 'checkbox') {
+                : (formData[elementKey] ?? el.defaultValue ?? "");
+          } else if (el.type === "checkbox") {
             currentValue = formData[elementKey] ?? el.defaultValue ?? [];
-          } else if (el.type === 'radio') {
-            currentValue = formData[elementKey] ?? el.defaultValue ?? '';
+          } else if (el.type === "radio") {
+            currentValue = formData[elementKey] ?? el.defaultValue ?? "";
           }
 
           return (
@@ -285,9 +285,9 @@ const BotMessagePart = ({
               {/* --- [수정 끝] --- */}
 
               {/* 2. input: 'defaultValue' -> 'value'로 변경, onDoubleClick 추가 */}
-              {el.type === 'input' && (
+              {el.type === "input" && (
                 <input
-                  type={el.validation?.type === 'email' ? 'email' : 'text'}
+                  type={el.validation?.type === "email" ? "email" : "text"}
                   className={styles.formInput}
                   placeholder={interpolateMessage(el.placeholder, slots)}
                   value={currentValue}
@@ -302,7 +302,7 @@ const BotMessagePart = ({
               )}
 
               {/* 3. date: 'value'에 currentValue 사용 (기존: formData[el.name] || '') */}
-              {el.type === 'date' && (
+              {el.type === "date" && (
                 <input
                   type="date"
                   className={styles.formInput}
@@ -314,7 +314,7 @@ const BotMessagePart = ({
               )}
 
               {/* 4. checkbox: 'checked'에 currentValue 사용 */}
-              {el.type === 'checkbox' &&
+              {el.type === "checkbox" &&
                 el.options?.map((opt, index) => {
                   const option = normalizeOption(opt, index);
 
@@ -345,7 +345,7 @@ const BotMessagePart = ({
                 })}
 
               {/* 5. dropbox: 'value'에 currentValue 사용 */}
-              {el.type === 'radio' &&
+              {el.type === "radio" &&
                 el.options?.map((opt, index) => {
                   const option = normalizeOption(opt, index);
 
@@ -372,12 +372,12 @@ const BotMessagePart = ({
                   );
                 })}
 
-              {el.type === 'dropbox' &&
+              {el.type === "dropbox" &&
                 (() => {
                   const options = Array.isArray(slots[el.optionsSlot])
                     ? slots[el.optionsSlot]
                     : el.options;
-                  const isMultiSelect = el.selectKind === 'multi';
+                  const isMultiSelect = el.selectKind === "multi";
                   const selectedValues = Array.isArray(currentValue)
                     ? currentValue
                     : currentValue
@@ -391,7 +391,7 @@ const BotMessagePart = ({
                       value={
                         isMultiSelect
                           ? selectedValues
-                          : (selectedValues[0] ?? '')
+                          : (selectedValues[0] ?? "")
                       }
                       onChange={(e) => {
                         if (isMultiSelect) {
@@ -410,7 +410,7 @@ const BotMessagePart = ({
                     >
                       {!isMultiSelect && (
                         <option value="" disabled>
-                          {t('Select')}...
+                          {t("Select")}...
                         </option>
                       )}
                       {(options || []).map((opt, index) => {
@@ -428,15 +428,15 @@ const BotMessagePart = ({
                     </select>
                   );
                 })()}
-              {el.type === 'search' && (
+              {el.type === "search" && (
                 <div
-                  style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
                 >
                   <input
                     type="text"
                     className={styles.formInput}
                     placeholder={interpolateMessage(el.placeholder, slots)}
-                    value={formData[elementKey] ?? ''}
+                    value={formData[elementKey] ?? ""}
                     onChange={(e) => handleFormInputChange(el, e.target.value)}
                     disabled={isCompleted}
                     style={{ flexGrow: 1 }}
@@ -446,7 +446,7 @@ const BotMessagePart = ({
                     disabled={isCompleted}
                     className={styles.formSubmitButton}
                     style={{
-                      padding: '8px 12px',
+                      padding: "8px 12px",
                       margin: 0,
                       flexShrink: 0,
                       lineHeight: 1,
@@ -469,7 +469,7 @@ const BotMessagePart = ({
                 onClick={onExcelUpload}
                 disabled={isCompleted}
               >
-                {t('Excel Upload')}
+                {t("Excel Upload")}
               </button>
             )}
             {/* <<< [수정] Default 버튼 완전 제거 >>> */}
@@ -478,7 +478,7 @@ const BotMessagePart = ({
               onClick={onFormSubmit}
               disabled={isCompleted}
             >
-              {t('Submit')}
+              {t("Submit")}
             </button>
           </div>
         )}
@@ -491,9 +491,9 @@ const BotMessagePart = ({
   // --- 👆 [수정 끝] ---
   return (
     // --- 👇 [수정] 래핑 div 변경 및 스타일 조정 ---
-    <div style={{ width: '100%' }}>
+    <div style={{ width: "100%" }}>
       <div>{message}</div>
-      {type === 'branch' && data.evaluationType === 'BUTTON' && (
+      {type === "branch" && data.evaluationType === "BUTTON" && (
         <div className={styles.branchButtonsContainer}>
           {/* --- 👇 [수정] interpolateMessage 사용 --- */}
           {data.replies?.map((reply) => (
@@ -510,7 +510,7 @@ const BotMessagePart = ({
         </div>
       )}
       {/* --- 👇 [추가] slotfilling 버튼 렌더링 --- */}
-      {type === 'slotfilling' && data.replies && data.replies.length > 0 && (
+      {type === "slotfilling" && data.replies && data.replies.length > 0 && (
         <div className={styles.branchButtonsContainer}>
           {data.replies.map((reply) => (
             <button
@@ -568,15 +568,15 @@ const MessageRenderer = ({
 
   // --- 👇 [수정] 렌더링 로직 수정 ---
   switch (item.type) {
-    case 'bot_streaming':
+    case "bot_streaming":
       // ... (변경 없음)
       return (
         <div className={styles.messageRow}>
           <img
             src={
               item.isStreaming
-                ? '/images/avatar-loading.png'
-                : '/images/avatar.png'
+                ? "/images/avatar-loading.png"
+                : "/images/avatar.png"
             }
             alt="Avatar"
             className={styles.avatar}
@@ -586,7 +586,7 @@ const MessageRenderer = ({
           </div>
         </div>
       );
-    case 'loading':
+    case "loading":
       // ... (변경 없음)
       return (
         <div className={styles.messageRow}>
@@ -599,12 +599,12 @@ const MessageRenderer = ({
             <img
               src="/images/Loading.gif"
               alt="Loading..."
-              style={{ width: '80px', height: '60px' }}
+              style={{ width: "80px", height: "60px" }}
             />
           </div>
         </div>
       );
-    case 'bot':
+    case "bot":
       // 1. API 에러 등 간단한 메시지 처리 (기존 로직)
       if (item.message) {
         return (
@@ -663,7 +663,7 @@ const MessageRenderer = ({
       }
       return null; // 렌더링할 데이터가 없는 경우
     // --- 👆 [수정 끝] ---
-    case 'user':
+    case "user":
       // ... (변경 없음)
       return (
         <div className={`${styles.messageRow} ${styles.userRow}`}>

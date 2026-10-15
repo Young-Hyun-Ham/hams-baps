@@ -1,13 +1,13 @@
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { type Edge, type Node } from 'reactflow';
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { type Edge, type Node } from "reactflow";
 
-import { fetchScenarioData } from '../../services/backendService';
-import { useBuilderStore } from '../../store/index';
-import styles from '../NodeController.module.css';
-import ScenarioGroupModal from '../modals/ScenarioGroupModal';
-import ScenarioViewModal from '../modals/ScenarioFlowViewerModal';
-import ScenarioFlowEditorModal from '../modals/ScenarioFlowEditorModal';
+import { fetchScenarioData } from "../../services/backendService";
+import { useBuilderStore } from "../../store/index";
+import styles from "../NodeController.module.css";
+import ScenarioGroupModal from "../modals/ScenarioGroupModal";
+import ScenarioViewModal from "../modals/ScenarioFlowViewerModal";
+import ScenarioFlowEditorModal from "../modals/ScenarioFlowEditorModal";
 
 type ScenarioLocalNode = {
   id: string;
@@ -34,7 +34,7 @@ const DEFAULT_NODE_WIDTH = 260;
 const DEFAULT_NODE_HEIGHT = 110;
 
 const normalizeSourceHandle = (sourceHandle?: string | null) =>
-  !sourceHandle || sourceHandle === 'default' ? null : sourceHandle;
+  !sourceHandle || sourceHandle === "default" ? null : sourceHandle;
 
 const getNodeSize = (node: Node<any>) => {
   const style = (node.style ?? {}) as Record<string, unknown>;
@@ -42,20 +42,20 @@ const getNodeSize = (node: Node<any>) => {
   return {
     width:
       Number(node.width ?? style.width) ||
-      (node.type === 'form' ? 300 : DEFAULT_NODE_WIDTH),
+      (node.type === "form" ? 300 : DEFAULT_NODE_WIDTH),
     height:
       Number(node.height ?? style.height) ||
-      (node.type === 'branch' ? 250 : DEFAULT_NODE_HEIGHT),
+      (node.type === "branch" ? 250 : DEFAULT_NODE_HEIGHT),
   };
 };
 
 const getNodeHandles = (node: Node<any>): string[] => {
   const data = node.data ?? {};
 
-  if (node.type === 'api') return ['onSuccess', 'onError'];
+  if (node.type === "api") return ["onSuccess", "onError"];
 
-  if (node.type === 'branch') {
-    if (data.evaluationType === 'CONDITION' && data.conditions?.length) {
+  if (node.type === "branch") {
+    if (data.evaluationType === "CONDITION" && data.conditions?.length) {
       return [
         ...data.conditions.map(
           (condition: any, index: number) =>
@@ -63,7 +63,7 @@ const getNodeHandles = (node: Node<any>): string[] => {
             condition.id ||
             `condition-${index}`,
         ),
-        'default',
+        "default",
       ];
     }
 
@@ -74,7 +74,7 @@ const getNodeHandles = (node: Node<any>): string[] => {
     }
   }
 
-  return ['default'];
+  return ["default"];
 };
 
 const getScenarioImportNodes = (nodes: Node<any>[]) => {
@@ -83,7 +83,7 @@ const getScenarioImportNodes = (nodes: Node<any>[]) => {
     nodes
       .filter(
         (node) =>
-          node.type === 'scenario' &&
+          node.type === "scenario" &&
           nodes.some((childNode) => childNode.parentNode === node.id),
       )
       .map((node) => node.id),
@@ -142,7 +142,7 @@ const createFallbackScenarioEdges = (nodes: Node<any>[]): Edge<any>[] => {
     const sourceHandle = getFallbackSourceHandle(sourceNode, targetNode);
 
     return {
-      id: `fallback-edge-${sourceNode.id}${sourceHandle || ''}-${targetNode.id}`,
+      id: `fallback-edge-${sourceNode.id}${sourceHandle || ""}-${targetNode.id}`,
       source: sourceNode.id,
       target: targetNode.id,
       sourceHandle,
@@ -346,7 +346,7 @@ const importScenarioIntoOrkesNode = async ({
   setNodes: (nodes: Node<any>[]) => void;
   setEdges: (edges: Edge<any>[]) => void;
 }) => {
-  const data = await fetchScenarioData(backend ?? 'fastapi', scenario.id);
+  const data = await fetchScenarioData(backend ?? "fastapi", scenario.id);
   const rawNodes = Array.isArray(data?.nodes)
     ? (data.nodes as Node<any>[])
     : [];
@@ -404,7 +404,7 @@ const importScenarioIntoOrkesNode = async ({
         y: GROUP_PADDING_TOP,
       },
       parentNode: targetNodeId,
-      extent: 'parent' as const,
+      extent: "parent" as const,
     };
   });
 
@@ -416,7 +416,7 @@ const importScenarioIntoOrkesNode = async ({
 
       return {
         ...edge,
-        id: `reactflow__edge-${source}${edge.sourceHandle || ''}-${target}`,
+        id: `reactflow__edge-${source}${edge.sourceHandle || ""}-${target}`,
         source,
         target,
         selected: false,
@@ -476,7 +476,7 @@ function ScenarioNodeController({
   const selectedScenario: any = scenarios.find(
     (item: any) => item.id === data.scenarioId,
   );
-  const title = data.label || data.title || '';
+  const title = data.label || data.title || "";
 
   const updateTitle = (value: string) => {
     setLocalNode((prev) => ({
@@ -523,11 +523,11 @@ function ScenarioNodeController({
       />
 
       <div className={styles.formGroup}>
-        <label>{t('Group header')}</label>
+        <label>{t("Group header")}</label>
         <input
           value={title}
           onChange={(event) => updateTitle(event.target.value)}
-          placeholder={t('Selected Group')}
+          placeholder={t("Selected Group")}
         />
       </div>
 
@@ -537,7 +537,7 @@ function ScenarioNodeController({
           className={styles.addReplyButton}
           onClick={() => setIsGroupModalOpen(true)}
         >
-          {t('Select Scenario')}
+          {t("Select Scenario")}
         </button>
         {/* hidden scenario viewer button per user request */}
         <button
@@ -546,16 +546,16 @@ function ScenarioNodeController({
           onClick={() => {
             if (selectedScenario) {
               window.dispatchEvent(
-                new CustomEvent('flow:open-scenario-tab', {
+                new CustomEvent("flow:open-scenario-tab", {
                   detail: { scenario: selectedScenario },
                 }),
               );
             } else {
-              alert(t('Please select a scenario first.'));
+              alert(t("Please select a scenario first."));
             }
           }}
         >
-          {t('Open Scenario in Tab')}
+          {t("Open Scenario in Tab")}
         </button>
       </div>
     </>

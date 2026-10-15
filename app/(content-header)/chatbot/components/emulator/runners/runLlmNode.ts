@@ -27,7 +27,10 @@ export async function runLlmNode(
 
     if (!res.ok || !res.body) {
       const message = (await res.text().catch(() => "")).trim();
-      pushBotStep(makeStepId(`${node.id}-err`), `[LLM 오류] ${message || `상태 코드: ${res.status}`}`);
+      pushBotStep(
+        makeStepId(`${node.id}-err`),
+        `[LLM 오류] ${message || `상태 코드: ${res.status}`}`,
+      );
       return false;
     }
 
@@ -49,14 +52,21 @@ export async function runLlmNode(
 
       accumulated += chunkText;
 
-      setSteps((prev) => prev.map((step) => (step.id === stepId ? { ...step, text: accumulated } : step)));
+      setSteps((prev) =>
+        prev.map((step) =>
+          step.id === stepId ? { ...step, text: accumulated } : step,
+        ),
+      );
     }
 
     setSlotValues((prev) => ({ ...prev, [outputVar]: accumulated }));
     return true;
   } catch (error) {
     console.error("LLM node execution error:", error);
-    pushBotStep(makeStepId(`${node.id}-err`), "[LLM 실행 오류가 발생했습니다.]");
+    pushBotStep(
+      makeStepId(`${node.id}-err`),
+      "[LLM 실행 오류가 발생했습니다.]",
+    );
     return false;
   }
 }

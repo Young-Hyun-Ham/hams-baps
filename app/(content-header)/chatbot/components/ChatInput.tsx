@@ -48,10 +48,7 @@ export default function ChatInput({ disabled, onSend, textareaRef }: Props) {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="bg-white px-[20px] py-2"
-    >
+    <form onSubmit={handleSubmit} className="bg-white px-[20px] py-2">
       <div className="max-w-4xl mx-auto flex gap-2 items-stretch">
         <div className="flex-1 flex">
           <textarea

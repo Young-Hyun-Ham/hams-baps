@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
 
-import { getSafeUUID } from '../../utils/util';
+import { getSafeUUID } from "../../utils/util";
 
 import {
   useCallback,
@@ -11,8 +11,8 @@ import {
   useMemo,
   useRef,
   useState,
-} from 'react';
-import { useRouter } from 'next/navigation';
+} from "react";
+import { useRouter } from "next/navigation";
 import ReactFlow, {
   Controls,
   ControlButton,
@@ -22,8 +22,8 @@ import ReactFlow, {
   MarkerType,
   Panel,
   SelectionMode,
-} from 'reactflow';
-import 'reactflow/dist/style.css';
+} from "reactflow";
+import "reactflow/dist/style.css";
 
 import {
   Box,
@@ -44,9 +44,9 @@ import {
   Stack,
   Backdrop,
   CircularProgress,
-} from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import { ReactFlowProvider } from 'reactflow';
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import { ReactFlowProvider } from "reactflow";
 import {
   Hand,
   MousePointer2,
@@ -78,77 +78,77 @@ import {
   Plus,
   GitFork,
   LayoutGrid,
-} from 'lucide-react';
+} from "lucide-react";
 
-import useBuilderHistoryStore from '../../store/historyStore';
+import useBuilderHistoryStore from "../../store/historyStore";
 import {
   useBuilderStore,
   ALL_NODE_TYPES,
   makeSnapshot,
   MOCK_UP_TREE_DATA,
   type StoreState,
-} from '../../store/index';
-import { sanitizeEdgesForSave } from '../../store/edgeControlActionStore';
-import { fetchScenarioData } from '../../services/backendService';
-import styles from '../../components/Detail.module.css';
-import MessageNode from '../../components/nodes/MessageNode';
-import BranchNode from '../../components/nodes/BranchNode';
-import SlotFillingNode from '../../components/nodes/SlotFillingNode';
-import ApiNode from '../../components/nodes/ApiNode';
-import FormNode from '../../components/nodes/FormNode';
-import FixedMenuNode from '../../components/nodes/FixedMenuNode';
-import LinkNode from '../../components/nodes/LinkNode';
-import LlmNode from '../../components/nodes/LlmNode';
-import ToastNode from '../../components/nodes/ToastNode';
-import IframeNode from '../../components/nodes/IframeNode';
-import ScenarioNode from '../../components/nodes/ScenarioNode';
-import SetSlotNode from '../../components/nodes/SetSlotNode';
-import DelayNode from '../../components/nodes/DelayNode';
-import GroupNode from '../../components/nodes/GroupNode';
-import YnBranchNode from '../../components/nodes/YnBranchNode';
-import SlotDisplay from '../../components/SlotDisplay';
-import NodeController from '../../components/NodeController';
-import NodesTreeUI from '../../components/NodesTreeUI';
-import ChatbotSimulator from '../../components/ChatbotSimulator';
+} from "../../store/index";
+import { sanitizeEdgesForSave } from "../../store/edgeControlActionStore";
+import { fetchScenarioData } from "../../services/backendService";
+import styles from "../../components/Detail.module.css";
+import MessageNode from "../../components/nodes/MessageNode";
+import BranchNode from "../../components/nodes/BranchNode";
+import SlotFillingNode from "../../components/nodes/SlotFillingNode";
+import ApiNode from "../../components/nodes/ApiNode";
+import FormNode from "../../components/nodes/FormNode";
+import FixedMenuNode from "../../components/nodes/FixedMenuNode";
+import LinkNode from "../../components/nodes/LinkNode";
+import LlmNode from "../../components/nodes/LlmNode";
+import ToastNode from "../../components/nodes/ToastNode";
+import IframeNode from "../../components/nodes/IframeNode";
+import ScenarioNode from "../../components/nodes/ScenarioNode";
+import SetSlotNode from "../../components/nodes/SetSlotNode";
+import DelayNode from "../../components/nodes/DelayNode";
+import GroupNode from "../../components/nodes/GroupNode";
+import YnBranchNode from "../../components/nodes/YnBranchNode";
+import SlotDisplay from "../../components/SlotDisplay";
+import NodeController from "../../components/NodeController";
+import NodesTreeUI from "../../components/NodesTreeUI";
+import ScenarioSimulatorModal from "../../components/modals/ScenarioSimulatorModal";
 
-import '@reactflow/node-resizer/dist/style.css';
-import CustomOrthogonalEdge from '../../components/edges/CustomOrthogonalEdge';
-import FlowCanvas from '../../scenario-orkes/components/FlowCanvas';
-import { createWorkflowEdge } from '../../scenario-orkes/components/BuildTopDownFlow';
+import "@reactflow/node-resizer/dist/style.css";
+import CustomOrthogonalEdge from "../../components/edges/CustomOrthogonalEdge";
+import FlowCanvas from "../../scenario-orkes/components/FlowCanvas";
+import { createWorkflowEdge } from "../../scenario-orkes/components/BuildTopDownFlow";
 
 // 플레이(실행) 스토어
-import { useBuilderExecution } from '../../components/controllers/hooks/useBuilderExecution';
-import { builderExecutionStore } from '../../store/builderExecutionStore';
+import { useBuilderExecution } from "../../components/controllers/hooks/useBuilderExecution";
+import { builderExecutionStore } from "../../store/builderExecutionStore";
 // 클립보드 스토어
-import { builderClipboardStore } from '../../store/builderClipboardStore';
-import MemoPad from '../../components/MemoPad';
-import CanvasMemoLayer from '../../components/CanvasMemoLayer';
-import { MemoCanvasItem } from '../../components/CanvasMemoItem';
-import ScenarioGroupModal from '../../components/modals/ScenarioGroupModal';
-import ScenarioNodesSettingModal from '../../components/modals/ScenarioNodesSettingModal';
-import LogPreview from '../../components/modals/LogPreview';
+import { builderClipboardStore } from "../../store/builderClipboardStore";
+import MemoPad from "../../components/MemoPad";
+import CanvasMemoLayer from "../../components/CanvasMemoLayer";
+import { MemoCanvasItem } from "../../components/CanvasMemoItem";
+import ScenarioGroupModal from "../../components/modals/ScenarioGroupModal";
+import ScenarioNodesSettingModal from "../../components/modals/ScenarioNodesSettingModal";
+import LogPreview from "../../components/modals/LogPreview";
 import {
   BuilderNode,
   BuilderNodeData,
   InsertTarget,
   Scenario,
   TreeItem,
-} from '../../types/types';
+} from "../../types/types";
 import ActivityPickerModal, {
   ActivityType,
-} from '../../components/modals/ActivityPickerModal';
-import { createNodeData } from '../../utils/nodeFactory';
+} from "../../components/modals/ActivityPickerModal";
+import { createNodeData } from "../../utils/nodeFactory";
 
-import type { Edge, Node } from 'reactflow';
+import type { Edge, Node } from "reactflow";
 
 import {
   mapResponseToTargetElement,
   parseOptionalParameter,
-} from '../../form-builder/components/CustomElementPropertyEditor';
-import apiClient from '@/lib/api/apiClient';
-import { useModal } from '@/providers/ModalProvider';
-import { COLORS } from '@/lib/constants/color';
-import { alignScenarioNodes } from './autoLayout';
+} from "../../form-builder/components/CustomElementPropertyEditor";
+import apiClient from "@/lib/api/apiClient";
+import { useModal } from "@/providers/ModalProvider";
+import { COLORS } from "@/lib/constants/color";
+import { alignScenarioNodes } from "./autoLayout";
 
 const DEFAULT_FORM_API_HEADERS = `{
   "Content-Type":"application/json",
@@ -181,22 +181,22 @@ const edgeTypes = {
 
 // 💡 [추가] 노드 레이블 매핑
 const nodeLabels = {
-  message: '+ Message',
-  form: '+ Form',
-  branch: '+ Condition Branch',
-  slotfilling: '+ SlotFilling',
-  api: '+ API',
-  llm: '+ LLM',
-  setSlot: '+ Set Slot',
-  delay: '+ Delay',
-  fixedmenu: '+ Fixed Menu',
-  link: '+ Link',
-  toast: '+ Toast',
-  iframe: '+ iFrame',
-  scenario: '+ Scenario Group', // Scenario Group 버튼용
+  message: "+ Message",
+  form: "+ Form",
+  branch: "+ Condition Branch",
+  slotfilling: "+ SlotFilling",
+  api: "+ API",
+  llm: "+ LLM",
+  setSlot: "+ Set Slot",
+  delay: "+ Delay",
+  fixedmenu: "+ Fixed Menu",
+  link: "+ Link",
+  toast: "+ Toast",
+  iframe: "+ iFrame",
+  scenario: "+ Scenario Group", // Scenario Group 버튼용
 } as any;
 
-type ToolMode = 'pan' | 'select';
+type ToolMode = "pan" | "select";
 
 type LayerMenuState = {
   open: boolean;
@@ -205,9 +205,9 @@ type LayerMenuState = {
 };
 
 type MenuTarget =
-  | { type: 'pane' }
-  | { type: 'node'; id: string }
-  | { type: 'edge'; id: string };
+  | { type: "pane" }
+  | { type: "node"; id: string }
+  | { type: "edge"; id: string };
 
 type ContextMenuState = {
   open: boolean;
@@ -225,10 +225,10 @@ type ExecutionFormElement = {
   placeholder?: string;
   options?: Array<string | { label?: string; value?: string }>;
   optionsSlot?: string;
-  selectKind?: 'single' | 'multi';
+  selectKind?: "single" | "multi";
   defaultValue?: unknown;
   apiData?: Record<string, unknown> | null;
-  eventType?: 'onChange' | 'onClick' | '';
+  eventType?: "onChange" | "onClick" | "";
   parameterId?: string;
   optionalParameter?: string;
   targetElementId?: string;
@@ -246,7 +246,7 @@ const normalizeExecutionFormOption = (
   option: ExecutionFormOption,
   index: number,
 ) => {
-  if (typeof option === 'object' && option !== null) {
+  if (typeof option === "object" && option !== null) {
     const value = String(option.value ?? option.label ?? index);
     return {
       value,
@@ -262,7 +262,7 @@ const normalizeExecutionFormOption = (
 };
 
 const getExecutionElementKey = (element: ExecutionFormElement, index: number) =>
-  element.name?.trim() || element.id || `${element.type || 'element'}-${index}`;
+  element.name?.trim() || element.id || `${element.type || "element"}-${index}`;
 
 const getGridDisplayColumns = (
   element: ExecutionFormElement,
@@ -275,7 +275,7 @@ const getGridDisplayColumns = (
 
   const columns = sourceColumns
     .map((column) => {
-      if (typeof column === 'string') {
+      if (typeof column === "string") {
         return { key: column, label: column };
       }
 
@@ -292,7 +292,7 @@ const getGridDisplayColumns = (
   return columns.filter((column) =>
     rows.some((row) => {
       const value = row[column.key];
-      return value !== null && value !== undefined && value !== '';
+      return value !== null && value !== undefined && value !== "";
     }),
   );
 };
@@ -343,8 +343,8 @@ const Flow = ({ scenario, scenarios }: any) => {
   }
 
   const [tabs, setTabs] = useState<ScenarioTab[]>([]);
-  const [activeTabId, setActiveTabId] = useState<string>('');
-  const [viewMode, setViewMode] = useState<'flow' | 'orkes'>('flow');
+  const [activeTabId, setActiveTabId] = useState<string>("");
+  const [viewMode, setViewMode] = useState<"flow" | "orkes">("flow");
 
   const formattedEdges = useMemo(() => {
     const nodeById = new Map(nodes.map((node: Node) => [node.id, node]));
@@ -360,7 +360,7 @@ const Flow = ({ scenario, scenarios }: any) => {
         return !(
           sharedParentId &&
           sharedParentId === targetNode?.parentNode &&
-          nodeById.get(sharedParentId)?.type === 'selectionGroup'
+          nodeById.get(sharedParentId)?.type === "selectionGroup"
         );
       })
       .map((edge: Edge) => {
@@ -369,14 +369,14 @@ const Flow = ({ scenario, scenarios }: any) => {
 
         let computedLabel: string | undefined = undefined;
 
-        if (sourceNode.type === 'branch') {
+        if (sourceNode.type === "branch") {
           const isConditionType =
-            sourceNode.data?.evaluationType === 'CONDITION';
+            sourceNode.data?.evaluationType === "CONDITION";
 
           if (isConditionType) {
             const conds = sourceNode.data?.conditions || [];
-            if (edge.sourceHandle === 'default') {
-              computedLabel = 'Default';
+            if (edge.sourceHandle === "default") {
+              computedLabel = "Default";
             } else {
               const index = conds.findIndex(
                 (c: any, idx: number) =>
@@ -414,13 +414,13 @@ const Flow = ({ scenario, scenarios }: any) => {
               }
             }
           }
-        } else if (sourceNode.type === 'ynBranch') {
-          if (edge.sourceHandle === 'Y') computedLabel = 'Y';
-          else if (edge.sourceHandle === 'N') computedLabel = 'N';
-        } else if (sourceNode.type === 'llm') {
+        } else if (sourceNode.type === "ynBranch") {
+          if (edge.sourceHandle === "Y") computedLabel = "Y";
+          else if (edge.sourceHandle === "N") computedLabel = "N";
+        } else if (sourceNode.type === "llm") {
           const conds = sourceNode.data?.conditions || [];
-          if (edge.sourceHandle === 'default') {
-            computedLabel = 'Default';
+          if (edge.sourceHandle === "default") {
+            computedLabel = "Default";
           } else {
             const index = conds.findIndex(
               (c: any, idx: number) =>
@@ -457,7 +457,7 @@ const Flow = ({ scenario, scenarios }: any) => {
     if (scenario?.id && tabs.length === 0) {
       const mainTab: ScenarioTab = {
         id: scenario.id,
-        name: scenario.name || scenario.scenario_nm || 'Main Scenario',
+        name: scenario.name || scenario.scenario_nm || "Main Scenario",
         nodes: nodes,
         edges: edges,
         startNodeId: startNodeId,
@@ -574,7 +574,7 @@ const Flow = ({ scenario, scenarios }: any) => {
 
           const newTab: ScenarioTab = {
             id: subScenario.id,
-            name: subScenario.name || subScenario.scenario_nm || 'Sub Scenario',
+            name: subScenario.name || subScenario.scenario_nm || "Sub Scenario",
             nodes: loadedNodes,
             edges: cleanEdges,
             startNodeId: data.startNodeId ?? null,
@@ -595,7 +595,7 @@ const Flow = ({ scenario, scenarios }: any) => {
         }
       } catch (e) {
         console.error(e);
-        alert('Failed to load sub scenario');
+        alert("Failed to load sub scenario");
       }
     },
     [backend, activeTabId, nodes, edges, startNodeId, selectedNodeId],
@@ -632,9 +632,9 @@ const Flow = ({ scenario, scenarios }: any) => {
       }
     };
 
-    window.addEventListener('flow:open-scenario-tab', handleOpenTabEvent);
+    window.addEventListener("flow:open-scenario-tab", handleOpenTabEvent);
     return () => {
-      window.removeEventListener('flow:open-scenario-tab', handleOpenTabEvent);
+      window.removeEventListener("flow:open-scenario-tab", handleOpenTabEvent);
     };
   }, [handleOpenScenarioTab]);
 
@@ -645,19 +645,26 @@ const Flow = ({ scenario, scenarios }: any) => {
   const { getNodes, project, setCenter } = useReactFlow();
   const reactFlowWrapper = useRef<HTMLDivElement | null>(null);
 
-  const [toolMode, setToolMode] = useState<ToolMode>('pan');
-  const isPanMode = toolMode === 'pan';
-  const isSelectMode = toolMode === 'select';
+  const [toolMode, setToolMode] = useState<ToolMode>("pan");
+  const isPanMode = toolMode === "pan";
+  const isSelectMode = toolMode === "select";
 
   const selectedNodesCount = useMemo(
     () => nodes.filter((n: any) => n.selected).length,
     [nodes],
   );
+  const simulatorNodes = useMemo(
+    () =>
+      nodes.filter(
+        (node): node is Node & { type: string } =>
+          typeof node.type === "string",
+      ),
+    [nodes],
+  );
 
-  const [rightPanelWidth, setRightPanelWidth] = useState(400);
   const [isSimulatorVisible, setIsSimulatorVisible] = useState(false);
   const [isColorSettingsVisible, setIsColorSettingsVisible] = useState(false);
-  const [isSimulatorExpanded, setIsSimulatorExpanded] = useState(false);
+  const [simulatorRunId, setSimulatorRunId] = useState(() => getSafeUUID());
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
   // Scenario Group을 드롭한 캔버스 좌표
   const [scenarioGroupDropPosition, setScenarioGroupDropPosition] = useState<{
@@ -672,8 +679,8 @@ const Flow = ({ scenario, scenarios }: any) => {
   // 캔버스 노드 다중 선택
   const [selectedNodes, setSelectedNodes] = useState<any[]>([]);
   // 캔버스 노드 검색 기능
-  const [searchType, setSearchType] = useState<string>('all');
-  const [searchKeyword, setSearchKeyword] = useState('');
+  const [searchType, setSearchType] = useState<string>("all");
+  const [searchKeyword, setSearchKeyword] = useState("");
   // 캔버스 패널 접기/펼치기 상태
   const [isCanvasPanelCollapsed, setIsCanvasPanelCollapsed] = useState(false);
   // 에뮬 실행 데이터 표시 패널 상태 ( 캔버스 패널 height 조정 위해 별도 상태로 분리 )
@@ -686,26 +693,26 @@ const Flow = ({ scenario, scenarios }: any) => {
   >(null);
 
   // viewMode 변경 시 node library 접힘/펼침 조절
-  const handleViewModeChange = (mode: 'flow' | 'orkes') => {
+  const handleViewModeChange = (mode: "flow" | "orkes") => {
     setViewMode(mode);
-    setIsNodeLibraryCollapsed(mode === 'orkes');
+    setIsNodeLibraryCollapsed(mode === "orkes");
   };
 
   // 좌측 노드 패널 옵션
   // isMenuView - 노드가 없을 경우 노드 패널 활설화(새로생성), 상세보기 노드 패널 숨김.
   const nodeTreeUIOptions = useMemo(() => {
     return {
-      isMenuView: nodes.length === 0 ? false : isSimulatorVisible,
+      isMenuView: nodes.length === 0 ? false : false, // isSimulatorVisible,
       isCollapsed:
         isNodeLibraryCollapsed !== null
           ? isNodeLibraryCollapsed
           : nodes.length === 0
             ? false
-            : isSimulatorVisible,
+            : false, // isSimulatorVisible,
       onToggleCollapse: (collapsed: boolean) =>
         setIsNodeLibraryCollapsed(collapsed),
     };
-  }, [nodes, isSimulatorVisible, isNodeLibraryCollapsed]);
+  }, [nodes, isNodeLibraryCollapsed]);
 
   const [isLoadingScenario, setIsLoadingScenario] = useState<boolean>(true);
 
@@ -791,14 +798,14 @@ const Flow = ({ scenario, scenarios }: any) => {
           (item.name ? nextValues[item.name] : undefined) ??
           (item.id ? nextValues[item.id] : undefined) ??
           item.defaultValue ??
-          '';
+          "";
 
         if (item.id) sourceValues[item.id] = value;
         if (item.name) sourceValues[item.name] = value;
       });
 
       const sourceKey = getExecutionElementKeyByElement(sourceElement);
-      const sourceValue = nextValues[sourceKey] ?? '';
+      const sourceValue = nextValues[sourceKey] ?? "";
       sourceValues.value = sourceValue;
 
       let payload: Record<string, unknown> = {};
@@ -808,7 +815,7 @@ const Flow = ({ scenario, scenarios }: any) => {
           sourceValues,
         );
       } catch (error) {
-        console.warn('Invalid Optional Parameter JSON:', error);
+        console.warn("Invalid Optional Parameter JSON:", error);
       }
 
       return payload;
@@ -847,10 +854,10 @@ const Flow = ({ scenario, scenarios }: any) => {
 
           const allowedValues = new Set(
             (mappedTarget.options ?? []).map((option, index) => {
-              if (option && typeof option === 'object') {
+              if (option && typeof option === "object") {
                 return String(option.value ?? option.label ?? index + 1);
               }
-              return String(option ?? '');
+              return String(option ?? "");
             }),
           );
           const currentValue = currentValues[targetKey];
@@ -860,7 +867,7 @@ const Flow = ({ scenario, scenarios }: any) => {
 
           return isStillValid
             ? currentValues
-            : { ...currentValues, [targetKey]: '' };
+            : { ...currentValues, [targetKey]: "" };
         });
 
         return prev.map((item) =>
@@ -877,17 +884,17 @@ const Flow = ({ scenario, scenarios }: any) => {
       nextValues: Record<string, unknown>,
     ) => {
       const endpoint =
-        typeof element.apiData?.endPoint === 'string'
+        typeof element.apiData?.endPoint === "string"
           ? element.apiData.endPoint.trim()
-          : '';
+          : "";
       if (!endpoint || !element.targetElementId) return;
 
       const method =
-        typeof element.apiData?.method === 'string'
+        typeof element.apiData?.method === "string"
           ? element.apiData.method.toLowerCase()
-          : 'get';
+          : "get";
       const headersText =
-        typeof element.apiData?.headers === 'string' &&
+        typeof element.apiData?.headers === "string" &&
         element.apiData.headers.trim()
           ? element.apiData.headers.trim()
           : DEFAULT_FORM_API_HEADERS;
@@ -899,17 +906,17 @@ const Flow = ({ scenario, scenarios }: any) => {
         const sourceKey = getExecutionElementKeyByElement(element);
         const parameterParams = parameterKey
           ? {
-              [parameterKey]: nextValues[sourceKey] ?? '',
+              [parameterKey]: nextValues[sourceKey] ?? "",
             }
           : {};
         const clientMethod = apiClient[
           method as keyof typeof apiClient
         ] as unknown as (...args: any[]) => Promise<unknown>;
 
-        if (typeof clientMethod !== 'function') return;
+        if (typeof clientMethod !== "function") return;
 
         const response =
-          method === 'get' || method === 'delete'
+          method === "get" || method === "delete"
             ? await clientMethod(endpoint, {
                 params: {
                   ...payload,
@@ -924,7 +931,7 @@ const Flow = ({ scenario, scenarios }: any) => {
 
         applyExecutionApiResponseToTarget(element, response);
       } catch (error) {
-        console.error('Execution form onchange API call failed:', error);
+        console.error("Execution form onchange API call failed:", error);
       }
     },
     [
@@ -942,7 +949,7 @@ const Flow = ({ scenario, scenarios }: any) => {
           [name]: value,
         };
 
-        if (element?.eventType === 'onChange') {
+        if (element?.eventType === "onChange") {
           void runExecutionFormElementApi(element, nextValues);
         }
 
@@ -968,7 +975,7 @@ const Flow = ({ scenario, scenarios }: any) => {
             : current.filter((item) => item !== value),
         };
 
-        if (element?.eventType === 'onChange') {
+        if (element?.eventType === "onChange") {
           void runExecutionFormElementApi(element, nextValues);
         }
 
@@ -995,9 +1002,9 @@ const Flow = ({ scenario, scenarios }: any) => {
   const [memos, setMemos] = useState([
     {
       id: getSafeUUID(),
-      text: '',
-      backgroundColor: '#fff7c2',
-      textColor: '#111827',
+      text: "",
+      backgroundColor: "#fff7c2",
+      textColor: "#111827",
     },
   ]) as any[];
   // ===========================================================
@@ -1043,9 +1050,9 @@ const Flow = ({ scenario, scenarios }: any) => {
         backgroundOpacity: 0.9,
         width: 400,
         height: 240,
-        text: '',
-        backgroundColor: '#fff7c2',
-        textColor: '#111827',
+        text: "",
+        backgroundColor: "#fff7c2",
+        textColor: "#111827",
         isCollapsed: false,
         zIndex: prev.length + 1,
       },
@@ -1128,12 +1135,12 @@ const Flow = ({ scenario, scenarios }: any) => {
       resizeStateRef.current = null;
     };
 
-    window.addEventListener('pointermove', handlePointerMove);
-    window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
 
     return () => {
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
     };
   }, [viewport.zoom]);
 
@@ -1186,31 +1193,31 @@ const Flow = ({ scenario, scenarios }: any) => {
     }
 
     const newNodeId = `ynBranch-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-    const replyYId = 'Y';
-    const replyNId = 'N';
+    const replyYId = "Y";
+    const replyNId = "N";
 
     const newNodeData = {
-      ...createNodeData('branch'),
+      ...createNodeData("branch"),
       id: newNodeId,
-      label: 'Y/N Branch',
+      label: "Y/N Branch",
       isSimpleYN: true,
-      content: 'Y/N 분기',
-      evaluationType: 'BUTTON',
+      content: "Y/N 분기",
+      evaluationType: "BUTTON",
       replies: [
-        { display: 'Y', value: replyYId },
-        { display: 'N', value: replyNId },
+        { display: "Y", value: replyYId },
+        { display: "N", value: replyNId },
       ],
     };
 
     const newNode: Node = {
       id: newNodeId,
-      type: 'ynBranch',
+      type: "ynBranch",
       position: { x: posX, y: posY },
       data: newNodeData,
     };
 
     const targetNodeInputPos =
-      targetNode?.data?.inputPosition === 'top' ? 'input-top' : 'input-left';
+      targetNode?.data?.inputPosition === "top" ? "input-top" : "input-left";
 
     // 1) Source -> ynBranch (Input handle on West/Left)
     const edgeToBranch: Edge = {
@@ -1218,15 +1225,15 @@ const Flow = ({ scenario, scenarios }: any) => {
       source: targetEdge.source,
       target: newNodeId,
       sourceHandle: targetEdge.sourceHandle,
-      targetHandle: 'input-left',
-      type: targetEdge.type || 'orthogonal',
+      targetHandle: "input-left",
+      type: targetEdge.type || "orthogonal",
       animated: false,
       markerEnd: targetEdge.markerEnd || {
         type: MarkerType.ArrowClosed,
-        color: '#cbd5e1',
+        color: "#cbd5e1",
       },
       style: targetEdge.style || {
-        stroke: '#b8c2cc',
+        stroke: "#b8c2cc",
         strokeWidth: 1.4,
       },
     };
@@ -1238,15 +1245,15 @@ const Flow = ({ scenario, scenarios }: any) => {
       target: targetEdge.target,
       sourceHandle: replyYId,
       targetHandle: targetEdge.targetHandle || targetNodeInputPos,
-      label: 'Y',
-      type: targetEdge.type || 'orthogonal',
+      label: "Y",
+      type: targetEdge.type || "orthogonal",
       animated: false,
       markerEnd: targetEdge.markerEnd || {
         type: MarkerType.ArrowClosed,
-        color: '#cbd5e1',
+        color: "#cbd5e1",
       },
       style: targetEdge.style || {
-        stroke: '#b8c2cc',
+        stroke: "#b8c2cc",
         strokeWidth: 1.4,
       },
     };
@@ -1265,9 +1272,9 @@ const Flow = ({ scenario, scenarios }: any) => {
 
   const handleToggleInputPosition = (
     nodeId: string,
-    position: 'left' | 'top',
+    position: "left" | "top",
   ) => {
-    const targetHandleId = position === 'top' ? 'input-top' : 'input-left';
+    const targetHandleId = position === "top" ? "input-top" : "input-left";
 
     const updatedNodes = nodes.map((node: any) => {
       if (node.id === nodeId) {
@@ -1305,10 +1312,10 @@ const Flow = ({ scenario, scenarios }: any) => {
 
   const handleToggleOutputPosition = (
     nodeId: string,
-    position: 'right' | 'bottom',
+    position: "right" | "bottom",
   ) => {
     const sourceHandleId =
-      position === 'bottom' ? 'output-bottom' : 'output-right';
+      position === "bottom" ? "output-bottom" : "output-right";
 
     const updatedNodes = nodes.map((node: any) => {
       if (node.id === nodeId) {
@@ -1327,8 +1334,8 @@ const Flow = ({ scenario, scenarios }: any) => {
       if (edge.source === nodeId) {
         if (
           !edge.sourceHandle ||
-          edge.sourceHandle === 'output-right' ||
-          edge.sourceHandle === 'output-bottom'
+          edge.sourceHandle === "output-right" ||
+          edge.sourceHandle === "output-bottom"
         ) {
           return {
             ...edge,
@@ -1360,15 +1367,15 @@ const Flow = ({ scenario, scenarios }: any) => {
   const handleSetIndividualOutputPosition = (
     nodeId: string,
     outputId: string,
-    position: 'right' | 'bottom',
+    position: "right" | "bottom",
   ) => {
     const updatedNodes = nodes.map((node: any) => {
       if (node.id === nodeId) {
         const isSingleOutputNode =
-          node.type !== 'branch' &&
-          node.type !== 'ynBranch' &&
-          node.type !== 'llm' &&
-          node.type !== 'fixedmenu';
+          node.type !== "branch" &&
+          node.type !== "ynBranch" &&
+          node.type !== "llm" &&
+          node.type !== "fixedmenu";
 
         return {
           ...node,
@@ -1389,11 +1396,11 @@ const Flow = ({ scenario, scenarios }: any) => {
       if (edge.source === nodeId) {
         if (
           !edge.sourceHandle ||
-          edge.sourceHandle === 'output-right' ||
-          edge.sourceHandle === 'output-bottom'
+          edge.sourceHandle === "output-right" ||
+          edge.sourceHandle === "output-bottom"
         ) {
           const sourceHandleId =
-            position === 'bottom' ? 'output-bottom' : 'output-right';
+            position === "bottom" ? "output-bottom" : "output-right";
           return {
             ...edge,
             sourceHandle: sourceHandleId,
@@ -1444,7 +1451,7 @@ const Flow = ({ scenario, scenarios }: any) => {
         ? nodes.find((node: Node) => node.id === draggedNode.parentNode)
         : null;
 
-      if (parentNode?.type === 'selectionGroup') {
+      if (parentNode?.type === "selectionGroup") {
         // Keep the child free while dragging so it can cross the group border.
         // Alignment is restored only when it is dropped inside a group.
         return;
@@ -1456,10 +1463,10 @@ const Flow = ({ scenario, scenarios }: any) => {
       if (connectedEdges.length === 0) return;
 
       const getNodeDimensions = (node: any) => {
-        if (node.type === 'ynBranch') {
+        if (node.type === "ynBranch") {
           return { width: 30, height: 30 };
         }
-        if (node.type === 'scenario') {
+        if (node.type === "scenario") {
           const isCollapsed = node.data?.isCollapsed !== false;
           return { width: 450, height: isCollapsed ? 50 : 120 };
         }
@@ -1475,27 +1482,27 @@ const Flow = ({ scenario, scenarios }: any) => {
       ) => {
         const { width, height } = getNodeDimensions(node);
 
-        if (node.type === 'ynBranch') {
+        if (node.type === "ynBranch") {
           if (isSource) {
-            const hId = handleId === 'N' ? 'N' : 'Y';
-            const posY = node.data?.outputPositions?.['Y'] || 'right';
-            const posN = node.data?.outputPositions?.['N'] || 'bottom';
+            const hId = handleId === "N" ? "N" : "Y";
+            const posY = node.data?.outputPositions?.["Y"] || "right";
+            const posN = node.data?.outputPositions?.["N"] || "bottom";
 
-            const targetSide = hId === 'Y' ? posY : posN;
-            const sameSideHandles = ['Y', 'N'].filter(
-              (id) => (id === 'Y' ? posY : posN) === targetSide,
+            const targetSide = hId === "Y" ? posY : posN;
+            const sameSideHandles = ["Y", "N"].filter(
+              (id) => (id === "Y" ? posY : posN) === targetSide,
             );
             const indexOnSide = sameSideHandles.indexOf(hId);
             const countOnSide = sameSideHandles.length || 1;
             const ratio = (indexOnSide + 1) / (countOnSide + 1);
 
-            if (targetSide === 'bottom') {
+            if (targetSide === "bottom") {
               return { offsetX: width * ratio, offsetY: height };
             }
             return { offsetX: width, offsetY: height * ratio };
           } else {
-            const inputPos = node.data?.inputPosition ?? 'left';
-            if (inputPos === 'top') {
+            const inputPos = node.data?.inputPosition ?? "left";
+            if (inputPos === "top") {
               return { offsetX: width / 2, offsetY: 0 };
             }
             return { offsetX: 0, offsetY: height / 2 };
@@ -1503,9 +1510,9 @@ const Flow = ({ scenario, scenarios }: any) => {
         }
 
         if (isSource) {
-          if (node.type === 'branch' || node.type === 'llm') {
+          if (node.type === "branch" || node.type === "llm") {
             const isConditionType =
-              node.type === 'llm' || node.data?.evaluationType === 'CONDITION';
+              node.type === "llm" || node.data?.evaluationType === "CONDITION";
 
             let allHandles: string[] = [];
 
@@ -1515,7 +1522,7 @@ const Flow = ({ scenario, scenarios }: any) => {
                 (c: any, idx: number) =>
                   node.data?.replies?.[idx]?.value || c.id || String(idx),
               );
-              allHandles.push('default');
+              allHandles.push("default");
             } else {
               const replies = node.data?.replies || [];
               allHandles = replies.map((r: any) => String(r.value));
@@ -1524,9 +1531,9 @@ const Flow = ({ scenario, scenarios }: any) => {
             const getPos = (hId: string) =>
               node.data?.outputPositions?.[hId] ||
               node.data?.outputPosition ||
-              'right';
+              "right";
 
-            const targetHandleId = handleId || 'default';
+            const targetHandleId = handleId || "default";
             const targetSide = getPos(targetHandleId);
 
             const handlesOnSide = allHandles.filter(
@@ -1537,24 +1544,24 @@ const Flow = ({ scenario, scenarios }: any) => {
             const countOnSide = handlesOnSide.length || 1;
             const ratio = (indexOnSide + 1) / (countOnSide + 1);
 
-            if (targetSide === 'bottom') {
+            if (targetSide === "bottom") {
               return { offsetX: width * ratio, offsetY: height };
             }
             return { offsetX: width, offsetY: height * ratio };
           }
 
           const pos =
-            node.data?.outputPositions?.[handleId || 'default'] ||
+            node.data?.outputPositions?.[handleId || "default"] ||
             node.data?.outputPosition ||
-            'right';
+            "right";
 
-          if (pos === 'bottom') {
+          if (pos === "bottom") {
             return { offsetX: width / 2, offsetY: height };
           }
           return { offsetX: width, offsetY: height / 2 };
         } else {
-          const inputPos = node.data?.inputPosition ?? 'left';
-          if (inputPos === 'top') {
+          const inputPos = node.data?.inputPosition ?? "left";
+          if (inputPos === "top") {
             return { offsetX: width / 2, offsetY: 0 };
           }
           return { offsetX: 0, offsetY: height / 2 };
@@ -1676,7 +1683,7 @@ const Flow = ({ scenario, scenarios }: any) => {
       const targetGroup = liveNodes
         .filter(
           (node: Node) =>
-            node.type === 'selectionGroup' &&
+            node.type === "selectionGroup" &&
             node.id !== draggedNode.id &&
             !node.data?.isCollapsed,
         )
@@ -1702,7 +1709,7 @@ const Flow = ({ scenario, scenarios }: any) => {
         });
 
       if (
-        draggedNode.type !== 'selectionGroup' &&
+        draggedNode.type !== "selectionGroup" &&
         targetGroup?.id !== groupNode?.id
       ) {
         const targetPosition = targetGroup
@@ -1720,8 +1727,8 @@ const Flow = ({ scenario, scenarios }: any) => {
               style: { ...draggedNode.style, width: 520 },
               data: {
                 ...draggedNode.data,
-                inputPosition: 'top',
-                outputPosition: 'bottom',
+                inputPosition: "top",
+                outputPosition: "bottom",
               },
             }
           : {
@@ -1742,13 +1749,13 @@ const Flow = ({ scenario, scenarios }: any) => {
           : [...nodesWithoutDragged, nextNode];
 
         let nextEdges = edges;
-        if (groupNode?.type === 'selectionGroup') {
+        if (groupNode?.type === "selectionGroup") {
           const previousGroupChildren = liveNodes
             .filter((node: Node) => node.parentNode === groupNode.id)
             .slice()
             .sort((a: Node, b: Node) => {
-              if (a.type === 'branch' && b.type !== 'branch') return 1;
-              if (a.type !== 'branch' && b.type === 'branch') return -1;
+              if (a.type === "branch" && b.type !== "branch") return 1;
+              if (a.type !== "branch" && b.type === "branch") return -1;
               return a.position.y - b.position.y;
             });
           const removedIndex = previousGroupChildren.findIndex(
@@ -1778,8 +1785,7 @@ const Flow = ({ scenario, scenarios }: any) => {
               createWorkflowEdge({
                 source: previousNode.id,
                 target: followingNode.id,
-                sourceHandle:
-                  previousNode.type === 'api' ? 'onSuccess' : null,
+                sourceHandle: previousNode.type === "api" ? "onSuccess" : null,
               }),
             ];
           }
@@ -1795,7 +1801,7 @@ const Flow = ({ scenario, scenarios }: any) => {
       }
 
       if (
-        groupNode?.type === 'selectionGroup' &&
+        groupNode?.type === "selectionGroup" &&
         targetGroup?.id === groupNode.id
       ) {
         const GROUP_CHILD_X = 60;
@@ -1811,8 +1817,8 @@ const Flow = ({ scenario, scenarios }: any) => {
               : node,
           )
           .sort((a: Node, b: Node) => {
-            if (a.type === 'branch' && b.type !== 'branch') return 1;
-            if (a.type !== 'branch' && b.type === 'branch') return -1;
+            if (a.type === "branch" && b.type !== "branch") return 1;
+            if (a.type !== "branch" && b.type === "branch") return -1;
             return a.position.y - b.position.y;
           });
         const childIds = new Set(groupChildren.map((node: Node) => node.id));
@@ -1832,8 +1838,8 @@ const Flow = ({ scenario, scenarios }: any) => {
               data: {
                 ...node.data,
                 groupOrder: index + 1,
-                inputPosition: 'top',
-                outputPosition: 'bottom',
+                inputPosition: "top",
+                outputPosition: "bottom",
               },
             };
             nextY += height + GROUP_CHILD_GAP;
@@ -1902,7 +1908,7 @@ const Flow = ({ scenario, scenarios }: any) => {
           createWorkflowEdge({
             source: node.id,
             target: orderedChildren[index + 1].id,
-            sourceHandle: node.type === 'api' ? 'onSuccess' : null,
+            sourceHandle: node.type === "api" ? "onSuccess" : null,
           }),
         );
 
@@ -1920,8 +1926,8 @@ const Flow = ({ scenario, scenarios }: any) => {
       if (connectedEdges.length === 0) return;
 
       const getNodeWidth = (node: any) => {
-        if (node.type === 'ynBranch') return 30;
-        if (node.type === 'scenario') return 450;
+        if (node.type === "ynBranch") return 30;
+        if (node.type === "scenario") return 450;
         return node.width || (node as any).measured?.width || 280;
       };
 
@@ -1931,51 +1937,51 @@ const Flow = ({ scenario, scenarios }: any) => {
         forceBottom = false,
       ) => {
         const width = getNodeWidth(sourceNode);
-        if (sourceNode.type === 'ynBranch') {
-          const hId = handleId === 'N' ? 'N' : 'Y';
+        if (sourceNode.type === "ynBranch") {
+          const hId = handleId === "N" ? "N" : "Y";
           const posY = forceBottom
-            ? 'bottom'
-            : sourceNode.data?.outputPositions?.['Y'] || 'right';
+            ? "bottom"
+            : sourceNode.data?.outputPositions?.["Y"] || "right";
           const posN = forceBottom
-            ? 'bottom'
-            : sourceNode.data?.outputPositions?.['N'] || 'bottom';
-          const targetSide = hId === 'Y' ? posY : posN;
-          const sameSideHandles = ['Y', 'N'].filter(
-            (id) => (id === 'Y' ? posY : posN) === targetSide,
+            ? "bottom"
+            : sourceNode.data?.outputPositions?.["N"] || "bottom";
+          const targetSide = hId === "Y" ? posY : posN;
+          const sameSideHandles = ["Y", "N"].filter(
+            (id) => (id === "Y" ? posY : posN) === targetSide,
           );
           const indexOnSide = sameSideHandles.indexOf(hId);
           const countOnSide = sameSideHandles.length || 1;
           const ratio = (indexOnSide + 1) / (countOnSide + 1);
-          return targetSide === 'bottom' ? width * ratio : width;
+          return targetSide === "bottom" ? width * ratio : width;
         }
 
-        if (sourceNode.type === 'api') {
-          const hId = handleId === 'onError' ? 'onError' : 'onSuccess';
+        if (sourceNode.type === "api") {
+          const hId = handleId === "onError" ? "onError" : "onSuccess";
           const posSuccess = forceBottom
-            ? 'bottom'
-            : sourceNode.data?.outputPositions?.['onSuccess'] || 'right';
+            ? "bottom"
+            : sourceNode.data?.outputPositions?.["onSuccess"] || "right";
           const posError = forceBottom
-            ? 'bottom'
-            : sourceNode.data?.outputPositions?.['onError'] || 'bottom';
-          const targetSide = hId === 'onError' ? posError : posSuccess;
-          const sameSideHandles = ['onSuccess', 'onError'].filter(
-            (id) => (id === 'onError' ? posError : posSuccess) === targetSide,
+            ? "bottom"
+            : sourceNode.data?.outputPositions?.["onError"] || "bottom";
+          const targetSide = hId === "onError" ? posError : posSuccess;
+          const sameSideHandles = ["onSuccess", "onError"].filter(
+            (id) => (id === "onError" ? posError : posSuccess) === targetSide,
           );
           const indexOnSide = sameSideHandles.indexOf(hId);
           const countOnSide = sameSideHandles.length || 1;
           const ratio = (indexOnSide + 1) / (countOnSide + 1);
-          return targetSide === 'bottom' ? width * ratio : width;
+          return targetSide === "bottom" ? width * ratio : width;
         }
 
         const getPos = (hId: string) =>
           forceBottom
-            ? 'bottom'
+            ? "bottom"
             : sourceNode.data?.outputPositions?.[hId] ||
               sourceNode.data?.outputPosition ||
-              'right';
+              "right";
 
-        const targetSide = getPos(handleId || 'default');
-        return targetSide === 'bottom' ? width / 2 : width;
+        const targetSide = getPos(handleId || "default");
+        return targetSide === "bottom" ? width / 2 : width;
       };
 
       const nodeUpdates: Record<string, any> = {};
@@ -2015,36 +2021,36 @@ const Flow = ({ scenario, scenarios }: any) => {
               y: nextNode.position.y,
             };
 
-            const outputId = edge.sourceHandle || 'default';
+            const outputId = edge.sourceHandle || "default";
             const isSingleOutputPrev =
-              prevNode.type !== 'branch' &&
-              prevNode.type !== 'ynBranch' &&
-              prevNode.type !== 'llm' &&
-              prevNode.type !== 'fixedmenu' &&
-              prevNode.type !== 'api';
+              prevNode.type !== "branch" &&
+              prevNode.type !== "ynBranch" &&
+              prevNode.type !== "llm" &&
+              prevNode.type !== "fixedmenu" &&
+              prevNode.type !== "api";
 
             nodeUpdates[prevNode.id] = {
               ...(nodeUpdates[prevNode.id] || {}),
-              ...(isSingleOutputPrev ? { outputPosition: 'bottom' } : {}),
+              ...(isSingleOutputPrev ? { outputPosition: "bottom" } : {}),
               outputPositions: {
                 ...(prevNode.data?.outputPositions || {}),
                 ...(nodeUpdates[prevNode.id]?.outputPositions || {}),
-                [outputId]: 'bottom',
+                [outputId]: "bottom",
               },
             };
 
             nodeUpdates[nextNode.id] = {
               ...(nodeUpdates[nextNode.id] || {}),
-              inputPosition: 'top',
+              inputPosition: "top",
             };
 
             const sourceHandleId = isSingleOutputPrev
-              ? 'output-bottom'
+              ? "output-bottom"
               : edge.sourceHandle;
 
             edgeUpdates[edge.id] = {
               sourceHandle: sourceHandleId,
-              targetHandle: 'input-top',
+              targetHandle: "input-top",
               points: undefined,
             };
           }
@@ -2106,14 +2112,14 @@ const Flow = ({ scenario, scenarios }: any) => {
   const isSelectionLayerTarget = useCallback((target: EventTarget | null) => {
     if (!(target instanceof HTMLElement)) return false;
 
-    const pane = target.closest('.react-flow__pane');
-    const isSelectionPane = pane?.classList.contains('selection') ?? false;
+    const pane = target.closest(".react-flow__pane");
+    const isSelectionPane = pane?.classList.contains("selection") ?? false;
 
     return Boolean(
       isSelectionPane ||
-        target.closest('.react-flow__nodesselection') ||
-        target.closest('.react-flow__nodesselection-rect') ||
-        target.closest('.react-flow__selection'),
+      target.closest(".react-flow__nodesselection") ||
+      target.closest(".react-flow__nodesselection-rect") ||
+      target.closest(".react-flow__selection"),
     );
   }, []);
 
@@ -2137,7 +2143,7 @@ const Flow = ({ scenario, scenarios }: any) => {
   const getSafeMenuPosition = (
     clientX: number,
     clientY: number,
-    menuType: 'pane' | 'node' | 'edge',
+    menuType: "pane" | "node" | "edge",
   ) => {
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
@@ -2168,7 +2174,7 @@ const Flow = ({ scenario, scenarios }: any) => {
       selected: false,
     }));
 
-    const { x, y } = getSafeMenuPosition(event.clientX, event.clientY, 'pane');
+    const { x, y } = getSafeMenuPosition(event.clientX, event.clientY, "pane");
     const bounds = reactFlowWrapper.current?.getBoundingClientRect();
     const flowPosition = bounds
       ? project({
@@ -2185,7 +2191,7 @@ const Flow = ({ scenario, scenarios }: any) => {
       x,
       y,
       flowPosition,
-      target: { type: 'pane' },
+      target: { type: "pane" },
     });
   };
 
@@ -2198,7 +2204,7 @@ const Flow = ({ scenario, scenarios }: any) => {
       selected: false,
     }));
 
-    const { x, y } = getSafeMenuPosition(event.clientX, event.clientY, 'node');
+    const { x, y } = getSafeMenuPosition(event.clientX, event.clientY, "node");
     const bounds = reactFlowWrapper.current?.getBoundingClientRect();
     const flowPosition = bounds
       ? project({
@@ -2215,7 +2221,7 @@ const Flow = ({ scenario, scenarios }: any) => {
       x,
       y,
       flowPosition,
-      target: { type: 'node', id: node.id },
+      target: { type: "node", id: node.id },
     });
   };
 
@@ -2228,7 +2234,7 @@ const Flow = ({ scenario, scenarios }: any) => {
       selected: item.id === edge.id,
     }));
 
-    const { x, y } = getSafeMenuPosition(event.clientX, event.clientY, 'edge');
+    const { x, y } = getSafeMenuPosition(event.clientX, event.clientY, "edge");
     const bounds = reactFlowWrapper.current?.getBoundingClientRect();
     const flowPosition = bounds
       ? project({
@@ -2245,7 +2251,7 @@ const Flow = ({ scenario, scenarios }: any) => {
       x,
       y,
       flowPosition,
-      target: { type: 'edge', id: edge.id },
+      target: { type: "edge", id: edge.id },
     });
   };
 
@@ -2263,7 +2269,7 @@ const Flow = ({ scenario, scenarios }: any) => {
       const { x, y } = getSafeMenuPosition(
         event.clientX,
         event.clientY,
-        'node',
+        "node",
       );
       const bounds = reactFlowWrapper.current?.getBoundingClientRect();
       const flowPosition = bounds
@@ -2279,7 +2285,7 @@ const Flow = ({ scenario, scenarios }: any) => {
         y,
         flowPosition,
         target: {
-          type: 'selection',
+          type: "selection",
           ids: selectedIds,
         },
       });
@@ -2387,7 +2393,7 @@ const Flow = ({ scenario, scenarios }: any) => {
       safeNodes
         .filter(
           (n: any) =>
-            (n.type === 'scenario' || n.type === 'selectionGroup') &&
+            (n.type === "scenario" || n.type === "selectionGroup") &&
             n?.data?.isCollapsed,
         )
         .map((n: any) => n.id),
@@ -2400,7 +2406,7 @@ const Flow = ({ scenario, scenarios }: any) => {
   const selectionGroupLayoutSignature = useMemo(() => {
     const groupIds = new Set(
       nodes
-        .filter((node: any) => node.type === 'selectionGroup')
+        .filter((node: any) => node.type === "selectionGroup")
         .map((node: any) => node.id),
     );
 
@@ -2412,10 +2418,10 @@ const Flow = ({ scenario, scenarios }: any) => {
           node.id,
           node.height || node.measured?.height || 0,
           node.width || node.measured?.width || 0,
-        ].join(':'),
+        ].join(":"),
       )
       .sort()
-      .join('|');
+      .join("|");
   }, [nodes]);
 
   useEffect(() => {
@@ -2426,7 +2432,7 @@ const Flow = ({ scenario, scenarios }: any) => {
     const GROUP_BOTTOM_PADDING = 60;
     const currentNodes = useBuilderStore.getState().nodes;
     const groups = currentNodes.filter(
-      (node: any) => node.type === 'selectionGroup' && !node.data?.isCollapsed,
+      (node: any) => node.type === "selectionGroup" && !node.data?.isCollapsed,
     );
     if (!groups.length) return;
 
@@ -2446,8 +2452,8 @@ const Flow = ({ scenario, scenarios }: any) => {
         .filter((node: any) => node.parentNode === group.id)
         .slice()
         .sort((a: any, b: any) => {
-          if (a.type === 'branch' && b.type !== 'branch') return 1;
-          if (a.type !== 'branch' && b.type === 'branch') return -1;
+          if (a.type === "branch" && b.type !== "branch") return 1;
+          if (a.type !== "branch" && b.type === "branch") return -1;
           return (a.position?.y || 0) - (b.position?.y || 0);
         });
       orderedChildrenByGroup.set(group.id, children);
@@ -2540,7 +2546,7 @@ const Flow = ({ scenario, scenarios }: any) => {
         .map((edge: any) => `${edge.source}>${edge.target}`)
         .sort();
 
-      if (desiredPairs.join('|') !== actualPairs.join('|')) {
+      if (desiredPairs.join("|") !== actualPairs.join("|")) {
         groupsToReconnect.add(groupId);
       }
     });
@@ -2596,7 +2602,7 @@ const Flow = ({ scenario, scenarios }: any) => {
           createWorkflowEdge({
             source: child.id,
             target: children[index + 1].id,
-            sourceHandle: child.type === 'api' ? 'onSuccess' : null,
+            sourceHandle: child.type === "api" ? "onSuccess" : null,
           }),
         );
       });
@@ -2619,7 +2625,7 @@ const Flow = ({ scenario, scenarios }: any) => {
     } else {
       const userInfo = await loadingUserData();
       if (userInfo.unuseNodes?.includes(node.type)) {
-        showAlert(`${t('The node does not have modification privileges')}`);
+        showAlert(`${t("The node does not have modification privileges")}`);
         return;
       }
       setSelectedNodes((prev: any) => {
@@ -2651,27 +2657,6 @@ const Flow = ({ scenario, scenarios }: any) => {
     [setSelectedNodeId],
   );
 
-  const handleMainResize = (mouseDownEvent: any) => {
-    mouseDownEvent.preventDefault();
-    const startSize = rightPanelWidth;
-    const startPosition = mouseDownEvent.clientX;
-
-    const onMouseMove = (mouseMoveEvent: any) => {
-      const newSize = startSize - (mouseMoveEvent.clientX - startPosition);
-      if (newSize > 350 && newSize < 1000) {
-        setRightPanelWidth(newSize);
-      }
-    };
-
-    const onMouseUp = () => {
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseup', onMouseUp);
-    };
-
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
-  };
-
   const handleDuplicateNode = () => {
     if (selectedNodeId) {
       duplicateNode(selectedNodeId);
@@ -2679,7 +2664,7 @@ const Flow = ({ scenario, scenarios }: any) => {
   };
 
   const handleKeyDown = (event: any) => {
-    if (event.key === 'Backspace' || event.key === 'Delete') {
+    if (event.key === "Backspace" || event.key === "Delete") {
       const isNodeSelected = nodes.some((node: any) => node.selected);
       if (!isNodeSelected) {
         deleteSelectedEdges();
@@ -2688,13 +2673,13 @@ const Flow = ({ scenario, scenarios }: any) => {
   };
 
   const onDragStart = (event: any, nodeType: any) => {
-    event.dataTransfer.setData('application/reactflow', nodeType);
-    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData("application/reactflow", nodeType);
+    event.dataTransfer.effectAllowed = "move";
   };
 
   const onDragOver = useCallback((event: any) => {
     event.preventDefault();
-    event.dataTransfer.dropEffect = 'move';
+    event.dataTransfer.dropEffect = "move";
   }, []);
 
   const onDrop = useCallback(
@@ -2704,9 +2689,9 @@ const Flow = ({ scenario, scenarios }: any) => {
       const reactFlowBounds = reactFlowWrapper.current?.getBoundingClientRect();
       if (!reactFlowBounds) return;
 
-      const type = event.dataTransfer.getData('application/reactflow');
+      const type = event.dataTransfer.getData("application/reactflow");
 
-      if (typeof type === 'undefined' || !type) {
+      if (typeof type === "undefined" || !type) {
         return;
       }
 
@@ -2716,7 +2701,7 @@ const Flow = ({ scenario, scenarios }: any) => {
       });
 
       // 드롭 위치를 저장한 후 시나리오 선택 모달을 연다.
-      if (type === 'scenarioGroup') {
+      if (type === "scenarioGroup") {
         setScenarioGroupDropPosition(position);
         setIsGroupModalOpen(true);
         return;
@@ -2726,7 +2711,7 @@ const Flow = ({ scenario, scenarios }: any) => {
         .slice()
         .reverse()
         .find((node: any) => {
-          if (node.type === 'scenario') return false;
+          if (node.type === "scenario") return false;
 
           const nodePosition = node.positionAbsolute || node.position;
           const width = node.width || Number(node.style?.width) || 250;
@@ -2742,7 +2727,7 @@ const Flow = ({ scenario, scenarios }: any) => {
 
       if (droppedOnNode) {
         const existingParentId =
-          droppedOnNode.type === 'selectionGroup'
+          droppedOnNode.type === "selectionGroup"
             ? droppedOnNode.id
             : droppedOnNode.parentNode;
         const groupNode = existingParentId
@@ -2751,13 +2736,13 @@ const Flow = ({ scenario, scenarios }: any) => {
 
         // Dropping on an existing group (or one of its children) appends a
         // vertically connected child to that group.
-        if (groupNode?.type === 'selectionGroup') {
+        if (groupNode?.type === "selectionGroup") {
           const children = nodes
             .filter((node: any) => node.parentNode === groupNode.id)
             .slice()
             .sort((a: any, b: any) => {
-              if (a.type === 'branch' && b.type !== 'branch') return 1;
-              if (a.type !== 'branch' && b.type === 'branch') return -1;
+              if (a.type === "branch" && b.type !== "branch") return 1;
+              if (a.type !== "branch" && b.type === "branch") return -1;
               return (a.position?.y || 0) - (b.position?.y || 0);
             });
           const previousChild = children[children.length - 1];
@@ -2782,8 +2767,8 @@ const Flow = ({ scenario, scenarios }: any) => {
             data: {
               ...data,
               groupOrder: children.length + 1,
-              inputPosition: 'top',
-              outputPosition: 'bottom',
+              inputPosition: "top",
+              outputPosition: "bottom",
             },
           };
           const requiredWidth = 640;
@@ -2845,7 +2830,7 @@ const Flow = ({ scenario, scenarios }: any) => {
               createWorkflowEdge({
                 source: previousChild.id,
                 target: newNode.id,
-                sourceHandle: previousChild.type === 'api' ? 'onSuccess' : null,
+                sourceHandle: previousChild.type === "api" ? "onSuccess" : null,
               }),
             ]);
           }
@@ -2857,7 +2842,7 @@ const Flow = ({ scenario, scenarios }: any) => {
         // existing node and the newly dropped node, arranged top-to-bottom.
         if (
           !droppedOnNode.parentNode &&
-          droppedOnNode.type !== 'selectionGroup'
+          droppedOnNode.type !== "selectionGroup"
         ) {
           const data = createNodeData(type) as BuilderNodeData;
           const newNodeId = data.id || `${type}-${Date.now()}`;
@@ -2874,14 +2859,14 @@ const Flow = ({ scenario, scenarios }: any) => {
             droppedOnNode.positionAbsolute || droppedOnNode.position;
           const group: BuilderNode = {
             id: groupId,
-            type: 'selectionGroup',
+            type: "selectionGroup",
             position: {
               x: groupPosition.x - paddingX,
               y: groupPosition.y - firstY,
             },
             data: {
-              label: t('Selected Group'),
-              title: t('Selected Group'),
+              label: t("Selected Group"),
+              title: t("Selected Group"),
               isCollapsed: false,
               entryNodeId: droppedOnNode.id,
               exitNodeIds: [newNodeId],
@@ -2898,8 +2883,8 @@ const Flow = ({ scenario, scenarios }: any) => {
             data: {
               ...droppedOnNode.data,
               groupOrder: 1,
-              inputPosition: 'top',
-              outputPosition: 'bottom',
+              inputPosition: "top",
+              outputPosition: "bottom",
             },
           };
           const secondChild: BuilderNode = {
@@ -2912,8 +2897,8 @@ const Flow = ({ scenario, scenarios }: any) => {
             data: {
               ...data,
               groupOrder: 2,
-              inputPosition: 'top',
-              outputPosition: 'bottom',
+              inputPosition: "top",
+              outputPosition: "bottom",
             },
           };
 
@@ -2959,7 +2944,7 @@ const Flow = ({ scenario, scenarios }: any) => {
             createWorkflowEdge({
               source: firstChild.id,
               target: secondChild.id,
-              sourceHandle: firstChild.type === 'api' ? 'onSuccess' : null,
+              sourceHandle: firstChild.type === "api" ? "onSuccess" : null,
             }),
           ]);
           setSelectedNodeId(secondChild.id);
@@ -2992,26 +2977,26 @@ const Flow = ({ scenario, scenarios }: any) => {
 
       const key = event.key.toLowerCase();
 
-      if (key === 'z' && !event.shiftKey) {
+      if (key === "z" && !event.shiftKey) {
         event.preventDefault();
         undo();
         return;
       }
 
-      if ((key === 'z' && event.shiftKey) || key === 'y') {
+      if ((key === "z" && event.shiftKey) || key === "y") {
         event.preventDefault();
         redo();
       }
     };
 
-    window.addEventListener('keydown', handleHistoryKey);
-    return () => window.removeEventListener('keydown', handleHistoryKey);
+    window.addEventListener("keydown", handleHistoryKey);
+    return () => window.removeEventListener("keydown", handleHistoryKey);
   }, [undo, redo]);
   // ========================================================================================================
 
   // 그룹노드 핸들 함수
   const handleGroupSelectedNodes = () => {
-    console.log('[DEBUG G Button Clicked]', {
+    console.log("[DEBUG G Button Clicked]", {
       selectedNodes,
       nodesSelectedFilter: nodes.filter((node: any) => node.selected),
       edges,
@@ -3021,11 +3006,11 @@ const Flow = ({ scenario, scenarios }: any) => {
         ? selectedNodes
         : nodes.filter((node: any) => node.selected);
 
-    console.log('[DEBUG activeSelectedNodes]', activeSelectedNodes);
+    console.log("[DEBUG activeSelectedNodes]", activeSelectedNodes);
 
     if (activeSelectedNodes.length < 2) {
       showAlert(
-        `${t('To group, you must select at least 2 top-level nodes.')}`,
+        `${t("To group, you must select at least 2 top-level nodes.")}`,
       );
       return;
     }
@@ -3038,7 +3023,7 @@ const Flow = ({ scenario, scenarios }: any) => {
 
     useBuilderStore.setState({ nodes: syncedNodes });
 
-    const groupLabel = `${t('Selected Group')}`;
+    const groupLabel = `${t("Selected Group")}`;
     groupSelectedNodes(groupLabel);
   };
   // ========================================================================================================
@@ -3049,41 +3034,41 @@ const Flow = ({ scenario, scenarios }: any) => {
     const data = node?.data ?? {};
 
     switch (node.type) {
-      case 'message':
+      case "message":
         return [data.content];
-      case 'form':
+      case "form":
         return [data.title];
-      case 'slotfilling':
+      case "slotfilling":
         return [data.content, data.slot];
-      case 'api':
+      case "api":
         return [
           data.url,
           ...(Array.isArray(data.apis)
             ? data.apis.map((api: any) => api?.name)
             : []),
         ];
-      case 'branch':
+      case "branch":
         return Array.isArray(data.replies)
           ? data.replies.map((reply: any) => reply?.display)
           : [];
-      case 'link':
+      case "link":
         return [data.display, data.content];
-      case 'llm':
+      case "llm":
         return [data.prompt];
-      case 'toast':
+      case "toast":
         return [data.message];
-      case 'iframe':
+      case "iframe":
         return [data.url];
-      case 'scenario':
+      case "scenario":
         return [data.label];
-      case 'selectionGroup':
+      case "selectionGroup":
         return [data.label, data.title];
-      case 'setSlot':
+      case "setSlot":
         return Array.isArray(data.assignments)
           ? data.assignments.flatMap((item: any) => [item?.key, item?.value])
           : [];
-      case 'delay':
-        return [String(data.duration ?? '')];
+      case "delay":
+        return [String(data.duration ?? "")];
       default:
         return [];
     }
@@ -3094,12 +3079,12 @@ const Flow = ({ scenario, scenarios }: any) => {
     if (!keyword) return [];
 
     return nodes.filter((node: any) => {
-      const typeMatched = searchType === 'all' || node.type === searchType;
+      const typeMatched = searchType === "all" || node.type === searchType;
       if (!typeMatched) return false;
 
       const text = getNodeSearchText(node)
         .filter(Boolean)
-        .join(' ')
+        .join(" ")
         .toLowerCase();
       return text.includes(keyword);
     });
@@ -3163,36 +3148,36 @@ const Flow = ({ scenario, scenarios }: any) => {
   ]);
 
   useEffect(() => {
-    window.addEventListener('resize', updateCanvasPanelHeight);
-    return () => window.removeEventListener('resize', updateCanvasPanelHeight);
+    window.addEventListener("resize", updateCanvasPanelHeight);
+    return () => window.removeEventListener("resize", updateCanvasPanelHeight);
   }, [updateCanvasPanelHeight]);
   // ========================================================================================================
 
   // ========================================================================================================
   // add node 모달 팝업
   const [insertTarget, setInsertTarget] = useState<InsertTarget | null>(null);
-  const [activitySearch, setActivitySearch] = useState('');
+  const [activitySearch, setActivitySearch] = useState("");
   const [activityInsertPosition, setActivityInsertPosition] = useState<{
     x: number;
     y: number;
   } | null>(null);
   const [recentTypes, setRecentTypes] = useState<ActivityType[]>([
-    'message',
-    'setSlot',
-    'branch',
-    'form',
+    "message",
+    "setSlot",
+    "branch",
+    "form",
   ]);
 
   const closeActivityPicker = () => {
     setInsertTarget(null);
-    setActivitySearch('');
+    setActivitySearch("");
     setActivityInsertPosition(null);
   };
 
   const openActivityPicker = useCallback(
     async (target: InsertTarget) => {
       setInsertTarget(target);
-      setActivitySearch('');
+      setActivitySearch("");
     },
     [setInsertTarget, setActivitySearch],
   );
@@ -3206,11 +3191,11 @@ const Flow = ({ scenario, scenarios }: any) => {
       openActivityPicker({ parentId: groupId });
     };
 
-    window.addEventListener('flow-uipath:add-group-node', handleGroupNodeAdd);
+    window.addEventListener("flow-uipath:add-group-node", handleGroupNodeAdd);
 
     return () => {
       window.removeEventListener(
-        'flow-uipath:add-group-node',
+        "flow-uipath:add-group-node",
         handleGroupNodeAdd,
       );
     };
@@ -3220,7 +3205,7 @@ const Flow = ({ scenario, scenarios }: any) => {
     if (!insertTarget) return;
     if (
       // unuseNodes.includes(type) ||
-      type === 'branch' &&
+      type === "branch" &&
       insertTarget.targetId
     )
       return;
@@ -3241,18 +3226,18 @@ const Flow = ({ scenario, scenarios }: any) => {
     let xOffset = 0;
 
     if (insertTarget.sourceHandle) {
-      if (insertTarget.sourceHandle === 'onError') {
+      if (insertTarget.sourceHandle === "onError") {
         xOffset = HORIZONTAL_STEP;
-      } else if (insertTarget.sourceHandle === 'onSuccess') {
+      } else if (insertTarget.sourceHandle === "onSuccess") {
         xOffset = 0;
       } else if (
-        insertTarget.sourceHandle.includes('condition') ||
-        insertTarget.sourceHandle.includes('reply')
+        insertTarget.sourceHandle.includes("condition") ||
+        insertTarget.sourceHandle.includes("reply")
       ) {
         const match = insertTarget.sourceHandle.match(/\d+/);
         const handleIdx = match ? parseInt(match[0], 10) : 1;
         xOffset = (handleIdx > 0 ? handleIdx : 1) * 140;
-      } else if (insertTarget.sourceHandle !== 'default') {
+      } else if (insertTarget.sourceHandle !== "default") {
         xOffset = 80;
       }
     }
@@ -3296,7 +3281,7 @@ const Flow = ({ scenario, scenarios }: any) => {
       return node;
     });
 
-    const insertedNodeNextSourceHandle = type === 'api' ? 'onSuccess' : null;
+    const insertedNodeNextSourceHandle = type === "api" ? "onSuccess" : null;
 
     if (parentNode) {
       const groupChildren = nodes
@@ -3440,7 +3425,7 @@ const Flow = ({ scenario, scenarios }: any) => {
   );
 
   const getVersionNumber = (version?: string) =>
-    Number(String(version ?? '').replace(/[^0-9]/g, '')) || 0;
+    Number(String(version ?? "").replace(/[^0-9]/g, "")) || 0;
 
   const selectedScenarioVersions = (scenarios ?? [])
     .filter((item: any) => item.groupId && item.groupId === scenario?.groupId)
@@ -3462,9 +3447,9 @@ const Flow = ({ scenario, scenarios }: any) => {
     <Box
       flex={1}
       sx={{ minHeight: 0 }}
-      height={'100%'}
-      display={'flex'}
-      flexDirection={'column'}
+      height={"100%"}
+      display={"flex"}
+      flexDirection={"column"}
       gap={1.5}
     >
       <Box
@@ -3474,8 +3459,8 @@ const Flow = ({ scenario, scenarios }: any) => {
         minHeight={0}
         borderRadius={2}
         borderColor={COLORS.blueGrey[100]}
-        display={'flex'}
-        overflow={'hidden'}
+        display={"flex"}
+        overflow={"hidden"}
       >
         <ScenarioGroupModal
           isOpen={isGroupModalOpen}
@@ -3590,25 +3575,25 @@ const Flow = ({ scenario, scenarios }: any) => {
           </div>
           <div
             style={{
-              display: 'flex',
-              flexDirection: 'column',
+              display: "flex",
+              flexDirection: "column",
               flexGrow: 1,
-              height: '100%',
-              width: '100%',
+              height: "100%",
+              width: "100%",
               minHeight: 0,
             }}
           >
             {tabs.length > 0 && (
               <Box
                 sx={{
-                  display: 'flex',
-                  alignItems: 'center',
+                  display: "flex",
+                  alignItems: "center",
                   gap: 0.5,
                   borderBottom: `1px solid ${COLORS.blueGrey[100]}`,
-                  backgroundColor: '#F8FAFC',
-                  padding: '4px 8px 0 8px',
+                  backgroundColor: "#F8FAFC",
+                  padding: "4px 8px 0 8px",
                   zIndex: 4,
-                  position: 'relative',
+                  position: "relative",
                 }}
               >
                 {tabs.map((tab) => {
@@ -3618,26 +3603,26 @@ const Flow = ({ scenario, scenarios }: any) => {
                       key={tab.id}
                       onClick={() => handleTabSwitch(tab.id)}
                       sx={{
-                        display: 'flex',
-                        alignItems: 'center',
+                        display: "flex",
+                        alignItems: "center",
                         gap: 1,
-                        padding: '6px 12px',
-                        borderRadius: '8px 8px 0 0',
-                        border: '1px solid',
+                        padding: "6px 12px",
+                        borderRadius: "8px 8px 0 0",
+                        border: "1px solid",
                         borderColor: isActive
                           ? COLORS.blueGrey[100]
-                          : 'transparent',
-                        borderBottom: isActive ? '1px solid #ffffff' : 'none',
-                        backgroundColor: isActive ? '#ffffff' : 'transparent',
-                        color: isActive ? 'primary.main' : 'text.secondary',
+                          : "transparent",
+                        borderBottom: isActive ? "1px solid #ffffff" : "none",
+                        backgroundColor: isActive ? "#ffffff" : "transparent",
+                        color: isActive ? "primary.main" : "text.secondary",
                         fontWeight: isActive ? 700 : 500,
-                        fontSize: '13px',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s',
-                        marginBottom: '-1px',
-                        '&:hover': {
-                          backgroundColor: isActive ? '#ffffff' : '#F1F5F9',
-                          color: isActive ? 'primary.main' : 'text.primary',
+                        fontSize: "13px",
+                        cursor: "pointer",
+                        transition: "all 0.2s",
+                        marginBottom: "-1px",
+                        "&:hover": {
+                          backgroundColor: isActive ? "#ffffff" : "#F1F5F9",
+                          color: isActive ? "primary.main" : "text.primary",
                         },
                       }}
                     >
@@ -3648,11 +3633,11 @@ const Flow = ({ scenario, scenarios }: any) => {
                           onClick={(e) => handleTabClose(tab.id, e)}
                           sx={{
                             padding: 0.2,
-                            color: isActive ? 'primary.main' : 'text.secondary',
+                            color: isActive ? "primary.main" : "text.secondary",
                             opacity: 0.7,
-                            '&:hover': {
+                            "&:hover": {
                               opacity: 1,
-                              backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                              backgroundColor: "rgba(0, 0, 0, 0.05)",
                             },
                           }}
                         >
@@ -3668,28 +3653,28 @@ const Flow = ({ scenario, scenarios }: any) => {
               style={{
                 flexGrow: 1,
                 minHeight: 0,
-                position: 'relative',
-                width: '100%',
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
+                position: "relative",
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
               }}
             >
               {/* Top Toolbar Overlay - Visible in both Flow and Orkes modes */}
               <div
                 style={{
-                  position: 'absolute',
+                  position: "absolute",
                   top: 12,
                   left: 12,
                   zIndex: 10,
-                  pointerEvents: 'none',
+                  pointerEvents: "none",
                 }}
               >
                 <div
                   ref={searchPanelRef}
-                  style={{ pointerEvents: 'auto' }}
+                  style={{ pointerEvents: "auto" }}
                   className={`${styles.searchPanel} ${
-                    isCanvasPanelCollapsed ? styles.searchPanelCollapsed : ''
+                    isCanvasPanelCollapsed ? styles.searchPanelCollapsed : ""
                   }`}
                 >
                   <div className={styles.searchTopRow}>
@@ -3697,7 +3682,7 @@ const Flow = ({ scenario, scenarios }: any) => {
                       <button
                         type="button"
                         onClick={undo}
-                        title={`${t('Undo')} (Ctrl/Cmd+Z)`}
+                        title={`${t("Undo")} (Ctrl/Cmd+Z)`}
                         className={styles.toolButton}
                         disabled={!canUndo}
                       >
@@ -3707,7 +3692,7 @@ const Flow = ({ scenario, scenarios }: any) => {
                       <button
                         type="button"
                         onClick={redo}
-                        title={`${t('Redo')} (Ctrl+Y, Cmd+Shift+Z)`}
+                        title={`${t("Redo")} (Ctrl+Y, Cmd+Shift+Z)`}
                         className={styles.toolButton}
                         disabled={!canRedo}
                       >
@@ -3718,7 +3703,7 @@ const Flow = ({ scenario, scenarios }: any) => {
                         type="button"
                         onClick={async () => {
                           const confirmed = await showConfirm(
-                            `${t('Do you want to save the Scenario?')}`,
+                            `${t("Do you want to save the Scenario?")}`,
                           );
                           if (!confirmed) return;
                           const payload = {
@@ -3728,7 +3713,7 @@ const Flow = ({ scenario, scenarios }: any) => {
                           resetExecution();
                           await saveScenario(payload);
                         }}
-                        title={`${t('Commit')} & ${t('Save Scenario')}`}
+                        title={`${t("Commit")} & ${t("Save Scenario")}`}
                         className={styles.toolButton}
                       >
                         <Save size={18} />
@@ -3738,7 +3723,7 @@ const Flow = ({ scenario, scenarios }: any) => {
                         type="button"
                         onClick={async () => {
                           const confirmed = await showConfirm(
-                            `${t('Do you want to push the Scenario?')}`,
+                            `${t("Do you want to push the Scenario?")}`,
                           );
                           if (!confirmed) return;
                           const payload = {
@@ -3748,7 +3733,7 @@ const Flow = ({ scenario, scenarios }: any) => {
                           resetExecution();
                           await saveScenario(payload);
                         }}
-                        title={t('Push Scenario')}
+                        title={t("Push Scenario")}
                         className={styles.toolButton}
                       >
                         <SendIcon size={18} />
@@ -3757,7 +3742,7 @@ const Flow = ({ scenario, scenarios }: any) => {
                       <button
                         type="button"
                         onClick={goList}
-                        title={t('Back to Scenario List')}
+                        title={t("Back to Scenario List")}
                         className={styles.toolButton}
                       >
                         <ArrowLeft size={18} />
@@ -3765,9 +3750,9 @@ const Flow = ({ scenario, scenarios }: any) => {
 
                       <div
                         style={{
-                          margin: '0 4px',
-                          display: 'flex',
-                          alignItems: 'center',
+                          margin: "0 4px",
+                          display: "flex",
+                          alignItems: "center",
                         }}
                       >
                         |
@@ -3775,25 +3760,25 @@ const Flow = ({ scenario, scenarios }: any) => {
 
                       <button
                         type="button"
-                        onClick={() => setToolMode('pan')}
-                        title={t('Pan mode')}
-                        className={`${styles.toolButton} ${isPanMode ? styles.toolButtonActive : ''}`}
+                        onClick={() => setToolMode("pan")}
+                        title={t("Pan mode")}
+                        className={`${styles.toolButton} ${isPanMode ? styles.toolButtonActive : ""}`}
                       >
                         <Hand size={18} />
                       </button>
 
                       <button
                         type="button"
-                        onClick={() => setToolMode('select')}
-                        title={t('Select mode')}
-                        className={`${styles.toolButton} ${isSelectMode ? styles.toolButtonActive : ''}`}
+                        onClick={() => setToolMode("select")}
+                        title={t("Select mode")}
+                        className={`${styles.toolButton} ${isSelectMode ? styles.toolButtonActive : ""}`}
                       >
                         <MousePointer2 size={18} />
                       </button>
 
                       <button
                         type="button"
-                        title={t('canvas add Memo')}
+                        title={t("canvas add Memo")}
                         onClick={addCanvasMemo}
                         className={styles.toolButton}
                       >
@@ -3802,30 +3787,34 @@ const Flow = ({ scenario, scenarios }: any) => {
 
                       <button
                         type="button"
-                        title={t('Show chatbot simulator')}
+                        title={t("Show chatbot simulator")}
                         onClick={() => {
-                          setIsSlotDisplayVisible(!isSimulatorVisible);
-                          setIsSimulatorVisible(!isSimulatorVisible);
+                          setIsSimulatorVisible((visible) => {
+                            if (!visible) {
+                              setSimulatorRunId(getSafeUUID());
+                            }
+                            return !visible;
+                          });
                         }}
-                        className={`${styles.toolButton} ${isSimulatorVisible ? styles.toolButtonActive : ''}`}
+                        className={`${styles.toolButton} ${isSimulatorVisible ? styles.toolButtonActive : ""}`}
                       >
                         <Sparkles size={18} />
                       </button>
 
                       <button
                         type="button"
-                        title={`${t('log preview')} (${t('DB JSON Edit')})`}
+                        title={`${t("log preview")} (${t("DB JSON Edit")})`}
                         onClick={() => setIsLogVisible(true)}
-                        className={`${styles.toolButton} ${isMemoVisible ? styles.toolButtonActive : ''}`}
+                        className={`${styles.toolButton} ${isMemoVisible ? styles.toolButtonActive : ""}`}
                       >
                         <Activity size={18} />
                       </button>
 
                       <div
                         style={{
-                          margin: '0 4px',
-                          display: 'flex',
-                          alignItems: 'center',
+                          margin: "0 4px",
+                          display: "flex",
+                          alignItems: "center",
                         }}
                       >
                         |
@@ -3833,12 +3822,12 @@ const Flow = ({ scenario, scenarios }: any) => {
 
                       <button
                         type="button"
-                        title={t('Run from Start to Anchor')}
+                        title={t("Run from Start to Anchor")}
                         onClick={() => {
                           setIsSlotDisplayVisible(true);
                           runBetweenStartAndAnchor();
                         }}
-                        className={`${styles.toolButton} ${executionRunning ? styles.toolButtonActive : ''}`}
+                        className={`${styles.toolButton} ${executionRunning ? styles.toolButtonActive : ""}`}
                         disabled={executionRunning}
                       >
                         <Play size={18} />
@@ -3846,7 +3835,7 @@ const Flow = ({ scenario, scenarios }: any) => {
 
                       <button
                         type="button"
-                        title={t('Stop execution')}
+                        title={t("Stop execution")}
                         onClick={() => stopExecution()}
                         className={styles.toolButton}
                         disabled={!executionRunning}
@@ -3856,7 +3845,7 @@ const Flow = ({ scenario, scenarios }: any) => {
 
                       <button
                         type="button"
-                        title={t('Execution log')}
+                        title={t("Execution log")}
                         onClick={() => setIsExecutionLogVisible(true)}
                         className={styles.toolButton}
                       >
@@ -3865,9 +3854,9 @@ const Flow = ({ scenario, scenarios }: any) => {
 
                       <div
                         style={{
-                          margin: '0 4px',
-                          display: 'flex',
-                          alignItems: 'center',
+                          margin: "0 4px",
+                          display: "flex",
+                          alignItems: "center",
                         }}
                       >
                         |
@@ -3875,18 +3864,18 @@ const Flow = ({ scenario, scenarios }: any) => {
 
                       <button
                         type="button"
-                        title={t('Group Selected Nodes')}
+                        title={t("Group Selected Nodes")}
                         onClick={handleGroupSelectedNodes}
                         className={styles.toolButton}
                       >
-                        <b>{t('G')}</b>
+                        <b>{t("G")}</b>
                       </button>
 
                       <div
                         style={{
-                          margin: '0 4px',
-                          display: 'flex',
-                          alignItems: 'center',
+                          margin: "0 4px",
+                          display: "flex",
+                          alignItems: "center",
                         }}
                       >
                         |
@@ -3895,55 +3884,55 @@ const Flow = ({ scenario, scenarios }: any) => {
                       {/* Segmented Switch Control for View Mode (Far Right of Toolbar) */}
                       <Box
                         sx={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          backgroundColor: '#f1f5f9',
-                          borderRadius: '8px',
-                          padding: '2px',
-                          border: '1px solid #cbd5e1',
+                          display: "inline-flex",
+                          alignItems: "center",
+                          backgroundColor: "#f1f5f9",
+                          borderRadius: "8px",
+                          padding: "2px",
+                          border: "1px solid #cbd5e1",
                           ml: 0.5,
                         }}
                       >
                         <button
                           type="button"
-                          onClick={() => handleViewModeChange('flow')}
+                          onClick={() => handleViewModeChange("flow")}
                           style={{
-                            padding: '4px 12px',
-                            borderRadius: '6px',
-                            fontSize: '12px',
-                            fontWeight: viewMode === 'flow' ? 700 : 500,
-                            color: viewMode === 'flow' ? '#0f172a' : '#64748b',
+                            padding: "4px 12px",
+                            borderRadius: "6px",
+                            fontSize: "12px",
+                            fontWeight: viewMode === "flow" ? 700 : 500,
+                            color: viewMode === "flow" ? "#0f172a" : "#64748b",
                             backgroundColor:
-                              viewMode === 'flow' ? '#ffffff' : 'transparent',
+                              viewMode === "flow" ? "#ffffff" : "transparent",
                             boxShadow:
-                              viewMode === 'flow'
-                                ? '0 1px 3px rgba(0,0,0,0.12)'
-                                : 'none',
-                            border: 'none',
-                            cursor: 'pointer',
-                            transition: 'all 0.15s ease',
+                              viewMode === "flow"
+                                ? "0 1px 3px rgba(0,0,0,0.12)"
+                                : "none",
+                            border: "none",
+                            cursor: "pointer",
+                            transition: "all 0.15s ease",
                           }}
                         >
                           Flow
                         </button>
                         <button
                           type="button"
-                          onClick={() => handleViewModeChange('orkes')}
+                          onClick={() => handleViewModeChange("orkes")}
                           style={{
-                            padding: '4px 12px',
-                            borderRadius: '6px',
-                            fontSize: '12px',
-                            fontWeight: viewMode === 'orkes' ? 700 : 500,
-                            color: viewMode === 'orkes' ? '#0f172a' : '#64748b',
+                            padding: "4px 12px",
+                            borderRadius: "6px",
+                            fontSize: "12px",
+                            fontWeight: viewMode === "orkes" ? 700 : 500,
+                            color: viewMode === "orkes" ? "#0f172a" : "#64748b",
                             backgroundColor:
-                              viewMode === 'orkes' ? '#ffffff' : 'transparent',
+                              viewMode === "orkes" ? "#ffffff" : "transparent",
                             boxShadow:
-                              viewMode === 'orkes'
-                                ? '0 1px 3px rgba(0,0,0,0.12)'
-                                : 'none',
-                            border: 'none',
-                            cursor: 'pointer',
-                            transition: 'all 0.15s ease',
+                              viewMode === "orkes"
+                                ? "0 1px 3px rgba(0,0,0,0.12)"
+                                : "none",
+                            border: "none",
+                            cursor: "pointer",
+                            transition: "all 0.15s ease",
                           }}
                         >
                           Orkes
@@ -3958,14 +3947,14 @@ const Flow = ({ scenario, scenarios }: any) => {
                           onChange={(e) => setSearchType(e.target.value)}
                           className={styles.searchSelect} // 기존 스타일 유지
                           sx={{
-                            height: '40px',
-                            backgroundColor: '#fff',
-                            fontSize: '12px',
-                            '& .MuiSelect-select': {
-                              paddingTop: '0px',
-                              paddingBottom: '0px',
-                              display: 'flex',
-                              alignItems: 'center',
+                            height: "40px",
+                            backgroundColor: "#fff",
+                            fontSize: "12px",
+                            "& .MuiSelect-select": {
+                              paddingTop: "0px",
+                              paddingBottom: "0px",
+                              display: "flex",
+                              alignItems: "center",
                             },
                           }}
                           // MenuProps를 통해 렌더링 위치를 강제로 body에 고정
@@ -3973,15 +3962,15 @@ const Flow = ({ scenario, scenarios }: any) => {
                             disablePortal: false,
                           }}
                         >
-                          <MenuItem value="all" sx={{ fontSize: '12px' }}>
-                            {t('All')}
+                          <MenuItem value="all" sx={{ fontSize: "12px" }}>
+                            {t("All")}
                           </MenuItem>
                           {MOCK_UP_TREE_DATA[0].children.map(
                             (item: TreeItem) => (
                               <MenuItem
                                 key={item.id}
                                 value={item.id}
-                                sx={{ fontSize: '12px' }}
+                                sx={{ fontSize: "12px" }}
                               >
                                 {item.id}
                               </MenuItem>
@@ -3995,8 +3984,8 @@ const Flow = ({ scenario, scenarios }: any) => {
                         type="text"
                         value={searchKeyword}
                         onChange={(e) => setSearchKeyword(e.target.value)}
-                        placeholder={t('Search node message text')}
-                        style={{ minWidth: '250px' }}
+                        placeholder={t("Search node message text")}
+                        style={{ minWidth: "250px" }}
                       />
                     </div>
 
@@ -4004,8 +3993,8 @@ const Flow = ({ scenario, scenarios }: any) => {
                       type="button"
                       title={
                         isCanvasPanelCollapsed
-                          ? `${t('Show canvas panel')}`
-                          : `${t('Hide canvas panel')}`
+                          ? `${t("Show canvas panel")}`
+                          : `${t("Hide canvas panel")}`
                       }
                       onClick={() => setIsCanvasPanelCollapsed((prev) => !prev)}
                       className={`${styles.toolButton} ${styles.panelToggleButton}`}
@@ -4029,14 +4018,14 @@ const Flow = ({ scenario, scenarios }: any) => {
                             role="button"
                             tabIndex={0}
                             onKeyDown={(e) => {
-                              if (e.key === 'Enter' || e.key === ' ') {
+                              if (e.key === "Enter" || e.key === " ") {
                                 focusNode(node);
                               }
                             }}
                           >
                             <div className={styles.searchResultHeader}>
                               <div className={styles.searchResultType}>
-                                {nodeLabels[node.type]?.replace('+ ', '') ||
+                                {nodeLabels[node.type]?.replace("+ ", "") ||
                                   node.type}
                               </div>
                               <div className={styles.searchResultId}>
@@ -4047,7 +4036,7 @@ const Flow = ({ scenario, scenarios }: any) => {
                             <div className={styles.searchResultText}>
                               {getNodeSearchText(node)
                                 .filter(Boolean)
-                                .join(' ') || '(empty)'}
+                                .join(" ") || "(empty)"}
                             </div>
                           </div>
                         ))}
@@ -4056,7 +4045,7 @@ const Flow = ({ scenario, scenarios }: any) => {
                 </div>
               </div>
 
-              {viewMode === 'flow' ? (
+              {viewMode === "flow" ? (
                 <ReactFlow
                   className={isPanMode ? styles.panCanvas : styles.selectCanvas}
                   key={scenario?.id}
@@ -4074,7 +4063,7 @@ const Flow = ({ scenario, scenarios }: any) => {
                   onDragOver={onDragOver}
                   onDrop={onDrop}
                   fitView
-                  style={{ backgroundColor: '#ffffff' }}
+                  style={{ backgroundColor: "#ffffff" }}
                   fitViewOptions={{ padding: 0.2, maxZoom: 1.2 }}
                   onMove={(_, vp) => setViewport(vp)}
                   defaultViewport={{ x: 100, y: 100, zoom: 0.5 }}
@@ -4090,23 +4079,23 @@ const Flow = ({ scenario, scenarios }: any) => {
                   nodesDraggable={!isSimulatorVisible}
                   deleteKeyCode="Delete"
                   defaultEdgeOptions={{
-                    type: 'default',
+                    type: "default",
                     animated: false,
                     markerEnd: {
                       type: MarkerType.ArrowClosed,
-                      color: '#cbd5e1',
+                      color: "#cbd5e1",
                     },
                     style: {
-                      stroke: '#b8c2cc',
+                      stroke: "#b8c2cc",
                       strokeWidth: 1.4,
-                      strokeDasharray: '0',
+                      strokeDasharray: "0",
                     },
                   }}
                   connectionLineStyle={{
-                    stroke: '',
+                    stroke: "",
                     strokeWidth: 1.4,
-                    strokeDasharray: '0',
-                    animation: 'none',
+                    strokeDasharray: "0",
+                    animation: "none",
                   }}
                   onPaneContextMenu={handlePaneContextMenu}
                   onNodeContextMenu={handleNodeContextMenu}
@@ -4117,7 +4106,7 @@ const Flow = ({ scenario, scenarios }: any) => {
                   <Controls>
                     <ControlButton
                       onClick={handleAutoLayout}
-                      title={t('Align Nodes')}
+                      title={t("Align Nodes")}
                     >
                       <LayoutGrid size={16} />
                     </ControlButton>
@@ -4126,7 +4115,7 @@ const Flow = ({ scenario, scenarios }: any) => {
                     nodeColor={(n: unknown) =>
                       (n as { type: string }).type in nodeColors
                         ? nodeColors[(n as { type: string }).type]
-                        : '#ddd'
+                        : "#ddd"
                     }
                     nodeStrokeWidth={3}
                     zoomable
@@ -4136,11 +4125,11 @@ const Flow = ({ scenario, scenarios }: any) => {
               ) : (
                 <div
                   style={{
-                    width: '100%',
-                    height: '100%',
+                    width: "100%",
+                    height: "100%",
                     flex: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
+                    display: "flex",
+                    flexDirection: "column",
                   }}
                 >
                   <FlowCanvas
@@ -4158,7 +4147,7 @@ const Flow = ({ scenario, scenarios }: any) => {
           </div>
 
           {/* 캔버스 마우스 우클릭 메뉴 */}
-          {contextMenu.open && contextMenu.target?.type === 'pane' && (
+          {contextMenu.open && contextMenu.target?.type === "pane" && (
             <div
               className={styles.layerMenu}
               style={{ left: contextMenu.x, top: contextMenu.y }}
@@ -4178,21 +4167,21 @@ const Flow = ({ scenario, scenarios }: any) => {
                 }}
               >
                 <Plus size={16} className={styles.layerMenuIcon} />
-                <span>{t('Add Node')}</span>
+                <span>{t("Add Node")}</span>
               </button>
 
               <div className={styles.layerMenuDivider} />
 
               <button
                 type="button"
-                className={`${styles.layerMenuItem} ${!clipboard ? styles.layerMenuItemDisabled : ''}`}
+                className={`${styles.layerMenuItem} ${!clipboard ? styles.layerMenuItemDisabled : ""}`}
                 onClick={() =>
                   handleContextPaste(contextMenu.flowPosition ?? null)
                 }
                 disabled={!clipboard}
               >
                 <Clipboard size={16} className={styles.layerMenuIcon} />
-                <span>{t('Paste')}</span>
+                <span>{t("Paste")}</span>
               </button>
 
               <div className={styles.layerMenuDivider} />
@@ -4203,7 +4192,7 @@ const Flow = ({ scenario, scenarios }: any) => {
                 onClick={() => setIsMemoVisible((prev) => !prev)}
               >
                 <NotebookPen size={16} className={styles.layerMenuIcon} />
-                {t('memo panel')}
+                {t("memo panel")}
               </button>
               <button
                 type="button"
@@ -4211,7 +4200,7 @@ const Flow = ({ scenario, scenarios }: any) => {
                 onClick={() => setIsSlotDisplayVisible((prev) => !prev)}
               >
                 <Database size={16} className={styles.layerMenuIcon} />
-                {t('Runtime State')}
+                {t("Runtime State")}
               </button>
 
               <div className={styles.layerMenuDivider} />
@@ -4220,23 +4209,23 @@ const Flow = ({ scenario, scenarios }: any) => {
                 type="button"
                 className={styles.layerMenuItem}
                 onClick={() => {
-                  setContextMenu({ open: false, x: 0, y: 0, target: 'pane' });
-                  setToolMode('pan');
+                  setContextMenu({ open: false, x: 0, y: 0, target: "pane" });
+                  setToolMode("pan");
                 }}
               >
                 <Hand size={16} className={styles.layerMenuIcon} />
-                <span>{t('Pan Mode')}</span>
+                <span>{t("Pan Mode")}</span>
               </button>
               <button
                 type="button"
                 className={styles.layerMenuItem}
                 onClick={() => {
-                  setContextMenu({ open: false, x: 0, y: 0, target: 'pane' });
-                  setToolMode('select');
+                  setContextMenu({ open: false, x: 0, y: 0, target: "pane" });
+                  setToolMode("select");
                 }}
               >
                 <MousePointer2 size={16} className={styles.layerMenuIcon} />
-                <span>{t('Select Mode')}</span>
+                <span>{t("Select Mode")}</span>
               </button>
 
               <div className={styles.layerMenuDivider} />
@@ -4245,12 +4234,12 @@ const Flow = ({ scenario, scenarios }: any) => {
                 type="button"
                 className={styles.layerMenuItem}
                 onClick={() => {
-                  setContextMenu({ open: false, x: 0, y: 0, target: 'pane' });
+                  setContextMenu({ open: false, x: 0, y: 0, target: "pane" });
                   addCanvasMemo();
                 }}
               >
                 <StickyNote size={16} className={styles.layerMenuIcon} />
-                <span>{t('Add Memo')}</span>
+                <span>{t("Add Memo")}</span>
               </button>
 
               <div className={styles.layerMenuDivider} />
@@ -4259,18 +4248,18 @@ const Flow = ({ scenario, scenarios }: any) => {
                 type="button"
                 className={styles.layerMenuItem}
                 onClick={() => {
-                  setContextMenu({ open: false, x: 0, y: 0, target: 'pane' });
+                  setContextMenu({ open: false, x: 0, y: 0, target: "pane" });
                   goList();
                 }}
               >
                 <ArrowLeft size={16} className={styles.layerMenuIcon} />
-                <span>{t('Exit')}</span>
+                <span>{t("Exit")}</span>
               </button>
             </div>
           )}
 
           {/* 노드 우클릭 */}
-          {contextMenu.open && contextMenu.target?.type === 'node' && (
+          {contextMenu.open && contextMenu.target?.type === "node" && (
             <div
               className={styles.layerMenu}
               style={{ left: contextMenu.x, top: contextMenu.y }}
@@ -4281,7 +4270,7 @@ const Flow = ({ scenario, scenarios }: any) => {
                 onClick={() => handleContextCopyNodes(contextMenu.target.id)}
               >
                 <Copy size={16} className={styles.layerMenuIcon} />
-                <span>{t('Copy Node')}</span>
+                <span>{t("Copy Node")}</span>
               </button>
 
               <button
@@ -4290,19 +4279,19 @@ const Flow = ({ scenario, scenarios }: any) => {
                 onClick={() => handleContextCutNodes(contextMenu.target.id)}
               >
                 <Scissors size={16} className={styles.layerMenuIcon} />
-                <span>{t('Cut Node')}</span>
+                <span>{t("Cut Node")}</span>
               </button>
 
               <button
                 type="button"
-                className={`${styles.layerMenuItem} ${!clipboard ? styles.layerMenuItemDisabled : ''}`}
+                className={`${styles.layerMenuItem} ${!clipboard ? styles.layerMenuItemDisabled : ""}`}
                 onClick={() =>
                   handleContextPaste(contextMenu.flowPosition ?? null)
                 }
                 disabled={!clipboard}
               >
                 <Clipboard size={16} className={styles.layerMenuIcon} />
-                <span>{t('Paste')}</span>
+                <span>{t("Paste")}</span>
               </button>
 
               <div className={styles.layerMenuDivider} />
@@ -4314,14 +4303,14 @@ const Flow = ({ scenario, scenarios }: any) => {
                 if (!targetNode) return null;
 
                 const currentInputPos =
-                  targetNode?.data?.inputPosition ?? 'left';
+                  targetNode?.data?.inputPosition ?? "left";
                 const nextInputPos =
-                  currentInputPos === 'left' ? 'top' : 'left';
+                  currentInputPos === "left" ? "top" : "left";
 
                 const getOutputsForNode = (node: any) => {
-                  if (node.type === 'branch') {
+                  if (node.type === "branch") {
                     const isConditionType =
-                      node.data?.evaluationType === 'CONDITION';
+                      node.data?.evaluationType === "CONDITION";
                     if (isConditionType) {
                       const conds = node.data?.conditions || [];
                       const list = conds.map((c: any, idx: number) => ({
@@ -4329,11 +4318,11 @@ const Flow = ({ scenario, scenarios }: any) => {
                           node.data?.replies?.[idx]?.value ||
                           c.id ||
                           String(idx),
-                        label: `Output ${idx + 1} (${c.slot ? `{${c.slot}}` : '조건 ' + (idx + 1)})`,
+                        label: `Output ${idx + 1} (${c.slot ? `{${c.slot}}` : "조건 " + (idx + 1)})`,
                       }));
                       list.push({
-                        id: 'default',
-                        label: 'Output Default (기본)',
+                        id: "default",
+                        label: "Output Default (기본)",
                       });
                       return list;
                     } else {
@@ -4345,34 +4334,34 @@ const Flow = ({ scenario, scenarios }: any) => {
                     }
                   }
 
-                  if (node.type === 'ynBranch') {
+                  if (node.type === "ynBranch") {
                     return [
-                      { id: 'Y', label: 'Output Y (Yes)' },
-                      { id: 'N', label: 'Output N (No)' },
+                      { id: "Y", label: "Output Y (Yes)" },
+                      { id: "N", label: "Output N (No)" },
                     ];
                   }
 
-                  if (node.type === 'llm') {
+                  if (node.type === "llm") {
                     const conds = node.data?.conditions || [];
                     const list = conds.map((c: any, idx: number) => ({
                       id: c.id || idx,
-                      label: `Output ${idx + 1} (${c.slot ? `{${c.slot}}` : '조건 ' + (idx + 1)})`,
+                      label: `Output ${idx + 1} (${c.slot ? `{${c.slot}}` : "조건 " + (idx + 1)})`,
                     }));
                     list.push({
-                      id: 'default',
-                      label: 'Output Default (기본)',
+                      id: "default",
+                      label: "Output Default (기본)",
                     });
                     return list;
                   }
 
-                  if (node.type === 'api') {
+                  if (node.type === "api") {
                     return [
-                      { id: 'onSuccess', label: 'Output Success (성공)' },
-                      { id: 'onError', label: 'Output Error (오류)' },
+                      { id: "onSuccess", label: "Output Success (성공)" },
+                      { id: "onError", label: "Output Error (오류)" },
                     ];
                   }
 
-                  if (node.type === 'fixedmenu') {
+                  if (node.type === "fixedmenu") {
                     const replies = node.data?.replies || [];
                     return replies.map((r: any, idx: number) => ({
                       id: r.value,
@@ -4380,7 +4369,7 @@ const Flow = ({ scenario, scenarios }: any) => {
                     }));
                   }
 
-                  return [{ id: 'default', label: 'Output (출력)' }];
+                  return [{ id: "default", label: "Output (출력)" }];
                 };
 
                 const outputs = getOutputsForNode(targetNode);
@@ -4403,94 +4392,94 @@ const Flow = ({ scenario, scenarios }: any) => {
                         className={styles.layerMenuIcon}
                         style={{
                           transform:
-                            currentInputPos === 'top'
-                              ? 'rotate(90deg)'
-                              : 'none',
+                            currentInputPos === "top"
+                              ? "rotate(90deg)"
+                              : "none",
                         }}
                       />
                       <span>
-                        {currentInputPos === 'left'
-                          ? t('Input 위치를 Top(상단)으로 변경')
-                          : t('Input 위치를 Left(좌측)로 변경')}
+                        {currentInputPos === "left"
+                          ? t("Input 위치를 Top(상단)으로 변경")
+                          : t("Input 위치를 Left(좌측)로 변경")}
                       </span>
                     </button>
 
                     <div className={styles.layerMenuDivider} />
 
-                    <div style={{ padding: '4px 6px' }}>
+                    <div style={{ padding: "4px 6px" }}>
                       <div
                         style={{
-                          fontSize: '11px',
+                          fontSize: "11px",
                           fontWeight: 700,
-                          color: '#64748b',
-                          marginBottom: '6px',
-                          paddingLeft: '4px',
+                          color: "#64748b",
+                          marginBottom: "6px",
+                          paddingLeft: "4px",
                         }}
                       >
-                        {t('개별 Output 위치 설정')}
+                        {t("개별 Output 위치 설정")}
                       </div>
                       {outputs.map((out: any) => {
                         const currentPos =
                           targetNode.data?.outputPositions?.[out.id] ||
-                          (targetNode.type === 'ynBranch' && out.id === 'N'
-                            ? 'bottom'
-                            : targetNode.type === 'api' && out.id === 'onError'
-                              ? 'bottom'
-                              : targetNode.data?.outputPosition || 'right');
+                          (targetNode.type === "ynBranch" && out.id === "N"
+                            ? "bottom"
+                            : targetNode.type === "api" && out.id === "onError"
+                              ? "bottom"
+                              : targetNode.data?.outputPosition || "right");
 
                         return (
                           <div
                             key={out.id}
                             style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
-                              gap: '8px',
-                              padding: '4px 6px',
-                              marginBottom: '4px',
-                              borderRadius: '6px',
-                              backgroundColor: '#f8fafc',
-                              fontSize: '12px',
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              gap: "8px",
+                              padding: "4px 6px",
+                              marginBottom: "4px",
+                              borderRadius: "6px",
+                              backgroundColor: "#f8fafc",
+                              fontSize: "12px",
                             }}
                           >
                             <span
                               style={{
-                                maxWidth: '120px',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap',
-                                color: '#334155',
+                                maxWidth: "120px",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                                color: "#334155",
                                 fontWeight: 500,
                               }}
                               title={out.label}
                             >
                               {out.label}
                             </span>
-                            <div style={{ display: 'flex', gap: '3px' }}>
+                            <div style={{ display: "flex", gap: "3px" }}>
                               <button
                                 type="button"
                                 style={{
-                                  padding: '2px 6px',
-                                  fontSize: '10px',
+                                  padding: "2px 6px",
+                                  fontSize: "10px",
                                   fontWeight: 600,
-                                  borderRadius: '4px',
-                                  border: '1px solid #cbd5e1',
+                                  borderRadius: "4px",
+                                  border: "1px solid #cbd5e1",
                                   backgroundColor:
-                                    currentPos === 'right'
-                                      ? '#2563eb'
-                                      : '#ffffff',
+                                    currentPos === "right"
+                                      ? "#2563eb"
+                                      : "#ffffff",
                                   color:
-                                    currentPos === 'right'
-                                      ? '#ffffff'
-                                      : '#64748b',
-                                  cursor: 'pointer',
-                                  width: 'auto',
+                                    currentPos === "right"
+                                      ? "#ffffff"
+                                      : "#64748b",
+                                  cursor: "pointer",
+                                  width: "auto",
                                 }}
                                 onClick={() => {
                                   handleSetIndividualOutputPosition(
                                     targetNode.id,
                                     out.id,
-                                    'right',
+                                    "right",
                                   );
                                   closeContextMenu();
                                 }}
@@ -4500,27 +4489,27 @@ const Flow = ({ scenario, scenarios }: any) => {
                               <button
                                 type="button"
                                 style={{
-                                  padding: '2px 6px',
-                                  fontSize: '10px',
+                                  padding: "2px 6px",
+                                  fontSize: "10px",
                                   fontWeight: 600,
-                                  borderRadius: '4px',
-                                  border: '1px solid #cbd5e1',
+                                  borderRadius: "4px",
+                                  border: "1px solid #cbd5e1",
                                   backgroundColor:
-                                    currentPos === 'bottom'
-                                      ? '#2563eb'
-                                      : '#ffffff',
+                                    currentPos === "bottom"
+                                      ? "#2563eb"
+                                      : "#ffffff",
                                   color:
-                                    currentPos === 'bottom'
-                                      ? '#ffffff'
-                                      : '#64748b',
-                                  cursor: 'pointer',
-                                  width: 'auto',
+                                    currentPos === "bottom"
+                                      ? "#ffffff"
+                                      : "#64748b",
+                                  cursor: "pointer",
+                                  width: "auto",
                                 }}
                                 onClick={() => {
                                   handleSetIndividualOutputPosition(
                                     targetNode.id,
                                     out.id,
-                                    'bottom',
+                                    "bottom",
                                   );
                                   closeContextMenu();
                                 }}
@@ -4547,13 +4536,13 @@ const Flow = ({ scenario, scenarios }: any) => {
                 }}
               >
                 <Trash size={16} className={styles.layerMenuIcon} />
-                <span>{t('Delete Node')}</span>
+                <span>{t("Delete Node")}</span>
               </button>
             </div>
           )}
 
           {/* 엣지 우클릭 */}
-          {contextMenu.open && contextMenu.target?.type === 'edge' && (
+          {contextMenu.open && contextMenu.target?.type === "edge" && (
             <div
               className={styles.layerMenu}
               style={{ left: contextMenu.x, top: contextMenu.y }}
@@ -4567,7 +4556,7 @@ const Flow = ({ scenario, scenarios }: any) => {
                 }}
               >
                 <GitFork size={16} className={styles.layerMenuIcon} />
-                <span>{t('Y/N 분기 노드 추가')}</span>
+                <span>{t("Y/N 분기 노드 추가")}</span>
               </button>
 
               <div className={styles.layerMenuDivider} />
@@ -4581,13 +4570,13 @@ const Flow = ({ scenario, scenarios }: any) => {
                 }}
               >
                 <Trash2 size={16} className={styles.layerMenuIcon} />
-                <span>{t('Delete Edge')}</span>
+                <span>{t("Delete Edge")}</span>
               </button>
             </div>
           )}
 
           {/* select 영역 */}
-          {contextMenu.open && contextMenu.target?.type === 'selection' && (
+          {contextMenu.open && contextMenu.target?.type === "selection" && (
             <div
               className={styles.layerMenu}
               style={{ left: contextMenu.x, top: contextMenu.y }}
@@ -4605,7 +4594,7 @@ const Flow = ({ scenario, scenarios }: any) => {
                 }}
               >
                 <Copy size={16} className={styles.layerMenuIcon} />
-                <span>{t('Copy Selected Nodes')}</span>
+                <span>{t("Copy Selected Nodes")}</span>
               </button>
 
               <button
@@ -4622,19 +4611,19 @@ const Flow = ({ scenario, scenarios }: any) => {
                 }}
               >
                 <Scissors size={16} className={styles.layerMenuIcon} />
-                <span>{t('Cut Selected Nodes')}</span>
+                <span>{t("Cut Selected Nodes")}</span>
               </button>
 
               <button
                 type="button"
-                className={`${styles.layerMenuItem} ${!clipboard ? styles.layerMenuItemDisabled : ''}`}
+                className={`${styles.layerMenuItem} ${!clipboard ? styles.layerMenuItemDisabled : ""}`}
                 onClick={() => {
                   handleContextPaste(contextMenu.flowPosition ?? null);
                 }}
                 disabled={!clipboard}
               >
                 <Clipboard size={16} className={styles.layerMenuIcon} />
-                <span>{t('Paste')}</span>
+                <span>{t("Paste")}</span>
               </button>
             </div>
           )}
@@ -4654,40 +4643,23 @@ const Flow = ({ scenario, scenarios }: any) => {
         </div>
 
         <div
-          className={`${styles.controllerPanel} ${selectedNodeId ? styles.visible : ''}`}
+          className={`${styles.controllerPanel} ${selectedNodeId ? styles.visible : ""}`}
         >
           <NodeController />
-        </div>
-
-        <div
-          className={`${styles.resizerV} ${isSimulatorVisible && !isSimulatorExpanded ? styles.visible : ''}`}
-          onMouseDown={handleMainResize}
-        />
-
-        <div
-          className={`${styles.rightContainer} ${isSimulatorVisible ? styles.visible : ''}`}
-          style={{
-            width: isSimulatorExpanded
-              ? 'max(600px, 50%)'
-              : isSimulatorVisible
-                ? `${rightPanelWidth}px`
-                : '0',
-          }}
-        >
-          <div className={styles.panel}>
-            <ChatbotSimulator
-              nodes={nodes}
-              edges={edges}
-              isVisible={isSimulatorVisible}
-              isExpanded={isSimulatorExpanded}
-              setIsExpanded={setIsSimulatorExpanded}
-            />
-          </div>
         </div>
       </Box>
 
       {/* 모달 팝업 ==================================================================== */}
       {/* add node modal */}
+      <ScenarioSimulatorModal
+        key={simulatorRunId}
+        open={isSimulatorVisible}
+        onClose={() => setIsSimulatorVisible(false)}
+        scenarioKey={String(scenario?.id ?? "builder-preview")}
+        scenarioTitle={scenario?.name}
+        scenarioRunId={simulatorRunId}
+        definitionOverride={{ nodes: simulatorNodes, edges, startNodeId }}
+      />
       <ActivityPickerModal
         open={Boolean(insertTarget)}
         search={activitySearch}
@@ -4716,7 +4688,7 @@ const Flow = ({ scenario, scenarios }: any) => {
             justifyContent="space-between"
             alignItems="center"
           >
-            <Typography variant="h6">{t('Execution Log')}</Typography>
+            <Typography variant="h6">{t("Execution Log")}</Typography>
             <IconButton onClick={() => setIsExecutionLogVisible(false)}>
               <CloseIcon />
             </IconButton>
@@ -4728,8 +4700,8 @@ const Flow = ({ scenario, scenarios }: any) => {
               sx={{
                 mb: 2,
                 p: 2,
-                bgcolor: '#fdeded',
-                color: '#5f2120',
+                bgcolor: "#fdeded",
+                color: "#5f2120",
                 borderRadius: 1,
               }}
             >
@@ -4738,21 +4710,21 @@ const Flow = ({ scenario, scenarios }: any) => {
           )}
           <Box
             sx={{
-              bgcolor: '#1e1e1e',
-              color: '#4af626',
+              bgcolor: "#1e1e1e",
+              color: "#4af626",
               p: 2,
               borderRadius: 1,
-              fontFamily: 'monospace',
-              fontSize: '0.75rem',
-              overflow: 'auto',
-              maxHeight: '60vh',
+              fontFamily: "monospace",
+              fontSize: "0.75rem",
+              overflow: "auto",
+              maxHeight: "60vh",
             }}
           >
             <pre
               style={{
                 margin: 0,
-                whiteSpace: 'pre-wrap',
-                wordBreak: 'break-all',
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-all",
               }}
             >
               {JSON.stringify(executionLogs, null, 2)}
@@ -4764,7 +4736,7 @@ const Flow = ({ scenario, scenarios }: any) => {
             onClick={() => setIsExecutionLogVisible(false)}
             variant="contained"
           >
-            {t('Close')}
+            {t("Close")}
           </Button>
         </DialogActions>
       </Dialog>
@@ -4782,7 +4754,7 @@ const Flow = ({ scenario, scenarios }: any) => {
             justifyContent="space-between"
             alignItems="center"
           >
-            <Typography variant="h6">{`${t('Log')} (${t('DB JSON Edit')})`}</Typography>
+            <Typography variant="h6">{`${t("Log")} (${t("DB JSON Edit")})`}</Typography>
             <IconButton onClick={() => setIsLogVisible(false)}>
               <CloseIcon />
             </IconButton>
@@ -4798,7 +4770,7 @@ const Flow = ({ scenario, scenarios }: any) => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setIsLogVisible(false)} variant="outlined">
-            {t('Cancel')}
+            {t("Cancel")}
           </Button>
           {/* LogPreview 내부에 저장 로직이 있다면 버튼을 추가하거나 내부 버튼을 사용하세요 */}
         </DialogActions>
@@ -4811,11 +4783,11 @@ const Flow = ({ scenario, scenarios }: any) => {
         fullWidth
         maxWidth="xs"
       >
-        <DialogTitle sx={{ fontWeight: 700 }}>{t('Select Branch')}</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700 }}>{t("Select Branch")}</DialogTitle>
         <DialogContent dividers>
-          <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
+          <Typography variant="body2" sx={{ mb: 3, color: "text.secondary" }}>
             {pendingBranchSelection?.title ||
-              t('Please select the flow that you want to proceed with.')}
+              t("Please select the flow that you want to proceed with.")}
           </Typography>
           <Stack spacing={1.5}>
             {pendingBranchSelection?.replies.map((reply: any) => (
@@ -4825,14 +4797,14 @@ const Flow = ({ scenario, scenarios }: any) => {
                 variant="outlined"
                 onClick={() => selectBranchReply(reply.value)}
                 sx={{
-                  justifyContent: 'flex-start',
+                  justifyContent: "flex-start",
                   py: 1.5,
                   px: 2,
-                  textAlign: 'left',
-                  borderColor: 'divider',
-                  '&:hover': {
-                    bgcolor: 'primary.light',
-                    color: 'primary.contrastText',
+                  textAlign: "left",
+                  borderColor: "divider",
+                  "&:hover": {
+                    bgcolor: "primary.light",
+                    color: "primary.contrastText",
                   },
                 }}
               >
@@ -4843,7 +4815,7 @@ const Flow = ({ scenario, scenarios }: any) => {
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
           <Button onClick={cancelBranchReplySelection} color="inherit">
-            {t('Cancel')}
+            {t("Cancel")}
           </Button>
         </DialogActions>
       </Dialog>
@@ -4856,7 +4828,7 @@ const Flow = ({ scenario, scenarios }: any) => {
         maxWidth="sm"
       >
         <DialogTitle sx={{ fontWeight: 700 }}>
-          {pendingFormInput?.title || t('Form input')}
+          {pendingFormInput?.title || t("Form input")}
         </DialogTitle>
         <DialogContent dividers>
           <Stack spacing={2} sx={{ py: 0.5 }}>
@@ -4872,7 +4844,7 @@ const Flow = ({ scenario, scenarios }: any) => {
                 ? pendingFormInput?.slots?.[element.optionsSlot]
                 : undefined;
 
-              if (element.type === 'checkbox') {
+              if (element.type === "checkbox") {
                 const options =
                   Array.isArray(slotValue) && slotValue.length > 0
                     ? (slotValue as ExecutionFormOption[])
@@ -4891,9 +4863,9 @@ const Flow = ({ scenario, scenarios }: any) => {
                       {options.length === 0 && (
                         <Typography
                           variant="body2"
-                          sx={{ color: 'text.secondary' }}
+                          sx={{ color: "text.secondary" }}
                         >
-                          {t('No options')}
+                          {t("No options")}
                         </Typography>
                       )}
                       {options.map((option, index: number) => {
@@ -4920,7 +4892,7 @@ const Flow = ({ scenario, scenarios }: any) => {
                             label={optionLabel}
                             sx={{
                               m: 0,
-                              '& .MuiFormControlLabel-label': {
+                              "& .MuiFormControlLabel-label": {
                                 fontSize: 14,
                               },
                             }}
@@ -4932,7 +4904,7 @@ const Flow = ({ scenario, scenarios }: any) => {
                 );
               }
 
-              if (element.type === 'dropbox') {
+              if (element.type === "dropbox") {
                 const options =
                   Array.isArray(slotValue) && slotValue.length > 0
                     ? (slotValue as ExecutionFormOption[])
@@ -4947,7 +4919,7 @@ const Flow = ({ scenario, scenarios }: any) => {
                     <InputLabel>{label}</InputLabel>
                     <Select
                       label={label}
-                      value={String(value ?? '')}
+                      value={String(value ?? "")}
                       onChange={(event) =>
                         updateExecutionFormValue(
                           elementName,
@@ -4957,7 +4929,7 @@ const Flow = ({ scenario, scenarios }: any) => {
                       }
                     >
                       <MenuItem value="">
-                        <em>{t('Select')}</em>
+                        <em>{t("Select")}</em>
                       </MenuItem>
                       {options.map((option, index: number) => {
                         const { value: optionValue, label: optionLabel } =
@@ -4977,7 +4949,7 @@ const Flow = ({ scenario, scenarios }: any) => {
                 );
               }
 
-              if (element.type === 'grid') {
+              if (element.type === "grid") {
                 const slotGridData = Array.isArray(slotValue)
                   ? slotValue
                   : null;
@@ -4987,7 +4959,7 @@ const Flow = ({ scenario, scenarios }: any) => {
                     : element.data || [];
                 const objectRows = gridData.filter(
                   (row): row is Record<string, unknown> =>
-                    typeof row === 'object' &&
+                    typeof row === "object" &&
                     row !== null &&
                     !Array.isArray(row),
                 );
@@ -5006,22 +4978,22 @@ const Flow = ({ scenario, scenarios }: any) => {
                       >
                         {t(label)}
                       </Typography>
-                      <Box sx={{ overflowX: 'auto' }}>
+                      <Box sx={{ overflowX: "auto" }}>
                         <Box
                           component="table"
                           sx={{
-                            width: '100%',
-                            borderCollapse: 'collapse',
-                            '& th, & td': {
-                              border: '1px solid',
-                              borderColor: 'divider',
+                            width: "100%",
+                            borderCollapse: "collapse",
+                            "& th, & td": {
+                              border: "1px solid",
+                              borderColor: "divider",
                               px: 1,
                               py: 0.75,
                               fontSize: 13,
-                              textAlign: 'left',
+                              textAlign: "left",
                             },
-                            '& th': {
-                              bgcolor: 'grey.50',
+                            "& th": {
+                              bgcolor: "grey.50",
                               fontWeight: 700,
                             },
                           }}
@@ -5038,7 +5010,7 @@ const Flow = ({ scenario, scenarios }: any) => {
                               <tr key={`${elementName}-${rowIndex}`}>
                                 {columns.map((column) => (
                                   <td key={column.key}>
-                                    {String(row[column.key] ?? '')}
+                                    {String(row[column.key] ?? "")}
                                   </td>
                                 ))}
                               </tr>
@@ -5064,15 +5036,15 @@ const Flow = ({ scenario, scenarios }: any) => {
                     >
                       {t(label)}
                     </Typography>
-                    <Box sx={{ overflowX: 'auto' }}>
+                    <Box sx={{ overflowX: "auto" }}>
                       <Box
                         component="table"
                         sx={{
-                          width: '100%',
-                          borderCollapse: 'collapse',
-                          '& td': {
-                            border: '1px solid',
-                            borderColor: 'divider',
+                          width: "100%",
+                          borderCollapse: "collapse",
+                          "& td": {
+                            border: "1px solid",
+                            borderColor: "divider",
                             px: 1,
                             py: 0.75,
                             fontSize: 13,
@@ -5089,7 +5061,7 @@ const Flow = ({ scenario, scenarios }: any) => {
                                     rowIndex * columns + columnIndex;
                                   return (
                                     <td key={columnIndex}>
-                                      {String(flatGridData[cellIndex] ?? '')}
+                                      {String(flatGridData[cellIndex] ?? "")}
                                     </td>
                                   );
                                 },
@@ -5109,9 +5081,9 @@ const Flow = ({ scenario, scenarios }: any) => {
                   fullWidth
                   size="small"
                   label={label}
-                  type={element.type === 'date' ? 'date' : 'text'}
-                  value={String(value ?? '')}
-                  placeholder={t('element.placeholder') || ''}
+                  type={element.type === "date" ? "date" : "text"}
+                  value={String(value ?? "")}
+                  placeholder={t("element.placeholder") || ""}
                   onChange={(event) =>
                     updateExecutionFormValue(
                       elementName,
@@ -5120,7 +5092,7 @@ const Flow = ({ scenario, scenarios }: any) => {
                     )
                   }
                   InputLabelProps={
-                    element.type === 'date' ? { shrink: true } : undefined
+                    element.type === "date" ? { shrink: true } : undefined
                   }
                 />
               );
@@ -5129,13 +5101,13 @@ const Flow = ({ scenario, scenarios }: any) => {
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
           <Button onClick={cancelFormInput} color="inherit">
-            {t('Cancel')}
+            {t("Cancel")}
           </Button>
           <Button
             variant="contained"
             onClick={() => submitFormInput(executionFormValues)}
           >
-            {t('Submit')}
+            {t("Submit")}
           </Button>
         </DialogActions>
       </Dialog>
@@ -5153,17 +5125,17 @@ const Flow = ({ scenario, scenarios }: any) => {
       <Backdrop
         open={isLoadingScenario}
         sx={{
-          color: '#fff',
+          color: "#fff",
           zIndex: (theme) => theme.zIndex.drawer + 999,
-          display: 'flex',
-          flexDirection: 'column',
+          display: "flex",
+          flexDirection: "column",
           gap: 2,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          backgroundColor: "rgba(0, 0, 0, 0.5)",
         }}
       >
         <CircularProgress color="inherit" size={50} />
         <Typography variant="h6" color="inherit">
-          {t('Loading scenario data...')}
+          {t("Loading scenario data...")}
         </Typography>
       </Backdrop>
 

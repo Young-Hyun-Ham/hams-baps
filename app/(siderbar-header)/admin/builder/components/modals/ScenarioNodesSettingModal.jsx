@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState } from "react";
 import {
   Box,
   Button,
@@ -15,10 +15,10 @@ import {
   Tabs,
   TextField,
   Typography,
-} from '@mui/material';
-import { Palette, Visibility, VisibilityOff } from '@mui/icons-material';
-import { useTranslation } from 'react-i18next';
-import { MOCK_UP_TREE_DATA, useBuilderStore } from '../../store';
+} from "@mui/material";
+import { Palette, Visibility, VisibilityOff } from "@mui/icons-material";
+import { useTranslation } from "react-i18next";
+import { MOCK_UP_TREE_DATA, useBuilderStore } from "../../store";
 
 const getNodeItems = () =>
   MOCK_UP_TREE_DATA.flatMap((section) =>
@@ -46,13 +46,13 @@ function ScenarioNodesSettingModal({ isOpen, onClose }) {
   const isAdmin = useMemo(
     () =>
       Array.isArray(userInfoJson?.roles) &&
-      userInfoJson.roles.some((role) => role.toLowerCase() === 'admin'),
+      userInfoJson.roles.some((role) => role.toLowerCase() === "admin"),
     [userInfoJson?.roles],
   );
   const selectedTab = isAdmin ? activeTab : 0;
   const nodeItems = useMemo(() => getNodeItems(), []);
   const nodeUseSections = useMemo(
-    () => MOCK_UP_TREE_DATA.filter((section) => section.id !== 'sec-user'),
+    () => MOCK_UP_TREE_DATA.filter((section) => section.id !== "sec-user"),
     [],
   );
   const colorItems = useMemo(
@@ -107,19 +107,19 @@ function ScenarioNodesSettingModal({ isOpen, onClose }) {
       }}
     >
       <DialogTitle sx={{ fontWeight: 700 }}>
-        {t('Scenario Nodes Settings')}
+        {t("Scenario Nodes Settings")}
       </DialogTitle>
-      <DialogContent dividers sx={{ p: 0, overflow: 'hidden' }}>
+      <DialogContent dividers sx={{ p: 0, overflow: "hidden" }}>
         <Tabs
           value={selectedTab}
           onChange={(_, value) => setActiveTab(value)}
           sx={{
             px: 2,
             borderBottom: 1,
-            borderColor: 'divider',
-            '& .MuiTab-root': {
+            borderColor: "divider",
+            "& .MuiTab-root": {
               minHeight: 48,
-              textTransform: 'none',
+              textTransform: "none",
               fontWeight: 700,
             },
           }}
@@ -132,11 +132,11 @@ function ScenarioNodesSettingModal({ isOpen, onClose }) {
           <List
             disablePadding
             sx={{
-              display: 'flex',
-              flexDirection: 'column',
+              display: "flex",
+              flexDirection: "column",
               gap: 1,
-              height: 'calc(100% - 49px)',
-              overflowY: 'auto',
+              height: "calc(100% - 49px)",
+              overflowY: "auto",
               p: 2,
             }}
           >
@@ -145,12 +145,12 @@ function ScenarioNodesSettingModal({ isOpen, onClose }) {
                 key={item.type}
                 sx={{
                   border: 1,
-                  borderColor: 'divider',
+                  borderColor: "divider",
                   borderRadius: 1,
                   px: 1.5,
                   py: 1,
-                  display: 'flex',
-                  alignItems: 'center',
+                  display: "flex",
+                  alignItems: "center",
                   gap: 1.25,
                 }}
               >
@@ -162,12 +162,12 @@ function ScenarioNodesSettingModal({ isOpen, onClose }) {
                   secondary={item.type}
                   sx={{ flex: 1, minWidth: 0 }}
                   primaryTypographyProps={{
-                    fontSize: '0.875rem',
+                    fontSize: "0.875rem",
                     fontWeight: 700,
                     noWrap: true,
                   }}
                   secondaryTypographyProps={{
-                    fontSize: '0.75rem',
+                    fontSize: "0.75rem",
                     noWrap: true,
                   }}
                 />
@@ -177,7 +177,7 @@ function ScenarioNodesSettingModal({ isOpen, onClose }) {
                     height: 30,
                     borderRadius: 1,
                     border: 1,
-                    borderColor: 'divider',
+                    borderColor: "divider",
                     bgcolor: item.color,
                     flexShrink: 0,
                   }}
@@ -192,10 +192,10 @@ function ScenarioNodesSettingModal({ isOpen, onClose }) {
                   sx={{
                     width: 52,
                     flexShrink: 0,
-                    '& input': {
+                    "& input": {
                       p: 0.5,
                       height: 28,
-                      cursor: 'pointer',
+                      cursor: "pointer",
                     },
                   }}
                 />
@@ -206,8 +206,8 @@ function ScenarioNodesSettingModal({ isOpen, onClose }) {
           <Stack
             spacing={1}
             sx={{
-              height: 'calc(100% - 49px)',
-              overflowY: 'auto',
+              height: "calc(100% - 49px)",
+              overflowY: "auto",
               p: 2,
             }}
           >
@@ -215,13 +215,13 @@ function ScenarioNodesSettingModal({ isOpen, onClose }) {
               <Box key={section.id}>
                 <Typography
                   variant="subtitle2"
-                  sx={{ mb: 0.75, fontWeight: 700, color: 'text.secondary' }}
+                  sx={{ mb: 0.75, fontWeight: 700, color: "text.secondary" }}
                 >
                   {section.label}
                 </Typography>
                 <List
                   disablePadding
-                  sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}
+                  sx={{ display: "flex", flexDirection: "column", gap: 1 }}
                 >
                   {section.children.map((item) => {
                     const checked = !userInfoJson?.unuseNodes?.includes(
@@ -233,19 +233,19 @@ function ScenarioNodesSettingModal({ isOpen, onClose }) {
                         key={item.id}
                         sx={{
                           border: 1,
-                          borderColor: 'divider',
+                          borderColor: "divider",
                           borderRadius: 1,
                           px: 1.5,
                           py: 0.75,
-                          display: 'flex',
-                          alignItems: 'center',
+                          display: "flex",
+                          alignItems: "center",
                           gap: 1,
                         }}
                       >
                         <ListItemIcon
                           sx={{
                             minWidth: 30,
-                            color: checked ? 'primary.main' : 'text.disabled',
+                            color: checked ? "primary.main" : "text.disabled",
                           }}
                         >
                           {checked ? (
@@ -259,12 +259,12 @@ function ScenarioNodesSettingModal({ isOpen, onClose }) {
                           secondary={item.id}
                           sx={{ flex: 1, minWidth: 0 }}
                           primaryTypographyProps={{
-                            fontSize: '0.875rem',
+                            fontSize: "0.875rem",
                             fontWeight: 600,
                             noWrap: true,
                           }}
                           secondaryTypographyProps={{
-                            fontSize: '0.75rem',
+                            fontSize: "0.75rem",
                             noWrap: true,
                           }}
                         />
@@ -286,7 +286,7 @@ function ScenarioNodesSettingModal({ isOpen, onClose }) {
         )}
       </DialogContent>
       <DialogActions sx={{ p: 2 }}>
-        <Button onClick={onClose}>{t('Close')}</Button>
+        <Button onClick={onClose}>{t("Close")}</Button>
       </DialogActions>
     </Dialog>
   );

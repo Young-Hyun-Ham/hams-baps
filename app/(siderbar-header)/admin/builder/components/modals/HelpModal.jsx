@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import styles from './HelpModal.module.css';
+import { useState } from "react";
+import styles from "./HelpModal.module.css";
 
 // --- 👇 [수정] Delay Node 추가 및 Slot 구문 설명 수정 ---
 const HelpManual = () => (
@@ -30,7 +30,7 @@ const HelpManual = () => (
       </li>
       <li>
         <strong>Backend Switch</strong>: Located in the top-right header, this
-        switch allows you to toggle between <strong>Firebase</strong> and{' '}
+        switch allows you to toggle between <strong>Firebase</strong> and{" "}
         <strong>FastAPI</strong> backends for scenario data storage and
         management.
       </li>
@@ -43,7 +43,7 @@ const HelpManual = () => (
     </p>
     <ul>
       <li>
-        <strong>Add New Scenario</strong>: Click the{' '}
+        <strong>Add New Scenario</strong>: Click the{" "}
         <code>+ Add New Scenario</code> button and enter a scenario name and
         select a job type to create a new conversation flow.
       </li>
@@ -53,7 +53,7 @@ const HelpManual = () => (
       </li>
       {/* --- 👇 [수정] Clone 기능 추가 --- */}
       <li>
-        <strong>Edit/Clone/Delete Scenario</strong>: Use the <code>Edit</code>{' '}
+        <strong>Edit/Clone/Delete Scenario</strong>: Use the <code>Edit</code>{" "}
         icon to change the name or job type, the <code>Clone</code> icon to
         duplicate the scenario with a new name, or the <code>Delete</code> icon
         to permanently remove the scenario.
@@ -84,14 +84,14 @@ const HelpManual = () => (
         node.
       </li>
       <li>
-        <strong>Simulator (Right)</strong>: Can be activated by clicking the{' '}
+        <strong>Simulator (Right)</strong>: Can be activated by clicking the{" "}
         <code>
           <img
             src="/images/chat_simulator.png"
             alt="chatbot"
-            style={{ width: '24px', height: '24px' }}
+            style={{ width: "24px", height: "24px" }}
           />
-        </code>{' '}
+        </code>{" "}
         icon to test how your written scenario works in real-time as an actual
         chatbot.
       </li>
@@ -133,7 +133,7 @@ const HelpManual = () => (
           </td>
           <td>
             Divides the conversation flow into multiple branches based on user
-            responses (buttons) or slot values (conditions, including boolean{' '}
+            responses (buttons) or slot values (conditions, including boolean{" "}
             <code>true</code>/<code>false</code> and comparing slots).
           </td>
         </tr>
@@ -226,7 +226,7 @@ const HelpManual = () => (
     <ol>
       <li>Click on the node you want to edit on the canvas.</li>
       <li>
-        Modify the node's text, buttons, form elements, API details, etc. in the{' '}
+        Modify the node's text, buttons, form elements, API details, etc. in the{" "}
         <strong>Controller Panel</strong> that appears on the right.
       </li>
       <li>
@@ -244,12 +244,12 @@ const HelpManual = () => (
     {/* --- 👇 [수정] Slot 구문 설명 통일 --- */}
     <p>
       To use a stored slot value within node content (like messages, prompts,
-      URLs, API bodies, etc.), use the <strong>curly brace notation</strong>:{' '}
+      URLs, API bodies, etc.), use the <strong>curly brace notation</strong>:{" "}
       <code>{`{{slotName}}`}</code>.
     </p>
     <p>
-      <strong>Example:</strong> If you stored a user's name in a slot called{' '}
-      <code>userName</code>, you can use it in a Message node like this:{' '}
+      <strong>Example:</strong> If you stored a user's name in a slot called{" "}
+      <code>userName</code>, you can use it in a Message node like this:{" "}
       <code>Hello, {`{{userName}}`}! Welcome.</code> The Slot Display panel
       (top-left of the canvas) shows the current values of all slots during
       simulation.
@@ -259,7 +259,7 @@ const HelpManual = () => (
     <h4>6.2.1. Dynamic Options/Data (Slot Binding)</h4>
     <p>
       In a <strong>Form</strong> node, you can dynamically populate the options
-      of a <strong>Dropbox</strong> or the data in a <strong>Grid</strong>{' '}
+      of a <strong>Dropbox</strong> or the data in a <strong>Grid</strong>{" "}
       element from a slot containing an array.
     </p>
     <ul>
@@ -282,8 +282,8 @@ const HelpManual = () => (
           </li>
           {/* --- 💡 [수정] Grid 'Display Labels' 설명 변경 --- */}
           <li>
-            (Grid specific) Optionally specify 'Display Labels' using{' '}
-            <code>key(Label)</code> syntax (e.g.,{' '}
+            (Grid specific) Optionally specify 'Display Labels' using{" "}
+            <code>key(Label)</code> syntax (e.g.,{" "}
             <code>name(My Name),email</code>). If <code>(Label)</code> is
             omitted, the key is used as the label. You can also check 'Hide
             Columns with Null Values'.
@@ -299,7 +299,7 @@ const HelpManual = () => (
         <strong>Grid Row Selection</strong>: When a user clicks a row in a Grid
         populated via 'Data Slot', the entire data object for that row is
         automatically stored in a special slot named <code>selectedRow</code>.
-        You can then use this slot (e.g.,{' '}
+        You can then use this slot (e.g.,{" "}
         <code>{`{{selectedRow.userId}}`}</code>) in subsequent nodes.
       </li>
     </ul>
@@ -308,7 +308,7 @@ const HelpManual = () => (
     <p>The API node allows for dynamic interaction with external servers.</p>
     <ul>
       <li>
-        <strong>Individual API Test</strong>: In single API mode, click the{' '}
+        <strong>Individual API Test</strong>: In single API mode, click the{" "}
         <strong>Play (▶)</strong> icon on the node header to test that specific
         API call immediately using current slot values. In multi-API mode, use
         the 'Test' button in the controller for the selected API call.
@@ -321,19 +321,19 @@ const HelpManual = () => (
       </li>
       {/* --- 👇 [수정] Slot 구문 설명 수정 --- */}
       <li>
-        <strong>Dynamic Requests</strong>: Use slots (e.g.,{' '}
+        <strong>Dynamic Requests</strong>: Use slots (e.g.,{" "}
         <code>{`{{userId}}`}</code>) in the URL, Headers (JSON string values),
         or Body (JSON string values) fields to make dynamic API calls.
       </li>
       {/* --- 👆 [수정 끝] --- */}
       <li>
         <strong>Response Mapping</strong>: Extract values from the JSON response
-        using JSON Path (e.g., <code>data.user.name</code>,{' '}
+        using JSON Path (e.g., <code>data.user.name</code>,{" "}
         <code>data.items[0].product</code>) and save them into slots.
       </li>
       <li>
-        <strong>Success/Failure Branching</strong>: Connect the{' '}
-        <code>On Success</code> handle (green) for successful calls and the{' '}
+        <strong>Success/Failure Branching</strong>: Connect the{" "}
+        <code>On Success</code> handle (green) for successful calls and the{" "}
         <code>On Error</code> handle (red) for failed calls to different
         subsequent nodes.
       </li>
@@ -341,7 +341,7 @@ const HelpManual = () => (
 
     <h3>6.4. Using the LLM Node</h3>
     <p>
-      The LLM node sends a dynamic prompt (using slots like{' '}
+      The LLM node sends a dynamic prompt (using slots like{" "}
       <code>{`{{topic}}`}</code>) to a large language model and displays the
       response.
     </p>
@@ -392,7 +392,7 @@ const HelpManual = () => (
       <li>
         <strong>Export/Import Nodes</strong>: Select nodes (Shift+click for
         multiple), click <code>Export Nodes</code> (copies to clipboard), then
-        go to another scenario (or the same one) and click{' '}
+        go to another scenario (or the same one) and click{" "}
         <code>Import Nodes</code> to paste.
       </li>
       <li>
@@ -408,13 +408,13 @@ const HelpManual = () => (
     <ul>
       <li>
         For non-interactive nodes (like Message, API, LLM, Set Slot, Delay,
-        Link, iFrame, Toast), you can find a checkbox in the{' '}
-        <strong>Controller Panel</strong> labeled{' '}
+        Link, iFrame, Toast), you can find a checkbox in the{" "}
+        <strong>Controller Panel</strong> labeled{" "}
         <strong>"Chain with next node (no new bubble)"</strong>.
       </li>
       <li>
         If this is <strong>checked</strong>, the simulator will not create a new
-        speech bubble for this node. Instead, it will{' '}
+        speech bubble for this node. Instead, it will{" "}
         <strong>append its content sequentially</strong> to the currently active
         bubble after a short delay (for visual effect).
       </li>
@@ -423,8 +423,8 @@ const HelpManual = () => (
         together to appear as a single, continuous turn from the bot.
       </li>
       <li>
-        The chain breaks (a new bubble is started) when a node has this option{' '}
-        <strong>unchecked</strong>, or when an <strong>interactive node</strong>{' '}
+        The chain breaks (a new bubble is started) when a node has this option{" "}
+        <strong>unchecked</strong>, or when an <strong>interactive node</strong>{" "}
         (like Form, SlotFilling, or Button Branch) is reached.
       </li>
     </ul>
@@ -480,7 +480,7 @@ const HelpManual_ko = () => (
     <ul>
       <li>서비스를 이용하려면 구글 계정으로 로그인해야 합니다.</li>
       <li>
-        <strong>허용된 이메일과 도메인</strong>(<code>cyberlogitec.com</code>,{' '}
+        <strong>허용된 이메일과 도메인</strong>(<code>cyberlogitec.com</code>,{" "}
         <code>wisenut.co.kr</code>)을 가진 사용자만 접근할 수 있습니다.
       </li>
     </ul>
@@ -499,7 +499,7 @@ const HelpManual_ko = () => (
       </li>
       <li>
         <strong>백엔드 전환 스위치</strong>: 우측 상단 헤더에 위치하며, 시나리오
-        데이터 저장 및 관리를 위한 백엔드를 <strong>Firebase</strong>와{' '}
+        데이터 저장 및 관리를 위한 백엔드를 <strong>Firebase</strong>와{" "}
         <strong>FastAPI</strong> 중에서 선택할 수 있습니다.
       </li>
     </ul>
@@ -508,7 +508,7 @@ const HelpManual_ko = () => (
     <p>로그인 후 가장 먼저 시나리오 목록 화면이 나타납니다.</p>
     <ul>
       <li>
-        <strong>새 시나리오 추가</strong>: <code>+ 새 시나리오 추가</code>{' '}
+        <strong>새 시나리오 추가</strong>: <code>+ 새 시나리오 추가</code>{" "}
         버튼을 클릭하고 시나리오 이름과 Job 타입을 선택하여 새로운 대화 흐름을
         생성합니다.
       </li>
@@ -518,7 +518,7 @@ const HelpManual_ko = () => (
       </li>
       {/* --- 👇 [수정] Clone 기능 추가 --- */}
       <li>
-        <strong>시나리오 수정/복제/삭제</strong>: 각 항목 옆의 <code>수정</code>{' '}
+        <strong>시나리오 수정/복제/삭제</strong>: 각 항목 옆의 <code>수정</code>{" "}
         아이콘으로 이름이나 Job 타입을 변경하고, <code>복제</code> 아이콘으로
         시나리오를 새 이름으로 복제하며, <code>삭제</code> 아이콘으로 시나리오를
         영구적으로 제거합니다.
@@ -540,7 +540,7 @@ const HelpManual_ko = () => (
       </li>
       <li>
         <strong>캔버스 (중앙)</strong>: 노드를 배치하고 연결하여 실제 대화
-        흐름을 구성하는 공간입니다. 쉬운 탐색을 위해 우측 하단에{' '}
+        흐름을 구성하는 공간입니다. 쉬운 탐색을 위해 우측 하단에{" "}
         <strong>미니맵</strong>이 제공됩니다.
       </li>
       <li>
@@ -548,14 +548,14 @@ const HelpManual_ko = () => (
         활성화되며, 해당 노드의 세부 내용을 편집할 수 있습니다.
       </li>
       <li>
-        <strong>시뮬레이터 (우측)</strong>:{' '}
+        <strong>시뮬레이터 (우측)</strong>:{" "}
         <code>
           <img
             src="/images/chat_simulator.png"
             alt="chatbot"
-            style={{ width: '24px', height: '24px' }}
+            style={{ width: "24px", height: "24px" }}
           />
-        </code>{' '}
+        </code>{" "}
         아이콘을 클릭하여 활성화할 수 있으며, 작성한 시나리오가 실제 챗봇처럼
         동작하는지 실시간으로 테스트할 수 있습니다.
       </li>
@@ -604,7 +604,7 @@ const HelpManual_ko = () => (
             </strong>
           </td>
           <td>
-            사용자의 답변(버튼 클릭) 또는 슬롯 값(조건 비교, boolean{' '}
+            사용자의 답변(버튼 클릭) 또는 슬롯 값(조건 비교, boolean{" "}
             <code>true</code>/<code>false</code> 포함, 슬롯 간 비교)에 따라 대화
             흐름을 여러 갈래로 나눕니다.
           </td>
@@ -721,12 +721,12 @@ const HelpManual_ko = () => (
     {/* --- 👇 [수정] Slot 구문 설명 통일 --- */}
     <p>
       노드 내용(메시지, 프롬프트, URL, API 본문 등) 안에서 저장된 슬롯 값을
-      사용하려면 <strong>이중 중괄호 표기법</strong>:{' '}
+      사용하려면 <strong>이중 중괄호 표기법</strong>:{" "}
       <code>{`{{슬롯이름}}`}</code>을 사용합니다.
     </p>
     <p>
       <strong>예시:</strong> <code>userName</code>이라는 슬롯에 사용자 이름을
-      저장했다면, 메시지 노드에서 <code>안녕하세요, {`{{userName}}`}님!</code>{' '}
+      저장했다면, 메시지 노드에서 <code>안녕하세요, {`{{userName}}`}님!</code>{" "}
       과 같이 사용할 수 있습니다. 캔버스 좌측 상단의 슬롯 표시 패널은 시뮬레이션
       중 현재 모든 슬롯의 값을 보여줍니다.
     </p>
@@ -734,7 +734,7 @@ const HelpManual_ko = () => (
 
     <h4>6.2.1. 동적 옵션/데이터 (슬롯 바인딩)</h4>
     <p>
-      <strong>Form</strong> 노드에서, 배열을 담고 있는 슬롯을 이용하여{' '}
+      <strong>Form</strong> 노드에서, 배열을 담고 있는 슬롯을 이용하여{" "}
       <strong>Dropbox</strong> 요소의 선택지나 <strong>Grid</strong> 요소의
       데이터를 동적으로 채울 수 있습니다.
     </p>
@@ -754,7 +754,7 @@ const HelpManual_ko = () => (
           </li>
           {/* --- 💡 [수정] Grid 'Display Labels' 설명 변경 --- */}
           <li>
-            (Grid 전용) 선택적으로 <code>key(Label)</code> 형식(예:{' '}
+            (Grid 전용) 선택적으로 <code>key(Label)</code> 형식(예:{" "}
             <code>name(내 이름),email</code>)을 사용하여 'Display Labels'를
             지정할 수 있습니다. <code>(Label)</code>을 생략하면 키 값이 레이블로
             사용됩니다. 'Hide Columns with Null Values'도 체크할 수 있습니다.
@@ -768,9 +768,9 @@ const HelpManual_ko = () => (
       </li>
       <li>
         <strong>Grid 행 선택</strong>: 'Data Slot'을 통해 채워진 Grid에서
-        사용자가 특정 행을 클릭하면, 해당 행의 전체 데이터 객체가{' '}
+        사용자가 특정 행을 클릭하면, 해당 행의 전체 데이터 객체가{" "}
         <code>selectedRow</code>라는 특수 슬롯에 자동으로 저장됩니다. 이후
-        노드에서 이 슬롯 값을 사용할 수 있습니다(예:{' '}
+        노드에서 이 슬롯 값을 사용할 수 있습니다(예:{" "}
         <code>{`{{selectedRow.userId}}`}</code>).
       </li>
     </ul>
@@ -798,12 +798,12 @@ const HelpManual_ko = () => (
       </li>
       {/* --- 👆 [수정 끝] --- */}
       <li>
-        <strong>응답 매핑</strong>: JSON Path(예: <code>data.user.name</code>,{' '}
+        <strong>응답 매핑</strong>: JSON Path(예: <code>data.user.name</code>,{" "}
         <code>data.items[0].product</code>)를 사용하여 JSON 응답에서 값을
         추출하고 지정된 슬롯에 저장합니다.
       </li>
       <li>
-        <strong>성공/실패 분기</strong>: 성공 시에는 <code>On Success</code>{' '}
+        <strong>성공/실패 분기</strong>: 성공 시에는 <code>On Success</code>{" "}
         핸들(녹색)에서, 실패 시에는 <code>On Error</code> 핸들(빨간색)에서 다음
         노드로 연결합니다.
       </li>
@@ -846,11 +846,11 @@ const HelpManual_ko = () => (
         클릭합니다.
       </li>
       <li>
-        <strong>연결선 삭제</strong>: 연결선 자체를 클릭하여 선택한 후{' '}
+        <strong>연결선 삭제</strong>: 연결선 자체를 클릭하여 선택한 후{" "}
         <code>Backspace</code> 또는 <code>Delete</code> 키를 누릅니다.
       </li>
       <li>
-        <strong>노드 복제</strong>: 복제할 노드를 선택한 후, 좌측 패널 하단의{' '}
+        <strong>노드 복제</strong>: 복제할 노드를 선택한 후, 좌측 패널 하단의{" "}
         <code>+ Duplicate Node</code> 버튼을 클릭합니다.
       </li>
     </ul>
@@ -859,12 +859,12 @@ const HelpManual_ko = () => (
     <p>시나리오의 일부 또는 전체를 효율적으로 재사용합니다.</p>
     <ul>
       <li>
-        <strong>노드 내보내기/가져오기</strong>: 노드들을 선택(Shift+클릭)하고{' '}
-        <code>Export Nodes</code>로 복사한 뒤, 다른 (또는 같은) 시나리오에서{' '}
+        <strong>노드 내보내기/가져오기</strong>: 노드들을 선택(Shift+클릭)하고{" "}
+        <code>Export Nodes</code>로 복사한 뒤, 다른 (또는 같은) 시나리오에서{" "}
         <code>Import Nodes</code>로 붙여넣습니다.
       </li>
       <li>
-        <strong>시나리오 그룹으로 가져오기</strong>:{' '}
+        <strong>시나리오 그룹으로 가져오기</strong>:{" "}
         <code>+ Scenario Group</code> 버튼을 누르고 목록에서 시나리오를
         선택하면, 해당 시나리오 전체가 하나의 접을 수 있는 그룹 노드로 캔버스에
         추가됩니다. 일반 노드처럼 입/출력 핸들을 연결하여 사용합니다.
@@ -876,7 +876,7 @@ const HelpManual_ko = () => (
     <ul>
       <li>
         사용자 입력이 필요 없는 노드(Message, API, LLM, Set Slot, Delay, Link,
-        iFrame, Toast)의 <strong>컨트롤러 패널</strong>에서{' '}
+        iFrame, Toast)의 <strong>컨트롤러 패널</strong>에서{" "}
         <strong>"다음 노드와 이어서 표시"</strong> 체크박스를 찾을 수 있습니다.
       </li>
       <li>
@@ -889,7 +889,7 @@ const HelpManual_ko = () => (
         턴(turn)처럼 자연스럽게 묶어서 표시할 수 있습니다.
       </li>
       <li>
-        이 체인(연결)은 이 옵션이 <strong>체크 해제</strong>된 노드를 만나거나,{' '}
+        이 체인(연결)은 이 옵션이 <strong>체크 해제</strong>된 노드를 만나거나,{" "}
         <strong>사용자 입력이 필요한 노드</strong>(Form, SlotFilling 등)를
         만나면 중단되고 새 말풍선이 시작됩니다.
       </li>
@@ -941,7 +941,7 @@ const HelpManual_vi = () => (
     <ul>
       <li>Bạn phải đăng nhập bằng tài khoản Google để sử dụng dịch vụ.</li>
       <li>
-        Chỉ những người dùng có <strong>email và tên miền được ủy quyền</strong>{' '}
+        Chỉ những người dùng có <strong>email và tên miền được ủy quyền</strong>{" "}
         (<code>cyberlogitec.com</code>, <code>wisenut.co.kr</code>) mới có thể
         truy cập dịch vụ.
       </li>
@@ -963,7 +963,7 @@ const HelpManual_vi = () => (
       </li>
       <li>
         <strong>Công tắc Backend</strong>: Nằm ở tiêu đề trên cùng bên phải,
-        công tắc này cho phép bạn chuyển đổi giữa các backend{' '}
+        công tắc này cho phép bạn chuyển đổi giữa các backend{" "}
         <strong>Firebase</strong> và <strong>FastAPI</strong> để lưu trữ và quản
         lý dữ liệu kịch bản.
       </li>
@@ -971,12 +971,12 @@ const HelpManual_vi = () => (
 
     <h2>2. Quản lý kịch bản</h2>
     <p>
-      Màn hình đầu tiên bạn thấy sau khi đăng nhập là{' '}
+      Màn hình đầu tiên bạn thấy sau khi đăng nhập là{" "}
       <strong>Danh sách kịch bản</strong>.
     </p>
     <ul>
       <li>
-        <strong>Thêm kịch bản mới</strong>: Nhấp vào nút{' '}
+        <strong>Thêm kịch bản mới</strong>: Nhấp vào nút{" "}
         <code>+ Thêm kịch bản mới</code>, nhập tên kịch bản và chọn loại công
         việc (job type) để tạo một luồng hội thoại mới.
       </li>
@@ -985,9 +985,9 @@ const HelpManual_vi = () => (
         điều hướng đến màn hình chỉnh sửa của kịch bản đó.
       </li>
       <li>
-        <strong>Chỉnh sửa/Sao chép/Xóa kịch bản</strong>: Sử dụng biểu tượng{' '}
-        <code>Chỉnh sửa</code> để thay đổi tên hoặc loại công việc, biểu tượng{' '}
-        <code>Sao chép</code> để nhân bản kịch bản với tên mới, hoặc biểu tượng{' '}
+        <strong>Chỉnh sửa/Sao chép/Xóa kịch bản</strong>: Sử dụng biểu tượng{" "}
+        <code>Chỉnh sửa</code> để thay đổi tên hoặc loại công việc, biểu tượng{" "}
+        <code>Sao chép</code> để nhân bản kịch bản với tên mới, hoặc biểu tượng{" "}
         <code>Xóa</code> để xóa vĩnh viễn kịch bản.
       </li>
     </ul>
@@ -1006,7 +1006,7 @@ const HelpManual_vi = () => (
       </li>
       <li>
         <strong>Canvas (Ở giữa)</strong>: Không gian để đặt các node và kết nối
-        chúng để tạo ra các luồng hội thoại thực tế. Một{' '}
+        chúng để tạo ra các luồng hội thoại thực tế. Một{" "}
         <strong>Bản đồ thu nhỏ (Minimap)</strong> có sẵn ở góc dưới cùng bên
         phải để dễ dàng điều hướng.
       </li>
@@ -1017,14 +1017,14 @@ const HelpManual_vi = () => (
       </li>
       <li>
         <strong>Trình mô phỏng (Bên phải)</strong>: Có thể được kích hoạt bằng
-        cách nhấp vào biểu tượng{' '}
+        cách nhấp vào biểu tượng{" "}
         <code>
           <img
             src="/images/chat_simulator.png"
             alt="chatbot"
-            style={{ width: '24px', height: '24px' }}
+            style={{ width: "24px", height: "24px" }}
           />
-        </code>{' '}
+        </code>{" "}
         để kiểm tra xem kịch bản bạn đã viết hoạt động như thế nào trong thời
         gian thực như một chatbot thực tế.
       </li>
@@ -1057,7 +1057,7 @@ const HelpManual_vi = () => (
             Một biểu mẫu để nhận dữ liệu có cấu trúc từ người dùng (ví dụ: văn
             bản, ngày tháng, hộp kiểm, danh sách thả xuống, lưới). Tùy chọn/dữ
             liệu có thể được điền động từ các slot. Việc chọn một hàng trong
-            lưới được liên kết với slot sẽ lưu trữ dữ liệu hàng đó vào slot{' '}
+            lưới được liên kết với slot sẽ lưu trữ dữ liệu hàng đó vào slot{" "}
             <code>selectedRow</code>.
           </td>
         </tr>
@@ -1067,7 +1067,7 @@ const HelpManual_vi = () => (
           </td>
           <td>
             Chia luồng hội thoại thành nhiều nhánh dựa trên phản hồi của người
-            dùng (nút bấm) hoặc giá trị của slot (điều kiện, bao gồm boolean{' '}
+            dùng (nút bấm) hoặc giá trị của slot (điều kiện, bao gồm boolean{" "}
             <code>true</code>/<code>false</code> và so sánh giữa các slot).
           </td>
         </tr>
@@ -1162,7 +1162,7 @@ const HelpManual_vi = () => (
         trong <strong>Bảng điều khiển</strong> xuất hiện ở bên phải.
       </li>
       <li>
-        Khi chỉnh sửa xong, nhấp vào nút{' '}
+        Khi chỉnh sửa xong, nhấp vào nút{" "}
         <code>Lưu thay đổi (Save Changes)</code> ở cuối bảng điều khiển để áp
         dụng các thay đổi cho node.
       </li>
@@ -1176,7 +1176,7 @@ const HelpManual_vi = () => (
     </p>
     <p>
       Để sử dụng giá trị slot đã lưu trong nội dung node (như tin nhắn, lời
-      nhắc, URL, body API, v.v.), hãy sử dụng{' '}
+      nhắc, URL, body API, v.v.), hãy sử dụng{" "}
       <strong>ký hiệu dấu ngoặc nhọn kép</strong>: <code>{`{{tên_slot}}`}</code>
       .
     </p>
@@ -1212,7 +1212,7 @@ const HelpManual_vi = () => (
           </li>
           {/* --- 💡 [수정] Grid 'Display Labels' 설명 변경 --- */}
           <li>
-            (Chỉ Lưới) Tùy chọn chỉ định 'Display Labels' bằng cú pháp{' '}
+            (Chỉ Lưới) Tùy chọn chỉ định 'Display Labels' bằng cú pháp{" "}
             <code>key(Label)</code> (ví dụ: <code>name(Tên tôi),email</code>).
             Nếu <code>(Label)</code> bị bỏ qua, khóa sẽ được sử dụng làm nhãn.
             Bạn cũng có thể chọn 'Hide Columns with Null Values'.
@@ -1227,8 +1227,8 @@ const HelpManual_vi = () => (
       <li>
         <strong>Lựa chọn hàng lưới</strong>: Khi người dùng nhấp vào một hàng
         trong Lưới được điền thông qua 'Data Slot', toàn bộ đối tượng dữ liệu
-        cho hàng đó sẽ tự động được lưu trữ trong một slot đặc biệt có tên là{' '}
-        <code>selectedRow</code>. Sau đó, bạn có thể sử dụng slot này (ví dụ:{' '}
+        cho hàng đó sẽ tự động được lưu trữ trong một slot đặc biệt có tên là{" "}
+        <code>selectedRow</code>. Sau đó, bạn có thể sử dụng slot này (ví dụ:{" "}
         <code>{`{{selectedRow.userId}}`}</code>) trong các node tiếp theo.
       </li>
     </ul>
@@ -1250,19 +1250,19 @@ const HelpManual_vi = () => (
         công, nếu không sẽ đến 'On Error'.
       </li>
       <li>
-        <strong>Yêu cầu động</strong>: Sử dụng các slot (ví dụ:{' '}
+        <strong>Yêu cầu động</strong>: Sử dụng các slot (ví dụ:{" "}
         <code>{`{{userId}}`}</code>) trong các trường URL, Headers (giá trị
         chuỗi JSON) hoặc Body (giá trị chuỗi JSON) để thực hiện các lệnh gọi API
         động.
       </li>
       <li>
         <strong>Ánh xạ phản hồi (Response Mapping)</strong>: Trích xuất các giá
-        trị từ phản hồi JSON bằng cách sử dụng Đường dẫn JSON (ví dụ:{' '}
+        trị từ phản hồi JSON bằng cách sử dụng Đường dẫn JSON (ví dụ:{" "}
         <code>data.user.name</code>, <code>data.items[0].product</code>) và lưu
         chúng vào các slot.
       </li>
       <li>
-        <strong>Phân nhánh thành công/thất bại</strong>: Kết nối tay cầm{' '}
+        <strong>Phân nhánh thành công/thất bại</strong>: Kết nối tay cầm{" "}
         <code>On Success</code> (màu xanh lá) cho các lệnh gọi thành công và tay
         cầm <code>On Error</code> (màu đỏ) cho các lệnh gọi không thành công đến
         các node tiếp theo khác nhau.
@@ -1271,7 +1271,7 @@ const HelpManual_vi = () => (
 
     <h3>6.4. Sử dụng Node LLM</h3>
     <p>
-      Node LLM gửi một lời nhắc động (sử dụng các slot như{' '}
+      Node LLM gửi một lời nhắc động (sử dụng các slot như{" "}
       <code>{`{{topic}}`}</code>) đến một mô hình ngôn ngữ lớn và hiển thị phản
       hồi.
     </p>
@@ -1329,7 +1329,7 @@ const HelpManual_vi = () => (
         nhấp vào <code>Nhập Node (Import Nodes)</code> để dán.
       </li>
       <li>
-        <strong>Kịch bản dưới dạng Nhóm</strong>: Nhấp vào{' '}
+        <strong>Kịch bản dưới dạng Nhóm</strong>: Nhấp vào{" "}
         <code>+ Nhóm kịch bản (+ Scenario Group)</code>, chọn một kịch bản từ
         danh sách. Nó sẽ được nhập dưới dạng một node nhóm có thể thu gọn duy
         nhất đại diện cho toàn bộ luồng của kịch bản đó. Kết nối các tay cầm đầu
@@ -1342,13 +1342,13 @@ const HelpManual_vi = () => (
     <ul>
       <li>
         Đối với các node không tương tác (như Message, API, LLM, Set Slot,
-        Delay, Link, iFrame, Toast), bạn có thể tìm thấy một hộp kiểm trong{' '}
-        <strong>Bảng điều khiển</strong> có nhãn{' '}
+        Delay, Link, iFrame, Toast), bạn có thể tìm thấy một hộp kiểm trong{" "}
+        <strong>Bảng điều khiển</strong> có nhãn{" "}
         <strong>"Nối với node tiếp theo (không tạo bong bóng mới)"</strong>.
       </li>
       <li>
         Nếu tùy chọn này được <strong>chọn</strong>, trình mô phỏng sẽ không tạo
-        bong bóng hội thoại mới cho node này. Thay vào đó, nó sẽ{' '}
+        bong bóng hội thoại mới cho node này. Thay vào đó, nó sẽ{" "}
         <strong>nối thêm nội dung một cách tuần tự</strong> vào bong bóng đang
         hoạt động sau một khoảng trễ ngắn (để tạo hiệu ứng hình ảnh).
       </li>
@@ -1358,7 +1358,7 @@ const HelpManual_vi = () => (
       </li>
       <li>
         Chuỗi này bị ngắt (một bong bóng mới được bắt đầu) khi gặp một node có
-        tùy chọn này <strong>không được chọn</strong>, hoặc khi đến một{' '}
+        tùy chọn này <strong>không được chọn</strong>, hoặc khi đến một{" "}
         <strong>node tương tác</strong> (như Form, SlotFilling hoặc Nhánh Nút
         bấm).
       </li>
@@ -1410,7 +1410,7 @@ const HelpManual_vi = () => (
 // --- 👆 [수정 끝] ---
 
 function HelpModal({ isOpen, onClose }) {
-  const [language, setLanguage] = useState('en');
+  const [language, setLanguage] = useState("en");
 
   if (!isOpen) return null;
 
@@ -1433,9 +1433,9 @@ function HelpModal({ isOpen, onClose }) {
 
         <h1>Chatbot Scenario Editor User Manual</h1>
 
-        {language === 'en' && <HelpManual />}
-        {language === 'ko' && <HelpManual_ko />}
-        {language === 'vi' && <HelpManual_vi />}
+        {language === "en" && <HelpManual />}
+        {language === "ko" && <HelpManual_ko />}
+        {language === "vi" && <HelpManual_vi />}
       </div>
     </div>
   );

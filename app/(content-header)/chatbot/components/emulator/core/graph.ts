@@ -61,14 +61,15 @@ export function resolveExecutableNode(
 }
 
 /** 루트 노드 찾기 */
-export function findRootNode(nodes: AnyNode[], edges: AnyEdge[]): AnyNode | null {
+export function findRootNode(
+  nodes: AnyNode[],
+  edges: AnyEdge[],
+): AnyNode | null {
   const topLevelNodes = nodes.filter((n) => !n.parentNode);
   const targets = new Set(edges.map((e) => e.target));
 
   const root =
-    topLevelNodes.find((n) => !targets.has(n.id)) ??
-    topLevelNodes[0] ??
-    null;
+    topLevelNodes.find((n) => !targets.has(n.id)) ?? topLevelNodes[0] ?? null;
 
   return resolveExecutableNode(nodes, edges, root);
 }

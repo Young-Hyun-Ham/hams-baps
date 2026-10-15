@@ -5,36 +5,36 @@ import {
   useMemo,
   useRef,
   useState,
-} from 'react';
+} from "react";
 import ReactFlow, {
   Background,
   Controls,
   MiniMap,
   useReactFlow,
   type Node,
-} from 'reactflow';
-import { Box } from '@mui/material';
-import { useTranslation } from 'react-i18next';
+} from "reactflow";
+import { Box } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 import {
   buildTopDownFlow,
   defaultEdgeOptions,
   getStartNode,
   START_NODE_ID,
-} from './BuildTopDownFlow';
-import { useBuilderStore, makeSnapshot } from '../../store';
-import { builderClipboardStore } from '../../store/builderClipboardStore';
-import useBuilderHistoryStore from '../../store/historyStore';
-import { builderExecutionStore } from '../../store/builderExecutionStore';
-import { useBuilderExecution } from '../../components/controllers/hooks/useBuilderExecution';
-import ChatbotSimulator from './modals/simulator/ChatbotSimulator';
-import BranchSelectionModal from './modals/BranchSelectionModal';
-import ExecutionFormInputModal from './modals/ExecutionFormInputModal';
-import FlowContextMenu from './context-menu/FlowContextMenu';
-import FlowCanvasToolbar from './toolbar/FlowCanvasToolbar';
-import { useFlowNodeSearch } from './hooks/useFlowNodeSearch';
-import { useExecutionFormInput } from './hooks/useExecutionFormInput';
-import { flowEdgeTypes, flowNodeTypes } from './FlowTypes';
+} from "./BuildTopDownFlow";
+import { useBuilderStore, makeSnapshot } from "../../store";
+import { builderClipboardStore } from "../../store/builderClipboardStore";
+import useBuilderHistoryStore from "../../store/historyStore";
+import { builderExecutionStore } from "../../store/builderExecutionStore";
+import { useBuilderExecution } from "../../components/controllers/hooks/useBuilderExecution";
+import ChatbotSimulator from "./modals/simulator/ChatbotSimulator";
+import BranchSelectionModal from "./modals/BranchSelectionModal";
+import ExecutionFormInputModal from "./modals/ExecutionFormInputModal";
+import FlowContextMenu from "./context-menu/FlowContextMenu";
+import FlowCanvasToolbar from "./toolbar/FlowCanvasToolbar";
+import { useFlowNodeSearch } from "./hooks/useFlowNodeSearch";
+import { useExecutionFormInput } from "./hooks/useExecutionFormInput";
+import { flowEdgeTypes, flowNodeTypes } from "./FlowTypes";
 
 import type {
   BuilderEdge,
@@ -42,9 +42,9 @@ import type {
   ContextMenuState,
   InsertTarget,
   NodeSize,
-} from '../types';
+} from "../types";
 
-import { useModal } from '@/providers/ModalProvider';
+import { useModal } from "@/providers/ModalProvider";
 
 type FlowCanvasProps = {
   nodes: BuilderNode[];
@@ -140,9 +140,9 @@ function FlowCanvas({
     ]);
 
     wrapper
-      .querySelectorAll<HTMLElement>('.react-flow__node')
+      .querySelectorAll<HTMLElement>(".react-flow__node")
       .forEach((element) => {
-        const nodeId = element.getAttribute('data-id');
+        const nodeId = element.getAttribute("data-id");
         if (!nodeId || !realNodeIds.has(nodeId)) return;
 
         const width = Math.round(element.offsetWidth);
@@ -175,7 +175,7 @@ function FlowCanvas({
     const observer = new ResizeObserver(measureNodeSizes);
 
     wrapper
-      .querySelectorAll<HTMLElement>('.react-flow__node')
+      .querySelectorAll<HTMLElement>(".react-flow__node")
       .forEach((element) => observer.observe(element));
 
     return () => {
@@ -216,7 +216,7 @@ function FlowCanvas({
   const getSafeMenuPosition = (
     clientX: number,
     clientY: number,
-    menuType: 'pane' | 'node' | 'edge',
+    menuType: "pane" | "node" | "edge",
   ) => {
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
@@ -251,7 +251,7 @@ function FlowCanvas({
   const handlePaneContextMenu = (event: React.MouseEvent) => {
     event.preventDefault();
 
-    const { x, y } = getSafeMenuPosition(event.clientX, event.clientY, 'pane');
+    const { x, y } = getSafeMenuPosition(event.clientX, event.clientY, "pane");
     const bounds = flowWrapperRef.current?.getBoundingClientRect();
     const flowPosition = bounds
       ? project({
@@ -267,7 +267,7 @@ function FlowCanvas({
       x,
       y,
       flowPosition,
-      target: { type: 'pane' },
+      target: { type: "pane" },
     });
   };
 
@@ -275,7 +275,7 @@ function FlowCanvas({
     event.preventDefault();
     event.stopPropagation();
 
-    const { x, y } = getSafeMenuPosition(event.clientX, event.clientY, 'node');
+    const { x, y } = getSafeMenuPosition(event.clientX, event.clientY, "node");
     const bounds = flowWrapperRef.current?.getBoundingClientRect();
     const flowPosition = bounds
       ? project({
@@ -291,7 +291,7 @@ function FlowCanvas({
       x,
       y,
       flowPosition,
-      target: { type: 'node', id: node.id },
+      target: { type: "node", id: node.id },
     });
   };
 
@@ -452,7 +452,7 @@ function FlowCanvas({
     <>
       <Box
         ref={flowWrapperRef}
-        sx={{ flex: 1, minWidth: 0, minHeight: 0, bgcolor: '#fbfcfd' }}
+        sx={{ flex: 1, minWidth: 0, minHeight: 0, bgcolor: "#fbfcfd" }}
       >
         <ReactFlow
           nodes={selectedNodes}
@@ -478,7 +478,7 @@ function FlowCanvas({
           onNodeClick={(_, node) => {
             closeContextMenu();
 
-            if (node.type === 'add' || node.type === 'start') return;
+            if (node.type === "add" || node.type === "start") return;
             onSelectNode(node.id);
           }}
           // 마우스 우클릭 메뉴 custom 수정
@@ -492,7 +492,7 @@ function FlowCanvas({
             nodeColor={(n: unknown) =>
               (n as { type: string }).type in nodeColors
                 ? nodeColors[(n as { type: string }).type]
-                : '#ddd'
+                : "#ddd"
             }
             nodeStrokeWidth={3}
             zoomable
@@ -510,7 +510,7 @@ function FlowCanvas({
             onRedo={redo}
             onSaveScenario={async () => {
               const confirmed = await showConfirm(
-                `${t('Do you want to save the Scenario?')}`,
+                `${t("Do you want to save the Scenario?")}`,
               );
               if (!confirmed) return;
               resetExecution();
@@ -518,7 +518,7 @@ function FlowCanvas({
             }}
             onPushScenario={async () => {
               const confirmed = await showConfirm(
-                `${t('Do you want to push the Scenario?')}`,
+                `${t("Do you want to push the Scenario?")}`,
               );
               if (!confirmed) return;
               resetExecution();

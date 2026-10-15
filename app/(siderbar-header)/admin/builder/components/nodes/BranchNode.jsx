@@ -1,11 +1,11 @@
-import React, { useEffect } from 'react';
-import { Handle, Position, useUpdateNodeInternals } from 'reactflow';
-import styles from './ChatNodes.module.css';
-import { useBuilderStore } from '../../store/index';
+import React, { useEffect } from "react";
+import { Handle, Position, useUpdateNodeInternals } from "reactflow";
+import styles from "./ChatNodes.module.css";
+import { useBuilderStore } from "../../store/index";
 // (AnchorIcon, StartNodeIcon 임포트 제거)
-import NodeWrapper from './NodeWrapper';
-import { useTranslation } from 'react-i18next';
-import YnBranchNode from './YnBranchNode';
+import NodeWrapper from "./NodeWrapper";
+import { useTranslation } from "react-i18next";
+import YnBranchNode from "./YnBranchNode";
 
 function BranchNode(props) {
   const { id, data } = props;
@@ -16,8 +16,10 @@ function BranchNode(props) {
   const isSelectionGroupChild = useBuilderStore((state) => {
     const node = state.nodes.find((item) => item.id === id);
     if (!node?.parentNode) return false;
-    return state.nodes.find((item) => item.id === node.parentNode)?.type ===
-      'selectionGroup';
+    return (
+      state.nodes.find((item) => item.id === node.parentNode)?.type ===
+      "selectionGroup"
+    );
   });
 
   useEffect(() => {
@@ -38,11 +40,11 @@ function BranchNode(props) {
           isSelectionGroupChild
             ? {
                 ...data,
-                outputPosition: 'right',
+                outputPosition: "right",
                 outputPositions: {
                   ...data.outputPositions,
-                  Y: 'right',
-                  N: 'right',
+                  Y: "right",
+                  N: "right",
                 },
               }
             : data
@@ -51,12 +53,12 @@ function BranchNode(props) {
     );
   }
   // 2. 공통 로직 제거
-  const isConditionType = data.evaluationType === 'CONDITION';
+  const isConditionType = data.evaluationType === "CONDITION";
   // (isAnchored, isStartNode 로직 제거)
 
   const getHandlePosition = (hId) => {
-    if (isSelectionGroupChild) return 'right';
-    return data?.outputPositions?.[hId] || data?.outputPosition || 'right';
+    if (isSelectionGroupChild) return "right";
+    return data?.outputPositions?.[hId] || data?.outputPosition || "right";
   };
 
   // Collect all handles for side grouping
@@ -66,7 +68,7 @@ function BranchNode(props) {
           id: data.replies?.[index]?.value || cond.id || String(index),
           isDefault: false,
         })) || []),
-        { id: 'default', isDefault: true },
+        { id: "default", isDefault: true },
       ]
     : data.replies?.map((reply) => ({
         id: reply.value,
@@ -74,21 +76,21 @@ function BranchNode(props) {
       })) || [];
 
   const rightHandles = allHandles.filter(
-    (h) => getHandlePosition(h.id) === 'right',
+    (h) => getHandlePosition(h.id) === "right",
   );
   const bottomHandles = allHandles.filter(
-    (h) => getHandlePosition(h.id) === 'bottom',
+    (h) => getHandlePosition(h.id) === "bottom",
   );
 
   const getHandleSideRatio = (handleId) => {
     const side = getHandlePosition(handleId);
-    const sideList = side === 'bottom' ? bottomHandles : rightHandles;
+    const sideList = side === "bottom" ? bottomHandles : rightHandles;
     const indexOnSide = sideList.findIndex((h) => h.id === handleId);
     const countOnSide = sideList.length || 1;
     const idx = indexOnSide !== -1 ? indexOnSide : 0;
     return {
       side,
-      isBottom: side === 'bottom',
+      isBottom: side === "bottom",
       ratio: ((idx + 1) / (countOnSide + 1)) * 100,
     };
   };
@@ -114,18 +116,18 @@ function BranchNode(props) {
                   isBottom
                     ? {
                         left: `${ratio}%`,
-                        background: '#555',
+                        background: "#555",
                       }
                     : {
                         top: `${ratio}%`,
-                        background: '#555',
+                        background: "#555",
                       }
                 }
               />
             );
           })}
           {(() => {
-            const handleId = 'default';
+            const handleId = "default";
             const { isBottom, ratio } = getHandleSideRatio(handleId);
 
             return (
@@ -138,11 +140,11 @@ function BranchNode(props) {
                     isBottom
                       ? {
                           left: `${ratio}%`,
-                          background: '#e74c3c',
+                          background: "#e74c3c",
                         }
                       : {
                           top: `${ratio}%`,
-                          background: '#e74c3c',
+                          background: "#e74c3c",
                         }
                   }
                 />
@@ -150,25 +152,25 @@ function BranchNode(props) {
                   style={
                     isBottom
                       ? {
-                          position: 'absolute',
+                          position: "absolute",
                           bottom: -18,
                           left: `${ratio}%`,
-                          transform: 'translateX(-50%)',
-                          fontSize: '11px',
-                          color: '#e74c3c',
-                          whiteSpace: 'nowrap',
+                          transform: "translateX(-50%)",
+                          fontSize: "11px",
+                          color: "#e74c3c",
+                          whiteSpace: "nowrap",
                         }
                       : {
-                          position: 'absolute',
+                          position: "absolute",
                           top: `${ratio}%`,
                           right: -45,
-                          transform: 'translateY(-50%)',
-                          fontSize: '11px',
-                          color: '#e74c3c',
+                          transform: "translateY(-50%)",
+                          fontSize: "11px",
+                          color: "#e74c3c",
                         }
                   }
                 >
-                  {t('Default')}
+                  {t("Default")}
                 </div>
               </>
             );
@@ -191,11 +193,11 @@ function BranchNode(props) {
                   isBottom
                     ? {
                         left: `${ratio}%`,
-                        background: '#555',
+                        background: "#555",
                       }
                     : {
                         top: `${ratio}%`,
-                        background: '#555',
+                        background: "#555",
                       }
                 }
               />
@@ -210,7 +212,7 @@ function BranchNode(props) {
     // 4. NodeWrapper로 감싸기
     <NodeWrapper
       id={id}
-      typeLabel={t('Condition Branch')}
+      typeLabel={t("Condition Branch")}
       icon={null} // (아이콘 없음)
       nodeColor={nodeColor}
       textColor={textColor}
@@ -218,17 +220,17 @@ function BranchNode(props) {
     >
       {/* 6. 기존 nodeBody의 내용만 children으로 전달 */}
       <div className={styles.section}>
-        <span className={styles.sectionTitle}>{t('Branch Text')}</span>
+        <span className={styles.sectionTitle}>{t("Branch Text")}</span>
         <textarea
           className={styles.textInput}
-          value={data.content || ''}
+          value={data.content || ""}
           readOnly
           rows={4}
         />
       </div>
       <div className={styles.section}>
         <span className={styles.sectionTitle}>
-          {t('Branches')} ({isConditionType ? t('Conditions') : t('Buttons')})
+          {t("Branches")} ({isConditionType ? t("Conditions") : t("Buttons")})
         </span>
         <div className={styles.branchOptionsContainer}>
           {isConditionType ? (
@@ -236,14 +238,14 @@ function BranchNode(props) {
               data.conditions.map((cond, index) => (
                 <div key={cond.id || index} className={styles.branchOption}>
                   <span className={styles.branchOptionButton}>
-                    {`{${cond.slot}} ${cond.operator} ${cond.valueType === 'slot' ? `{${cond.value}}` : `'${cond.value}'`}`}
+                    {`{${cond.slot}} ${cond.operator} ${cond.valueType === "slot" ? `{${cond.value}}` : `'${cond.value}'`}`}
                   </span>
                   {/* 핸들은 customHandles에서 이미 정의됨 */}
                 </div>
               ))
             ) : (
               <div className={styles.formElementsPlaceholder}>
-                {t('No conditions added')}.
+                {t("No conditions added")}.
               </div>
             )
           ) : (data.replies?.length || 0) > 0 ? (
@@ -257,7 +259,7 @@ function BranchNode(props) {
             ))
           ) : (
             <div className={styles.formElementsPlaceholder}>
-              {t('No buttons added')}.
+              {t("No buttons added")}.
             </div>
           )}
         </div>

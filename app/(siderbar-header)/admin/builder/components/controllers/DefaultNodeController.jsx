@@ -1,5 +1,5 @@
-import styles from '../../NodeController.module.css';
-import { useTranslation } from 'react-i18next';
+import styles from "../../NodeController.module.css";
+import { useTranslation } from "react-i18next";
 
 function DefaultNodeController({ localNode, setLocalNode }) {
   const { type, data } = localNode;
@@ -18,12 +18,12 @@ function DefaultNodeController({ localNode, setLocalNode }) {
       const nodeType = newNode.type;
       const newReply = {
         display:
-          nodeType === 'branch'
-            ? 'New condition'
-            : nodeType === 'fixedmenu'
-              ? 'New menu'
-              : 'New reply',
-        value: `${nodeType === 'branch' ? 'cond' : nodeType === 'fixedmenu' ? 'menu' : 'val'}_${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+          nodeType === "branch"
+            ? "New condition"
+            : nodeType === "fixedmenu"
+              ? "New menu"
+              : "New reply",
+        value: `${nodeType === "branch" ? "cond" : nodeType === "fixedmenu" ? "menu" : "val"}_${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
       };
       const newReplies = [...(newNode.data.replies || []), newReply];
       newNode.data.replies = newReplies;
@@ -65,9 +65,9 @@ function DefaultNodeController({ localNode, setLocalNode }) {
       const newNode = { ...prev };
       const newCondition = {
         id: `cond-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-        slot: '',
-        operator: '==',
-        value: '',
+        slot: "",
+        operator: "==",
+        value: "",
       };
       const newConditions = [...(newNode.data.conditions || []), newCondition];
       newNode.data.conditions = newConditions;
@@ -101,54 +101,54 @@ function DefaultNodeController({ localNode, setLocalNode }) {
   return (
     <>
       <div className={styles.formGroup}>
-        <label>{t('Content')}</label>
+        <label>{t("Content")}</label>
         <textarea
-          value={data.content || ''}
-          onChange={(e) => handleLocalDataChange('content', e.target.value)}
+          value={data.content || ""}
+          onChange={(e) => handleLocalDataChange("content", e.target.value)}
           rows={4}
         />
       </div>
 
-      {type === 'link' && (
+      {type === "link" && (
         <div className={styles.formGroup}>
-          <label>{t('Display Text')}</label>
+          <label>{t("Display Text")}</label>
           <input
             type="text"
-            value={data.display || ''}
-            onChange={(e) => handleLocalDataChange('display', e.target.value)}
+            value={data.display || ""}
+            onChange={(e) => handleLocalDataChange("display", e.target.value)}
           />
         </div>
       )}
 
-      {type === 'slotfilling' && (
+      {type === "slotfilling" && (
         <div className={styles.formGroup}>
-          <label>{t('Slot')}</label>
+          <label>{t("Slot")}</label>
           <input
             type="text"
-            value={data.slot || ''}
-            onChange={(e) => handleLocalDataChange('slot', e.target.value)}
+            value={data.slot || ""}
+            onChange={(e) => handleLocalDataChange("slot", e.target.value)}
           />
         </div>
       )}
 
-      {type === 'branch' && (
+      {type === "branch" && (
         <div className={styles.formGroup}>
-          <label>{t('Evaluation Type')}</label>
+          <label>{t("Evaluation Type")}</label>
           <select
-            value={data.evaluationType || 'BUTTON'}
+            value={data.evaluationType || "BUTTON"}
             onChange={(e) =>
-              handleLocalDataChange('evaluationType', e.target.value)
+              handleLocalDataChange("evaluationType", e.target.value)
             }
           >
-            <option value="BUTTON">{t('Button Click')}</option>
-            <option value="CONDITION">{t('Slot Condition')}</option>
+            <option value="BUTTON">{t("Button Click")}</option>
+            <option value="CONDITION">{t("Slot Condition")}</option>
           </select>
         </div>
       )}
 
-      {type === 'branch' && data.evaluationType === 'CONDITION' ? (
+      {type === "branch" && data.evaluationType === "CONDITION" ? (
         <div className={styles.formGroup}>
-          <label>{t('Conditions')}</label>
+          <label>{t("Conditions")}</label>
           <div className={styles.repliesContainer}>
             {(data.conditions || []).map((cond, index) => (
               <div key={cond.id} className={styles.quickReply}>
@@ -156,14 +156,14 @@ function DefaultNodeController({ localNode, setLocalNode }) {
                   className={styles.quickReplyInput}
                   value={cond.slot}
                   onChange={(e) =>
-                    handleConditionChange(index, 'slot', e.target.value)
+                    handleConditionChange(index, "slot", e.target.value)
                   }
-                  placeholder={t('Slot Name')}
+                  placeholder={t("Slot Name")}
                 />
                 <select
                   value={cond.operator}
                   onChange={(e) =>
-                    handleConditionChange(index, 'operator', e.target.value)
+                    handleConditionChange(index, "operator", e.target.value)
                   }
                 >
                   <option value="==">==</option>
@@ -172,16 +172,16 @@ function DefaultNodeController({ localNode, setLocalNode }) {
                   <option value="<">&lt;</option>
                   <option value=">=">&gt;=</option>
                   <option value="<=">&lt;=</option>
-                  <option value="contains">{t('contains')}</option>
-                  <option value="!contains">!{t('contains')}</option>
+                  <option value="contains">{t("contains")}</option>
+                  <option value="!contains">!{t("contains")}</option>
                 </select>
                 <input
                   className={styles.quickReplyInput}
                   value={cond.value}
                   onChange={(e) =>
-                    handleConditionChange(index, 'value', e.target.value)
+                    handleConditionChange(index, "value", e.target.value)
                   }
-                  placeholder={t('Value to compare')}
+                  placeholder={t("Value to compare")}
                 />
                 <button
                   onClick={() => deleteCondition(index)}
@@ -192,22 +192,22 @@ function DefaultNodeController({ localNode, setLocalNode }) {
               </div>
             ))}
             <button onClick={addCondition} className={styles.addReplyButton}>
-              + {t('Add Condition')}
+              + {t("Add Condition")}
             </button>
           </div>
         </div>
       ) : (
-        (type === 'message' ||
-          type === 'slotfilling' ||
-          type === 'branch' ||
-          type === 'fixedmenu') && (
+        (type === "message" ||
+          type === "slotfilling" ||
+          type === "branch" ||
+          type === "fixedmenu") && (
           <div className={styles.formGroup}>
             <label>
-              {type === 'branch'
-                ? 'Branches'
-                : type === 'fixedmenu'
-                  ? 'Menus'
-                  : 'Quick Replies'}
+              {type === "branch"
+                ? "Branches"
+                : type === "fixedmenu"
+                  ? "Menus"
+                  : "Quick Replies"}
             </label>
             <div className={styles.repliesContainer}>
               {data.replies?.map((reply, index) => (
@@ -216,18 +216,18 @@ function DefaultNodeController({ localNode, setLocalNode }) {
                     className={styles.quickReplyInput}
                     value={reply.display}
                     onChange={(e) =>
-                      localUpdateReply(index, 'display', e.target.value)
+                      localUpdateReply(index, "display", e.target.value)
                     }
                     placeholder="Display text"
                   />
-                  {type !== 'branch' && type !== 'fixedmenu' && (
+                  {type !== "branch" && type !== "fixedmenu" && (
                     <input
                       className={styles.quickReplyInput}
                       value={reply.value}
                       onChange={(e) =>
-                        localUpdateReply(index, 'value', e.target.value)
+                        localUpdateReply(index, "value", e.target.value)
                       }
-                      placeholder={t('Actual value')}
+                      placeholder={t("Actual value")}
                     />
                   )}
                   <button
@@ -239,11 +239,11 @@ function DefaultNodeController({ localNode, setLocalNode }) {
                 </div>
               ))}
               <button onClick={localAddReply} className={styles.addReplyButton}>
-                {type === 'branch'
-                  ? `+ ${t('Add Branch')}`
-                  : type === 'fixedmenu'
-                    ? `+ ${t('Add Menu')}`
-                    : `+ ${t('Add Reply')}`}
+                {type === "branch"
+                  ? `+ ${t("Add Branch")}`
+                  : type === "fixedmenu"
+                    ? `+ ${t("Add Menu")}`
+                    : `+ ${t("Add Reply")}`}
               </button>
             </div>
           </div>

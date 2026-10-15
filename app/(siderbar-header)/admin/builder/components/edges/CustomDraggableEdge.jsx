@@ -1,4 +1,4 @@
-import { BaseEdge, EdgeLabelRenderer } from 'reactflow';
+import { BaseEdge, EdgeLabelRenderer } from "reactflow";
 
 function CustomDraggableEdge(props) {
   const {
@@ -28,7 +28,7 @@ function CustomDraggableEdge(props) {
     const initialY = controlY;
 
     const updateEdgeControlPoint = data?.updateEdgeControlPoint;
-    if (typeof updateEdgeControlPoint !== 'function') {
+    if (typeof updateEdgeControlPoint !== "function") {
       return;
     }
 
@@ -43,12 +43,12 @@ function CustomDraggableEdge(props) {
     };
 
     const onMouseUp = () => {
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseup', onMouseUp);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
     };
 
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
   };
 
   return (
@@ -59,16 +59,16 @@ function CustomDraggableEdge(props) {
         <EdgeLabelRenderer>
           <div
             style={{
-              position: 'absolute',
+              position: "absolute",
               transform: `translate(-50%, -50%) translate(${controlX}px, ${controlY}px)`,
-              pointerEvents: 'all',
+              pointerEvents: "all",
               width: 14,
               height: 14,
-              borderRadius: '9999px',
-              background: '#2563eb',
-              border: '2px solid #ffffff',
-              cursor: 'grab',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+              borderRadius: "9999px",
+              background: "#2563eb",
+              border: "2px solid #ffffff",
+              cursor: "grab",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
               zIndex: 30,
             }}
             onMouseDown={onMouseDown}

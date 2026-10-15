@@ -1,7 +1,7 @@
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
 
-import { useBuilderStore } from '../../store/index';
-import styles from '../NodeController.module.css';
+import { useBuilderStore } from "../../store/index";
+import styles from "../NodeController.module.css";
 
 type GroupLocalNode = {
   id: string;
@@ -44,7 +44,7 @@ function GroupNodeController({
       selectedGroupNodes.some((node: any) => node.id === edge.target),
   );
   const data = localNode.data || {};
-  const title = data.label || data.title || '';
+  const title = data.label || data.title || "";
   const childNodes = (nodes as BuilderNodeSummary[]).filter(
     (node) => node.parentNode === localNode.id,
   );
@@ -62,7 +62,7 @@ function GroupNodeController({
 
   const openNodePicker = () => {
     window.dispatchEvent(
-      new CustomEvent('flow-uipath:add-group-node', {
+      new CustomEvent("flow-uipath:add-group-node", {
         detail: { groupId: localNode.id },
       }),
     );
@@ -71,16 +71,16 @@ function GroupNodeController({
   return (
     <>
       <div className={styles.formGroup}>
-        <label>{t('Group header')}</label>
+        <label>{t("Group header")}</label>
         <input
           value={title}
           onChange={(event) => updateTitle(event.target.value)}
-          placeholder={t('Selected Group')}
+          placeholder={t("Selected Group")}
         />
       </div>
 
       <div className={styles.formGroup}>
-        <label>{t('Nodes')}</label>
+        <label>{t("Nodes")}</label>
         <div className={styles.repliesContainer}>
           {childNodes.length > 0 ? (
             childNodes.map((node, index) => (
@@ -101,7 +101,7 @@ function GroupNodeController({
               </button>
             ))
           ) : (
-            <p className={styles.placeholder}>{t('No nodes added')}.</p>
+            <p className={styles.placeholder}>{t("No nodes added")}.</p>
           )}
         </div>
         <button
@@ -109,7 +109,7 @@ function GroupNodeController({
           className={styles.addReplyButton}
           onClick={openNodePicker}
         >
-          + {t('Add Node')}
+          + {t("Add Node")}
         </button>
         {/* hidden scenario viewer button per user request */}
         <button
@@ -121,16 +121,21 @@ function GroupNodeController({
             // console.log("selectedGroupEdges================> ", selectedGroupEdges)
             if (selectedGroupNodes) {
               window.dispatchEvent(
-                new CustomEvent('flow:open-groupNodes-tab', {
-                  detail: { id: localNode.id, name: title, nodes: selectedGroupNodes, edges: selectedGroupEdges },
+                new CustomEvent("flow:open-groupNodes-tab", {
+                  detail: {
+                    id: localNode.id,
+                    name: title,
+                    nodes: selectedGroupNodes,
+                    edges: selectedGroupEdges,
+                  },
                 }),
               );
             } else {
-              alert(t('Please select a scenario first.'));
+              alert(t("Please select a scenario first."));
             }
           }}
         >
-          {t('Open Scenario in Tab')}
+          {t("Open Scenario in Tab")}
         </button>
       </div>
     </>

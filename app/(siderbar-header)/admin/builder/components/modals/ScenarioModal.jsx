@@ -1,15 +1,15 @@
-import { useState, useEffect } from 'react';
-import { useModal } from '@/providers/ModalProvider';
+import { useState, useEffect } from "react";
+import { useModal } from "@/providers/ModalProvider";
 
-import styles from './ScenarioModal.module.css';
-import { useTranslation } from 'react-i18next';
+import styles from "./ScenarioModal.module.css";
+import { useTranslation } from "react-i18next";
 
 function ScenarioModal({ isOpen, onClose, onSave, scenario }) {
   const { t } = useTranslation();
-  const [name, setName] = useState('');
+  const [name, setName] = useState("");
   // <<< [수정] job 상태 제거 >>>
   // const [job, setJob] = useState('Batch');
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState("");
   const { showAlert } = useModal();
 
   const isEditMode = !!scenario;
@@ -17,15 +17,15 @@ function ScenarioModal({ isOpen, onClose, onSave, scenario }) {
   useEffect(() => {
     if (isOpen) {
       if (isEditMode) {
-        setName(scenario.name || '');
+        setName(scenario.name || "");
         // <<< [수정] job 상태 설정 제거 >>>
         // setJob(scenario.job || 'Batch');
-        setDescription(scenario.description || '');
+        setDescription(scenario.description || "");
       } else {
-        setName('');
+        setName("");
         // <<< [수정] job 상태 설정 제거 >>>
         // setJob('Batch');
-        setDescription('');
+        setDescription("");
       }
     }
   }, [isOpen, scenario, isEditMode]);
@@ -33,14 +33,14 @@ function ScenarioModal({ isOpen, onClose, onSave, scenario }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (name.trim()) {
-      const jobToSave = isEditMode ? scenario.job || 'Process' : 'Process';
+      const jobToSave = isEditMode ? scenario.job || "Process" : "Process";
       onSave({
         name: name.trim(),
         job: jobToSave,
         description: description.trim(),
       });
     } else {
-      showAlert(t('Please enter a scenario name.'));
+      showAlert(t("Please enter a scenario name."));
     }
   };
 
@@ -51,24 +51,24 @@ function ScenarioModal({ isOpen, onClose, onSave, scenario }) {
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-        <h2>{isEditMode ? t('Edit Scenario') : t('Create New Scenario')}</h2>
+        <h2>{isEditMode ? t("Edit Scenario") : t("Create New Scenario")}</h2>
         {/* <<< [수정] 문구에서 Job Type 제거 --- */}
         <p>
           {isEditMode
-            ? t('Edit the name and description of your scenario')
+            ? t("Edit the name and description of your scenario")
             : t(
-                'Enter a name and optionally add a description for your new scenario',
+                "Enter a name and optionally add a description for your new scenario",
               )}
         </p>
         {/* --- [수정 끝] >>> */}
         <form onSubmit={handleSubmit}>
-          <label className={styles.label}>{t('Name')}</label>
+          <label className={styles.label}>{t("Name")}</label>
           <input
             type="text"
             className={styles.input}
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder={t('Scenario Name')}
+            placeholder={t("Scenario Name")}
             autoFocus
           />
           {/* --- 👇 [수정] Job Type 선택 UI 숨김 --- */}
@@ -86,15 +86,15 @@ function ScenarioModal({ isOpen, onClose, onSave, scenario }) {
           */}
           {/* --- 👆 [수정 끝] --- */}
           <label className={styles.label}>
-            {t('Description')} ({t('Optional')})
+            {t("Description")} ({t("Optional")})
           </label>
           <textarea
             className={styles.input}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder={t('Enter a brief description for the scenario')}
+            placeholder={t("Enter a brief description for the scenario")}
             rows={3}
-            style={{ resize: 'vertical' }}
+            style={{ resize: "vertical" }}
           />
           <div className={styles.buttonGroup}>
             <button
@@ -102,10 +102,10 @@ function ScenarioModal({ isOpen, onClose, onSave, scenario }) {
               className={styles.cancelButton}
               onClick={onClose}
             >
-              {t('Cancel')}
+              {t("Cancel")}
             </button>
             <button type="submit" className={styles.createButton}>
-              {isEditMode ? t('Save') : t('Create')}
+              {isEditMode ? t("Save") : t("Create")}
             </button>
           </div>
         </form>

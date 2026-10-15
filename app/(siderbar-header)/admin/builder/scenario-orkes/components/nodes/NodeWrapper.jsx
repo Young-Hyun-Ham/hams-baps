@@ -1,13 +1,13 @@
-import { Handle, Position } from 'reactflow';
-import { useEffect, useMemo, useState } from 'react';
+import { Handle, Position } from "reactflow";
+import { useEffect, useMemo, useState } from "react";
 
-import styles from './ChatNodes.module.css';
-import { useBuilderStore } from '../../../store';
-import { builderExecutionStore } from '../../../store/builderExecutionStore';
-import { AnchorIcon, StartNodeIcon } from '../icons/Icons';
+import styles from "./ChatNodes.module.css";
+import { useBuilderStore } from "../../../store";
+import { builderExecutionStore } from "../../../store/builderExecutionStore";
+import { AnchorIcon, StartNodeIcon } from "../icons/Icons";
 
-import { Loader2, CheckCircle2, ChevronDown, ChevronRight } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { Loader2, CheckCircle2, ChevronDown, ChevronRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const getNodeIdsToRemove = (nodes, edges, nodeId) => {
   const removeSet = new Set();
@@ -30,15 +30,15 @@ const getNodeIdsToRemove = (nodes, edges, nodeId) => {
     removeSet.add(targetId);
 
     if (
-      targetNode.type === 'scenario' ||
-      targetNode.type === 'selectionGroup'
+      targetNode.type === "scenario" ||
+      targetNode.type === "selectionGroup"
     ) {
       nodes
         .filter((child) => child.parentNode === targetId)
         .forEach((child) => collectNodeAndChildren(child.id));
     }
 
-    if (targetNode.type === 'branch') {
+    if (targetNode.type === "branch") {
       outgoingEdgesBySourceId
         .get(targetId)
         ?.forEach((edge) => collectBranchDescendant(edge.target));
@@ -85,7 +85,7 @@ function NodeWrapper({
   children,
   handles = null,
   headerButtons = null,
-  customClassName = '',
+  customClassName = "",
   style = {},
   collapseContentOnHeader = true,
 }) {
@@ -107,9 +107,9 @@ function NodeWrapper({
   );
   const childDeleteCount = useMemo(() => {
     if (
-      deleteTarget?.type !== 'branch' &&
-      deleteTarget?.type !== 'selectionGroup' &&
-      deleteTarget?.type !== 'scenario'
+      deleteTarget?.type !== "branch" &&
+      deleteTarget?.type !== "selectionGroup" &&
+      deleteTarget?.type !== "scenario"
     ) {
       return 0;
     }
@@ -124,7 +124,7 @@ function NodeWrapper({
   // Flow UiPath insert rule: page.tsx marks existing nodes as collapsed
   // after adding a node, and the shared wrapper applies that flag to the body.
   useEffect(() => {
-    if (typeof flowCollapsed === 'boolean') {
+    if (typeof flowCollapsed === "boolean") {
       setIsBodyCollapsed(flowCollapsed);
     }
   }, [flowCollapsed]);
@@ -140,7 +140,7 @@ function NodeWrapper({
 
     if (childDeleteCount > 0) {
       const confirmed = window.confirm(
-        t('This node has child nodes. Delete all child nodes as well?'),
+        t("This node has child nodes. Delete all child nodes as well?"),
       );
 
       if (!confirmed) return;
@@ -165,11 +165,11 @@ function NodeWrapper({
 
   return (
     <div
-      className={`${styles.nodeWrapper} ${isAnchored ? styles.anchored : ''} ${isStartNode ? styles.startNode : ''} ${customClassName}`}
+      className={`${styles.nodeWrapper} ${isAnchored ? styles.anchored : ""} ${isStartNode ? styles.startNode : ""} ${customClassName}`}
       style={{
         ...style,
-        '--node-accent': nodeColor || '#5f8fb8',
-        '--node-accent-text': textColor || '#ffffff',
+        "--node-accent": nodeColor || "#5f8fb8",
+        "--node-accent-text": textColor || "#ffffff",
       }}
     >
       {/* 플레이 추가 */}
@@ -192,13 +192,13 @@ function NodeWrapper({
 
       {/* 2. 공통 헤더 */}
       <div
-        className={`${styles.nodeHeader} ${isBodyCollapsed ? styles.nodeHeaderCollapsed : ''}`}
+        className={`${styles.nodeHeader} ${isBodyCollapsed ? styles.nodeHeaderCollapsed : ""}`}
         role="button"
         tabIndex={0}
-        title={isBodyCollapsed ? t('Expand') : t('Collapse')}
+        title={isBodyCollapsed ? t("Expand") : t("Collapse")}
         onClick={toggleBodyCollapsed}
         onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
+          if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
             toggleBodyCollapsed();
           }
@@ -221,8 +221,8 @@ function NodeWrapper({
               e.stopPropagation();
               setStartNodeId(id);
             }}
-            className={`${styles.startNodeButton} ${isStartNode ? styles.active : ''}`}
-            title={t('Set as Start Node')}
+            className={`${styles.startNodeButton} ${isStartNode ? styles.active : ""}`}
+            title={t("Set as Start Node")}
           >
             <StartNodeIcon />
           </button>
@@ -231,8 +231,8 @@ function NodeWrapper({
               e.stopPropagation();
               setAnchorNodeId(id);
             }}
-            className={`${styles.anchorButton} ${isAnchored ? styles.active : ''}`}
-            title={t('Set as anchor')}
+            className={`${styles.anchorButton} ${isAnchored ? styles.active : ""}`}
+            title={t("Set as anchor")}
           >
             <AnchorIcon />
           </button>

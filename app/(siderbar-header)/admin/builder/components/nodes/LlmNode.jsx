@@ -1,9 +1,9 @@
-import { Handle, Position } from 'reactflow';
-import styles from './ChatNodes.module.css';
-import { useBuilderStore } from '../../store/index';
+import { Handle, Position } from "reactflow";
+import styles from "./ChatNodes.module.css";
+import { useBuilderStore } from "../../store/index";
 // (AnchorIcon, StartNodeIcon 임포트 제거)
-import NodeWrapper from './NodeWrapper'; // 1. Wrapper 임포트
-import { useTranslation } from 'react-i18next';
+import NodeWrapper from "./NodeWrapper"; // 1. Wrapper 임포트
+import { useTranslation } from "react-i18next";
 
 function LlmNode({ id, data }) {
   const { t } = useTranslation();
@@ -25,7 +25,7 @@ function LlmNode({ id, data }) {
           id={cond.id}
           style={{
             top: `${((index + 1) / ((data.conditions?.length || 0) + 2)) * 100}%`,
-            background: '#555',
+            background: "#555",
           }}
         />
       ))}
@@ -35,19 +35,19 @@ function LlmNode({ id, data }) {
         id="default"
         style={{
           top: `${(((data.conditions?.length || 0) + 1) / ((data.conditions?.length || 0) + 2)) * 100}%`,
-          background: '#e74c3c',
+          background: "#e74c3c",
         }}
       />
       <div
         style={{
-          position: 'absolute',
+          position: "absolute",
           bottom: 10,
           right: -45,
-          fontSize: '11px',
-          color: '#e74c3c',
+          fontSize: "11px",
+          color: "#e74c3c",
         }}
       >
-        {t('Default')}
+        {t("Default")}
       </div>
     </>
   );
@@ -64,7 +64,7 @@ function LlmNode({ id, data }) {
     >
       {/* 5. 기존 nodeBody의 내용만 children으로 전달 */}
       <div className={styles.section}>
-        <span className={styles.sectionTitle}>{t('Prompt')}</span>
+        <span className={styles.sectionTitle}>{t("Prompt")}</span>
         <textarea
           className={styles.textInput}
           value={data.prompt}
@@ -73,16 +73,16 @@ function LlmNode({ id, data }) {
         />
       </div>
       <div className={styles.section}>
-        <span className={styles.sectionTitle}>{t('Output Variable')}</span>
+        <span className={styles.sectionTitle}>{t("Output Variable")}</span>
         <input
           type="text"
           className={styles.textInput}
-          value={data.outputVar || ''}
+          value={data.outputVar || ""}
           readOnly
         />
       </div>
       <div className={styles.section}>
-        <span className={styles.sectionTitle}>{t('Conditions')}:</span>
+        <span className={styles.sectionTitle}>{t("Conditions")}:</span>
         <div className={styles.branchOptionsContainer}>
           {data.conditions?.map((cond, index) => (
             <div key={cond.id} className={styles.branchOption}>
@@ -92,7 +92,7 @@ function LlmNode({ id, data }) {
           ))}
           {data.conditions?.length === 0 && (
             <div className={styles.formElementsPlaceholder}>
-              {t('No conditions added')}.
+              {t("No conditions added")}.
             </div>
           )}
         </div>

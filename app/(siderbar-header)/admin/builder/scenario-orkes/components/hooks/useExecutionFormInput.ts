@@ -1,15 +1,15 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from "react";
 
-import { builderExecutionStore } from '../../../store/builderExecutionStore';
-import { getExecutionElementKey } from '../modals/ExecutionFormInputModal';
+import { builderExecutionStore } from "../../../store/builderExecutionStore";
+import { getExecutionElementKey } from "../modals/ExecutionFormInputModal";
 
-import type { ExecutionFormElement } from '../../types';
+import type { ExecutionFormElement } from "../../types";
 
-import apiClient from '@/lib/api/apiClient';
+import apiClient from "@/lib/api/apiClient";
 import {
   mapResponseToTargetElement,
   parseOptionalParameter,
-} from '../../../form-builder/components/CustomElementPropertyEditor';
+} from "../../../form-builder/components/CustomElementPropertyEditor";
 
 const DEFAULT_FORM_API_HEADERS = `{
   "Content-Type":"application/json",
@@ -31,7 +31,6 @@ export function useExecutionFormInput() {
 
   useEffect(() => {
     if (!pendingFormInput) {
-
       setExecutionFormElements([]);
       setExecutionFormValues({});
       return;
@@ -74,14 +73,14 @@ export function useExecutionFormInput() {
           (item.name ? nextValues[item.name] : undefined) ??
           (item.id ? nextValues[item.id] : undefined) ??
           item.defaultValue ??
-          '';
+          "";
 
         if (item.id) sourceValues[item.id] = value;
         if (item.name) sourceValues[item.name] = value;
       });
 
       const sourceKey = getExecutionElementKeyByElement(sourceElement);
-      const sourceValue = nextValues[sourceKey] ?? '';
+      const sourceValue = nextValues[sourceKey] ?? "";
       sourceValues.value = sourceValue;
 
       let payload: Record<string, unknown> = {};
@@ -91,7 +90,7 @@ export function useExecutionFormInput() {
           sourceValues,
         );
       } catch (error) {
-        console.warn('Invalid Optional Parameter JSON:', error);
+        console.warn("Invalid Optional Parameter JSON:", error);
       }
 
       return payload;
@@ -132,10 +131,10 @@ export function useExecutionFormInput() {
 
           const allowedValues = new Set(
             (mappedTarget.options ?? []).map((option, index) => {
-              if (option && typeof option === 'object') {
+              if (option && typeof option === "object") {
                 return String(option.value ?? option.label ?? index + 1);
               }
-              return String(option ?? '');
+              return String(option ?? "");
             }),
           );
           const currentValue = currentValues[targetKey];
@@ -145,7 +144,7 @@ export function useExecutionFormInput() {
 
           return isStillValid
             ? currentValues
-            : { ...currentValues, [targetKey]: '' };
+            : { ...currentValues, [targetKey]: "" };
         });
 
         return prev.map((item) =>
@@ -162,17 +161,17 @@ export function useExecutionFormInput() {
       nextValues: Record<string, unknown>,
     ) => {
       const endpoint =
-        typeof element.apiData?.endPoint === 'string'
+        typeof element.apiData?.endPoint === "string"
           ? element.apiData.endPoint.trim()
-          : '';
+          : "";
       if (!endpoint || !element.targetElementId) return;
 
       const method =
-        typeof element.apiData?.method === 'string'
+        typeof element.apiData?.method === "string"
           ? element.apiData.method.toLowerCase()
-          : 'get';
+          : "get";
       const headersText =
-        typeof element.apiData?.headers === 'string' &&
+        typeof element.apiData?.headers === "string" &&
         element.apiData.headers.trim()
           ? element.apiData.headers.trim()
           : DEFAULT_FORM_API_HEADERS;
@@ -184,17 +183,17 @@ export function useExecutionFormInput() {
         const sourceKey = getExecutionElementKeyByElement(element);
         const parameterParams = parameterKey
           ? {
-              [parameterKey]: nextValues[sourceKey] ?? '',
+              [parameterKey]: nextValues[sourceKey] ?? "",
             }
           : {};
         const clientMethod = apiClient[
           method as keyof typeof apiClient
         ] as unknown as (...args: any[]) => Promise<unknown>;
 
-        if (typeof clientMethod !== 'function') return;
+        if (typeof clientMethod !== "function") return;
 
         const response =
-          method === 'get' || method === 'delete'
+          method === "get" || method === "delete"
             ? await clientMethod(endpoint, {
                 params: {
                   ...payload,
@@ -209,7 +208,7 @@ export function useExecutionFormInput() {
 
         applyExecutionApiResponseToTarget(element, response);
       } catch (error) {
-        console.error('Execution form onchange API call failed:', error);
+        console.error("Execution form onchange API call failed:", error);
       }
     },
     [
@@ -230,23 +229,23 @@ export function useExecutionFormInput() {
         if (element?.sendByOption) {
           const current =
             prev[name] &&
-            typeof prev[name] === 'object' &&
+            typeof prev[name] === "object" &&
             !Array.isArray(prev[name])
               ? (prev[name] as Record<string, unknown>)
               : {};
           const option = element.options?.find((item) =>
-            typeof item === 'string' ? item === value : item.value === value,
+            typeof item === "string" ? item === value : item.value === value,
           );
           const param =
-            typeof option === 'string'
+            typeof option === "string"
               ? option
               : option?.param?.trim() || option?.value || value;
           const nextValues = {
             ...prev,
-            [name]: { ...current, [param]: checked ? 'Y' : 'N' },
+            [name]: { ...current, [param]: checked ? "Y" : "N" },
           };
 
-          if (element.eventType === 'onChange') {
+          if (element.eventType === "onChange") {
             void runExecutionFormElementApi(element, nextValues);
           }
 
@@ -261,7 +260,7 @@ export function useExecutionFormInput() {
             : current.filter((item) => item !== value),
         };
 
-        if (element?.eventType === 'onChange') {
+        if (element?.eventType === "onChange") {
           void runExecutionFormElementApi(element, nextValues);
         }
 
@@ -279,7 +278,7 @@ export function useExecutionFormInput() {
           [name]: value,
         };
 
-        if (element?.eventType === 'onChange') {
+        if (element?.eventType === "onChange") {
           void runExecutionFormElementApi(element, nextValues);
         }
 

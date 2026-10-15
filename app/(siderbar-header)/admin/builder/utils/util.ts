@@ -1,13 +1,13 @@
-import type { LOCALE_TIME, LOCALE_TIME_TYPE } from '../types/types';
+import type { LOCALE_TIME, LOCALE_TIME_TYPE } from "../types/types";
 
 export const getSafeUUID = (): string => {
   // 1. 브라우저/Node 환경에서 표준 API가 존재하는지 확인
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
     return crypto.randomUUID();
   }
 
   // 2. 구형 브라우저나 비보안(HTTP) 환경을 위한 대체 로직 (RFC4122 준수)
-  if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+  if (typeof crypto !== "undefined" && crypto.getRandomValues) {
     return (([1e7] as any) + -1e3 + -4e3 + -8e3 + -1e11).replace(
       /[018]/g,
       (c: any) =>
@@ -19,9 +19,9 @@ export const getSafeUUID = (): string => {
   }
 
   // 3. 최후의 수단 (보안성은 낮으나 오류는 방지함)
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
 };
@@ -75,12 +75,13 @@ export const toLocaleTimeValue = (
 export function formatDateTime(dateString: any) {
   // dateString이 유효하지 않으면 빈 문자열을 반환합니다.
   if (!dateString) {
-    return '';
+    return "";
   }
 
   let date: Date;
-  if (typeof dateString === 'object') {
-    const milliseconds = (dateString.seconds * 1000) + Math.floor(dateString.nanoseconds / 1000000);
+  if (typeof dateString === "object") {
+    const milliseconds =
+      dateString.seconds * 1000 + Math.floor(dateString.nanoseconds / 1000000);
     date = new Date(milliseconds);
   } else {
     date = new Date(dateString);
@@ -88,11 +89,11 @@ export function formatDateTime(dateString: any) {
 
   // 각 부분(년, 월, 일, 시, 분, 초)을 추출합니다.
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작하므로 +1
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  const seconds = String(date.getSeconds()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, "0"); // 월은 0부터 시작하므로 +1
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const seconds = String(date.getSeconds()).padStart(2, "0");
 
   // 형식에 맞게 문자열을 조합하여 반환합니다.
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
@@ -108,10 +109,10 @@ export function formatDateTime(dateString: any) {
 export function compareObjectsByHierarchicalId<T extends Record<string, any>>(
   a: T,
   b: T,
-  key: keyof T = 'index',
+  key: keyof T = "index",
 ): number {
-  const aParts = String(a[key]).split('.').map(Number);
-  const bParts = String(b[key]).split('.').map(Number);
+  const aParts = String(a[key]).split(".").map(Number);
+  const bParts = String(b[key]).split(".").map(Number);
 
   const len = Math.max(aParts.length, bParts.length);
   for (let i = 0; i < len; i++) {
@@ -127,17 +128,17 @@ export function compareObjectsByHierarchicalId<T extends Record<string, any>>(
  */
 export const downloadFile = (data: Blob | string, fileName: string) => {
   const url =
-    typeof data === 'string' ? data : window.URL.createObjectURL(data);
+    typeof data === "string" ? data : window.URL.createObjectURL(data);
 
-  const link = document.createElement('a');
+  const link = document.createElement("a");
   link.href = url;
-  link.setAttribute('download', fileName);
+  link.setAttribute("download", fileName);
 
   document.body.appendChild(link);
   link.click();
 
   document.body.removeChild(link);
-  if (typeof data !== 'string') {
+  if (typeof data !== "string") {
     window.URL.revokeObjectURL(url);
   }
 };

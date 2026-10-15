@@ -1,29 +1,29 @@
-'use client';
+"use client";
 
-import { RefObject, useCallback, useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { ReactFlowProvider, useReactFlow } from 'reactflow';
+import { RefObject, useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { ReactFlowProvider, useReactFlow } from "reactflow";
 
-import 'reactflow/dist/style.css';
-import { Box, Button, IconButton, Typography } from '@mui/material';
-import { ArrowLeft, Save, Search, Settings } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import "reactflow/dist/style.css";
+import { Box, Button, IconButton, Typography } from "@mui/material";
+import { ArrowLeft, Save, Search, Settings } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
-import slotStyles from '../components/SlotDisplay.module.css';
-import { createNodeData } from '../utils/nodeFactory';
-import { useBuilderStore } from '../store';
+import slotStyles from "../components/SlotDisplay.module.css";
+import { createNodeData } from "../utils/nodeFactory";
+import { useBuilderStore } from "../store";
 import ActivityPickerModal, {
   type ActivityType,
-} from './components/modals/ActivityPickerModal';
-import NodeController from '../components/NodeController';
-import FlowCanvas from './components/FlowCanvas';
-import { createWorkflowEdge, panelBorder } from './components/BuildTopDownFlow';
-import { MemoCanvasItem } from '../components/CanvasMemoItem';
-import CanvasMemoLayer from '../components/CanvasMemoLayer';
-import SlotPanel from './components/SlotPanel';
-import ScenarioEditModal from '../components/modals/ScenarioEditModal';
-import ScenarioNodesSettingModal from '../components/modals/ScenarioNodesSettingModal';
-import { createScenario } from '../services/fastApi';
+} from "./components/modals/ActivityPickerModal";
+import NodeController from "../components/NodeController";
+import FlowCanvas from "./components/FlowCanvas";
+import { createWorkflowEdge, panelBorder } from "./components/BuildTopDownFlow";
+import { MemoCanvasItem } from "../components/CanvasMemoItem";
+import CanvasMemoLayer from "../components/CanvasMemoLayer";
+import SlotPanel from "./components/SlotPanel";
+import ScenarioEditModal from "../components/modals/ScenarioEditModal";
+import ScenarioNodesSettingModal from "../components/modals/ScenarioNodesSettingModal";
+import { createScenario } from "../services/fastApi";
 
 import type {
   BuilderEdge,
@@ -32,10 +32,10 @@ import type {
   InsertTarget,
   ScenarioSummary,
   SidebarMenuData,
-} from './types';
+} from "./types";
 
-import { useModal } from '@/providers/ModalProvider';
-import { getSafeUUID } from '../utils/util';
+import { useModal } from "@/providers/ModalProvider";
+import { getSafeUUID } from "../utils/util";
 
 function FlowUiPathPageContent() {
   const { showAlert, showConfirm } = useModal();
@@ -63,12 +63,12 @@ function FlowUiPathPageContent() {
   } = useBuilderStore() as any;
   const setStartNodeId = useBuilderStore((state) => state.setStartNodeId);
   const [insertTarget, setInsertTarget] = useState<InsertTarget | null>(null);
-  const [activitySearch, setActivitySearch] = useState('');
+  const [activitySearch, setActivitySearch] = useState("");
   const [recentTypes, setRecentTypes] = useState<ActivityType[]>([
-    'message',
-    'setSlot',
-    'branch',
-    'form',
+    "message",
+    "setSlot",
+    "branch",
+    "form",
   ]);
   const [play, setPlay] = useState<boolean>(false);
   const [sidebarData, setSidebarData] = useState<SidebarMenuData | null>(null);
@@ -85,9 +85,9 @@ function FlowUiPathPageContent() {
     : [];
 
   const unuseNodes = insertTarget?.targetId
-    ? baseUnuseNodes.includes('branch')
+    ? baseUnuseNodes.includes("branch")
       ? [...baseUnuseNodes]
-      : [...baseUnuseNodes, 'branch']
+      : [...baseUnuseNodes, "branch"]
     : [...baseUnuseNodes];
 
   useEffect(() => {
@@ -101,34 +101,32 @@ function FlowUiPathPageContent() {
         const data: any = await fetchScenarios({});
         setScenarios(data ?? []);
       } catch (error) {
-        console.error('Error fetching rows:', error);
-        throw new Error('Failed to fetch');
+        console.error("Error fetching rows:", error);
+        throw new Error("Failed to fetch");
       }
     };
 
     const onLoadSettings = async (type: string) => {
       const userInfo = await loadingUserData();
       if (userInfo.unuseNodes?.includes(type)) {
-        showAlert(
-          `${t('The node does not have modification privileges')}`,
-        );
+        showAlert(`${t("The node does not have modification privileges")}`);
         return;
       }
     };
 
     onLoadScenarios();
-    onLoadSettings('settingNodes');
+    onLoadSettings("settingNodes");
   }, []);
 
   const closeActivityPicker = () => {
     setInsertTarget(null);
-    setActivitySearch('');
+    setActivitySearch("");
   };
 
   const openActivityPicker = useCallback(
     async (target: InsertTarget) => {
       setInsertTarget(target);
-      setActivitySearch('');
+      setActivitySearch("");
       // if (sidebarData?.isLeaf && sidebarData.isScenario) {
       //   setInsertTarget(target);
       //   setActivitySearch('');
@@ -156,11 +154,11 @@ function FlowUiPathPageContent() {
       openActivityPicker({ parentId: groupId });
     };
 
-    window.addEventListener('flow-uipath:add-group-node', handleGroupNodeAdd);
+    window.addEventListener("flow-uipath:add-group-node", handleGroupNodeAdd);
 
     return () => {
       window.removeEventListener(
-        'flow-uipath:add-group-node',
+        "flow-uipath:add-group-node",
         handleGroupNodeAdd,
       );
     };
@@ -170,7 +168,7 @@ function FlowUiPathPageContent() {
     if (!insertTarget) return;
     if (
       unuseNodes.includes(type) ||
-      (type === 'branch' && insertTarget.targetId)
+      (type === "branch" && insertTarget.targetId)
     )
       return;
 
@@ -212,13 +210,13 @@ function FlowUiPathPageContent() {
       type,
       position,
       parentNode: parentNode?.id,
-      extent: parentNode ? 'parent' : undefined,
+      extent: parentNode ? "parent" : undefined,
       data: {
         ...data,
         flowCollapsed: false,
       },
     };
-    const insertedNodeNextSourceHandle = type === 'api' ? 'onSuccess' : null;
+    const insertedNodeNextSourceHandle = type === "api" ? "onSuccess" : null;
 
     if (parentNode) {
       const groupChildren = nodes
@@ -317,7 +315,7 @@ function FlowUiPathPageContent() {
       data: {
         ...node.data,
         flowCollapsed:
-          node.type === 'branch' || node.type === 'selectionGroup'
+          node.type === "branch" || node.type === "selectionGroup"
             ? false
             : true,
       },
@@ -381,9 +379,9 @@ function FlowUiPathPageContent() {
         backgroundOpacity: 0.9,
         width: 400,
         height: 240,
-        text: '',
-        backgroundColor: '#fff7c2',
-        textColor: '#111827',
+        text: "",
+        backgroundColor: "#fff7c2",
+        textColor: "#111827",
         isCollapsed: false,
         zIndex: prev.length + 1,
       },
@@ -499,12 +497,12 @@ function FlowUiPathPageContent() {
       resizeStateRef.current = null;
     };
 
-    window.addEventListener('pointermove', handlePointerMove);
-    window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
 
     return () => {
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
     };
   }, [clampMemoPosition, viewport.zoom]);
 
@@ -588,9 +586,9 @@ function FlowUiPathPageContent() {
             }
           : { ...prev },
       );
-      showAlert(`${t('success')}`);
+      showAlert(`${t("success")}`);
     } catch (e) {
-      showAlert(`${t('error')}`);
+      showAlert(`${t("error")}`);
     }
   };
 
@@ -607,11 +605,11 @@ function FlowUiPathPageContent() {
   return (
     <Box
       sx={{
-        height: '100%',
+        height: "100%",
         minHeight: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        bgcolor: '#fff',
+        display: "flex",
+        flexDirection: "column",
+        bgcolor: "#fff",
         border: `1px solid ${panelBorder}`,
       }}
     >
@@ -619,8 +617,8 @@ function FlowUiPathPageContent() {
         sx={{
           height: 48,
           borderBottom: `1px solid ${panelBorder}`,
-          display: 'flex',
-          alignItems: 'center',
+          display: "flex",
+          alignItems: "center",
           gap: 1,
           px: 1,
           flexShrink: 0,
@@ -637,14 +635,14 @@ function FlowUiPathPageContent() {
             flex: 1,
             fontSize: 14,
             fontWeight: 700,
-            color: '#26323d',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
+            color: "#26323d",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
           }}
         >
-          {scenario?.name ? 'Selected Scenario Title : ' : ''}
-          {scenario?.name || scenario?.scenario_nm || ''}
+          {scenario?.name ? "Selected Scenario Title : " : ""}
+          {scenario?.name || scenario?.scenario_nm || ""}
         </Typography>
         <IconButton
           size="small"
@@ -675,15 +673,15 @@ function FlowUiPathPageContent() {
         onClose={() => setIsNodesSettingModalOpen(false)}
       />
 
-      <Box sx={{ flex: 1, minHeight: 0, display: 'flex' }}>
+      <Box sx={{ flex: 1, minHeight: 0, display: "flex" }}>
         <Box
           sx={{
-            position: 'relative',
+            position: "relative",
             flex: 1,
             minWidth: 0,
             minHeight: 0,
-            display: 'flex',
-            overflow: 'hidden',
+            display: "flex",
+            overflow: "hidden",
           }}
         >
           <FlowCanvas
@@ -714,11 +712,11 @@ function FlowUiPathPageContent() {
           sx={{
             width: selectedNodeId || play ? 420 : 0,
             flexShrink: 0,
-            overflow: 'hidden',
+            overflow: "hidden",
             borderLeft:
-              selectedNodeId || play ? `1px solid ${panelBorder}` : 'none',
-            transition: 'width 160ms ease',
-            bgcolor: '#fff',
+              selectedNodeId || play ? `1px solid ${panelBorder}` : "none",
+            transition: "width 160ms ease",
+            bgcolor: "#fff",
           }}
         >
           {play ? <SlotPanel /> : selectedNodeId ? <NodeController /> : null}

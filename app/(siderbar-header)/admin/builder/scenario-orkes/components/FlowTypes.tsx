@@ -1,19 +1,19 @@
-import { Box, Typography } from '@mui/material';
-import { CirclePlus } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import { Handle, Position, type EdgeProps, type NodeProps } from 'reactflow';
+import { Box, Typography } from "@mui/material";
+import { CirclePlus } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { Handle, Position, type EdgeProps, type NodeProps } from "reactflow";
 
-import ApiNode from './nodes/ApiNode';
-import BranchNode from './nodes/BranchNode';
-import FormNode from './nodes/FormNode';
-import GroupNode from './nodes/GroupNode';
-import IframeNode from './nodes/IframeNode';
-import LinkNode from './nodes/LinkNode';
-import MessageNode from './nodes/MessageNode';
-import ScenarioNode from './nodes/ScenarioNode';
-import SetSlotNode from './nodes/SetSlotNode';
+import ApiNode from "./nodes/ApiNode";
+import BranchNode from "./nodes/BranchNode";
+import FormNode from "./nodes/FormNode";
+import GroupNode from "./nodes/GroupNode";
+import IframeNode from "./nodes/IframeNode";
+import LinkNode from "./nodes/LinkNode";
+import MessageNode from "./nodes/MessageNode";
+import ScenarioNode from "./nodes/ScenarioNode";
+import SetSlotNode from "./nodes/SetSlotNode";
 
-import type { AddNodeData } from '../types';
+import type { AddNodeData } from "../types";
 
 function StartNode() {
   const { t } = useTranslation();
@@ -23,17 +23,17 @@ function StartNode() {
       sx={{
         width: 54,
         height: 54,
-        borderRadius: '50%',
-        border: '3px solid #72adc2',
-        bgcolor: '#fff',
-        boxShadow: '0 5px 14px rgba(40, 88, 110, 0.16)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        borderRadius: "50%",
+        border: "3px solid #72adc2",
+        bgcolor: "#fff",
+        boxShadow: "0 5px 14px rgba(40, 88, 110, 0.16)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
       }}
     >
-      <Typography sx={{ fontSize: 10, fontWeight: 700, color: '#426b7b' }}>
-        {t('Start')}
+      <Typography sx={{ fontSize: 10, fontWeight: 700, color: "#426b7b" }}>
+        {t("Start")}
       </Typography>
       <Handle type="source" position={Position.Bottom} style={{ opacity: 0 }} />
     </Box>
@@ -48,18 +48,18 @@ function EndNode() {
       sx={{
         width: 54,
         height: 54,
-        borderRadius: '50%',
-        border: '3px solid #a7b6c2',
-        bgcolor: '#fff',
-        boxShadow: '0 5px 14px rgba(15, 23, 42, 0.12)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        borderRadius: "50%",
+        border: "3px solid #a7b6c2",
+        bgcolor: "#fff",
+        boxShadow: "0 5px 14px rgba(15, 23, 42, 0.12)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
       }}
     >
       <Handle type="target" position={Position.Top} style={{ opacity: 0 }} />
-      <Typography sx={{ fontSize: 10, fontWeight: 700, color: '#64748b' }}>
-        {t('End')}
+      <Typography sx={{ fontSize: 10, fontWeight: 700, color: "#64748b" }}>
+        {t("End")}
       </Typography>
     </Box>
   );
@@ -77,19 +77,19 @@ function AddFlowNode({ data }: NodeProps<AddNodeData>) {
       sx={{
         width: 18,
         height: 18,
-        borderRadius: '50%',
+        borderRadius: "50%",
         border: `1px solid #c9d4de`,
-        bgcolor: '#fff',
-        color: '#93a3af',
-        display: 'grid',
-        placeItems: 'center',
-        cursor: 'pointer',
+        bgcolor: "#fff",
+        color: "#93a3af",
+        display: "grid",
+        placeItems: "center",
+        cursor: "pointer",
         p: 0,
-        boxShadow: '0 1px 5px rgba(15, 23, 42, 0.12)',
-        '&:hover': {
-          borderColor: '#0f6cbd',
-          color: '#0f6cbd',
-          bgcolor: '#f5fbff',
+        boxShadow: "0 1px 5px rgba(15, 23, 42, 0.12)",
+        "&:hover": {
+          borderColor: "#0f6cbd",
+          color: "#0f6cbd",
+          bgcolor: "#f5fbff",
         },
       }}
     >
@@ -132,9 +132,9 @@ function EndMergeEdge({
       d={edgePath}
       className="react-flow__edge-path"
       style={{
-        stroke: '#8f9daa',
+        stroke: "#8f9daa",
         strokeWidth: 1.35,
-        fill: 'none',
+        fill: "none",
         ...style,
       }}
     />
@@ -165,9 +165,9 @@ function FanoutCurveEdge({
       className="react-flow__edge-path"
       markerEnd={markerEnd}
       style={{
-        stroke: '#8f9daa',
+        stroke: "#8f9daa",
         strokeWidth: 1.35,
-        fill: 'none',
+        fill: "none",
         ...style,
       }}
     />
@@ -198,9 +198,9 @@ function BranchFanoutCurveEdge({
       className="react-flow__edge-path"
       markerEnd={markerEnd}
       style={{
-        stroke: '#8f9daa',
+        stroke: "#8f9daa",
         strokeWidth: 1.35,
-        fill: 'none',
+        fill: "none",
         ...style,
       }}
     />

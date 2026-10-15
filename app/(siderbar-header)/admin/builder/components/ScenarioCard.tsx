@@ -7,16 +7,16 @@ import {
   Popover,
   MenuItem,
   ListItemText,
-} from '@mui/material';
-import { CheckCircle, MoreVert } from '@mui/icons-material';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useTranslation } from 'react-i18next';
+} from "@mui/material";
+import { CheckCircle, MoreVert } from "@mui/icons-material";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
 
-import { Scenario } from '../types/types';
+import { Scenario } from "../types/types";
 
-import { COLORS } from '@/lib/constants/color';
-import { formatDateTime } from '../utils/util';
+import { COLORS } from "@/lib/constants/color";
+import { formatDateTime } from "../utils/util";
 
 export function ScenarioCard({
   scenario,
@@ -30,13 +30,13 @@ export function ScenarioCard({
   onClone,
   disableClick = false,
   disableActions = false,
-  mode = 'default',
+  mode = "default",
   versionChips,
 }: {
   scenario: Scenario;
   selected?: boolean;
   focused?: boolean;
-  mode?: 'default' | 'popup';
+  mode?: "default" | "popup";
   showProgressId?: boolean;
   onSelect?: (scenario: Scenario) => void;
   onEdit?: (scenario: Scenario) => void;
@@ -68,10 +68,10 @@ export function ScenarioCard({
     <Card
       key={scenario.id}
       sx={{
-        border: (mode === 'popup' && selected) || selected ? 2 : 1,
+        border: (mode === "popup" && selected) || selected ? 2 : 1,
         borderColor:
-          mode === 'popup' && selected
-            ? '#16a34a'
+          mode === "popup" && selected
+            ? "#16a34a"
             : selected
               ? COLORS.primary.main
               : focused
@@ -79,24 +79,24 @@ export function ScenarioCard({
                 : COLORS.blueGrey[100],
         borderRadius: 2,
         minWidth: 0,
-        width: '100%',
-        cursor: disableClick ? 'grab' : 'pointer',
-        height: '100%',
+        width: "100%",
+        cursor: disableClick ? "grab" : "pointer",
+        height: "100%",
         backgroundColor:
-          mode === 'popup' && selected
-            ? '#f0fdf4'
+          mode === "popup" && selected
+            ? "#f0fdf4"
             : selected || focused
-              ? '#F3F8FF'
+              ? "#F3F8FF"
               : isDeployed
-                ? '#e8f5e9'
-                : 'background.paper',
+                ? "#e8f5e9"
+                : "background.paper",
         boxShadow:
-          mode === 'popup' && selected
-            ? '0 0 0 3px rgba(22,163,74,0.15)'
+          mode === "popup" && selected
+            ? "0 0 0 3px rgba(22,163,74,0.15)"
             : selected || focused
-              ? '0 0 0 2px rgba(25,118,210,0.1)'
+              ? "0 0 0 2px rgba(25,118,210,0.1)"
               : undefined,
-        transition: 'all .2s ease',
+        transition: "all .2s ease",
       }}
       elevation={2}
       onClick={(e) => {
@@ -111,10 +111,10 @@ export function ScenarioCard({
     >
       <CardContent
         sx={{
-          '&.MuiCardContent-root': {
+          "&.MuiCardContent-root": {
             p: 1.5,
-            height: '100%',
-            boxSizing: 'border-box',
+            height: "100%",
+            boxSizing: "border-box",
           },
         }}
       >
@@ -136,10 +136,10 @@ export function ScenarioCard({
                 variant="caption"
                 sx={{
                   color: COLORS.grey[600],
-                  fontSize: '11px',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
+                  fontSize: "11px",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
                 }}
               >
                 {`v.${scenario.depn_ver_id}`}
@@ -151,8 +151,8 @@ export function ScenarioCard({
               variant="caption"
               sx={{
                 color: COLORS.grey[600],
-                fontSize: '11px',
-                whiteSpace: 'nowrap',
+                fontSize: "11px",
+                whiteSpace: "nowrap",
                 flexShrink: 0,
               }}
             >
@@ -170,7 +170,7 @@ export function ScenarioCard({
             onTouchStart={(e) => e.stopPropagation()}
             onClick={disableActions ? undefined : openMenu}
           >
-            <MoreVert sx={{ fontSize: '16px' }} />
+            <MoreVert sx={{ fontSize: "16px" }} />
           </IconButton>
           <Popover
             open={isMenuOpen}
@@ -178,17 +178,17 @@ export function ScenarioCard({
             onClose={closeMenu}
             onClick={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+            transformOrigin={{ vertical: "top", horizontal: "right" }}
             slotProps={{
               paper: {
                 elevation: 1,
                 sx: {
-                  border: '1px solid',
+                  border: "1px solid",
                   borderColor: COLORS.blueGrey[100],
                   borderRadius: 2,
                   bgcolor: COLORS.common.white,
-                  overflow: 'visible',
+                  overflow: "visible",
                 },
               },
             }}
@@ -200,20 +200,20 @@ export function ScenarioCard({
                 onClone?.(scenario);
               }}
               sx={{
-                '&.MuiMenuItem-root': {
+                "&.MuiMenuItem-root": {
                   borderRadius: 2,
                 },
               }}
             >
               <ListItemText
                 sx={{
-                  '& .MuiListItemText-primary': {
+                  "& .MuiListItemText-primary": {
                     fontSize: 12,
-                    lineHeight: '16px',
+                    lineHeight: "16px",
                   },
                 }}
               >
-                {t('Clone')}
+                {t("Clone")}
               </ListItemText>
             </MenuItem>
             <MenuItem
@@ -223,20 +223,20 @@ export function ScenarioCard({
                 onEdit?.(scenario);
               }}
               sx={{
-                '&.MuiMenuItem-root': {
+                "&.MuiMenuItem-root": {
                   borderRadius: 2,
                 },
               }}
             >
               <ListItemText
                 sx={{
-                  '& .MuiListItemText-primary': {
+                  "& .MuiListItemText-primary": {
                     fontSize: 12,
-                    lineHeight: '16px',
+                    lineHeight: "16px",
                   },
                 }}
               >
-                {t('Edit')}
+                {t("Edit")}
               </ListItemText>
             </MenuItem>
             <MenuItem
@@ -246,20 +246,20 @@ export function ScenarioCard({
                 onDelete?.(scenario);
               }}
               sx={{
-                '&.MuiMenuItem-root': {
+                "&.MuiMenuItem-root": {
                   borderRadius: 2,
                 },
               }}
             >
               <ListItemText
                 sx={{
-                  '& .MuiListItemText-primary': {
+                  "& .MuiListItemText-primary": {
                     fontSize: 12,
-                    lineHeight: '16px',
+                    lineHeight: "16px",
                   },
                 }}
               >
-                {t('Delete')}
+                {t("Delete")}
               </ListItemText>
             </MenuItem>
           </Popover>
@@ -270,13 +270,13 @@ export function ScenarioCard({
           fontWeight={400}
           lineHeight={1.2}
           sx={{
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
             minWidth: 0,
           }}
         >
-          {scenario.name ?? ''}
+          {scenario.name ?? ""}
         </Typography>
       </CardContent>
     </Card>

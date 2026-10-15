@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import styles from './ApiTemplateModal.module.css'; // API 템플릿 모달과 동일한 스타일 사용
-import { useTranslation } from 'react-i18next';
+import { useState } from "react";
+import styles from "./ApiTemplateModal.module.css"; // API 템플릿 모달과 동일한 스타일 사용
+import { useTranslation } from "react-i18next";
 
 function FormTemplateModal({
   isOpen,
@@ -11,8 +11,8 @@ function FormTemplateModal({
   templates,
 }) {
   const { t } = useTranslation();
-  const [templateName, setTemplateName] = useState('');
-  const [error, setError] = useState('');
+  const [templateName, setTemplateName] = useState("");
+  const [error, setError] = useState("");
 
   if (!isOpen) {
     return null;
@@ -20,16 +20,16 @@ function FormTemplateModal({
 
   const handleSave = () => {
     if (!templateName.trim()) {
-      setError('Please enter a template name.');
+      setError("Please enter a template name.");
       return;
     }
     if (templates.some((t) => t.name === templateName.trim())) {
-      setError('A template with this name already exists.');
+      setError("A template with this name already exists.");
       return;
     }
     onSave(templateName.trim());
-    setTemplateName('');
-    setError('');
+    setTemplateName("");
+    setError("");
   };
 
   const handleSelect = (template) => {
@@ -48,10 +48,10 @@ function FormTemplateModal({
         <button className={styles.closeButton} onClick={onClose}>
           &times;
         </button>
-        <h2>{t('Form Templates')}</h2>
+        <h2>{t("Form Templates")}</h2>
 
         <div className={styles.saveSection}>
-          <h3>{t('Save Current Form as Template')}</h3>
+          <h3>{t("Save Current Form as Template")}</h3>
           <p className={styles.instructionText}>
             {t("Save the current form's title and elements as a new template")}.
           </p>
@@ -61,17 +61,17 @@ function FormTemplateModal({
               value={templateName}
               onChange={(e) => {
                 setTemplateName(e.target.value);
-                setError('');
+                setError("");
               }}
               placeholder="Enter new template name"
             />
-            <button onClick={handleSave}>{t('Save')}</button>
+            <button onClick={handleSave}>{t("Save")}</button>
           </div>
           {error && <p className={styles.errorMessage}>{error}</p>}
         </div>
 
         <div className={styles.loadSection}>
-          <h3>{t('Load from Template')}</h3>
+          <h3>{t("Load from Template")}</h3>
           <p className={styles.instructionText}>
             {t("This will replace the current form's title and elements")}.
           </p>
@@ -85,19 +85,19 @@ function FormTemplateModal({
                       onClick={() => handleSelect(template)}
                       className={styles.loadButton}
                     >
-                      {t('Load')}
+                      {t("Load")}
                     </button>
                     <button
                       onClick={(e) => handleDelete(e, template.id)}
                       className={styles.deleteButton}
                     >
-                      {t('Delete')}
+                      {t("Delete")}
                     </button>
                   </div>
                 </div>
               ))
             ) : (
-              <p className={styles.placeholder}>{t('No saved templates')}.</p>
+              <p className={styles.placeholder}>{t("No saved templates")}.</p>
             )}
           </div>
         </div>

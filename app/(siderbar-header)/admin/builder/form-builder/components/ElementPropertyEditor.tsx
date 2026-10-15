@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 import {
   Box,
   Button,
@@ -25,8 +25,8 @@ import {
   TableRow,
   TextField,
   Typography,
-} from '@mui/material';
-import { useTranslation } from 'react-i18next';
+} from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 import {
   DisplayKey,
@@ -34,10 +34,11 @@ import {
   FormElement,
   GridElement,
   InputElement,
-} from '../type';
-import GridDataEditor from './GridDataEditor';
-import { toLocaleTimeValue } from '../../utils/util';
-import { LOCALE_LIST, LOCALE_TIME } from '../../types/types';
+  LOCALE_LIST,
+  LOCALE_TIME,
+} from "../type";
+import GridDataEditor from "./GridDataEditor";
+import { toLocaleTimeValue } from "../utils/dateTimestamp";
 
 const splitList = (value: string) =>
   value
@@ -45,18 +46,34 @@ const splitList = (value: string) =>
     .map((item) => item.trim())
     .filter(Boolean);
 
-const formatList = (items: string[]) => items.join('\n');
+const formatList = (items: string[] | string) =>
+  (Array.isArray(items) ? items : items ? [items] : []).join("\n");
 
 const INITIAL_GRID_SAMPLE_JSON = JSON.stringify(
   {
     data: [
-      { id: 'AL000000001', name: 'ABC Corp' },
-      { id: 'AL000000002', name: 'DEF Ltd' },
+      { id: "AL000000001", name: "ABC Corp" },
+      { id: "AL000000002", name: "DEF Ltd" },
     ],
   },
   null,
   2,
 );
+
+const createEmptyGridSampleJson = (dataSlot: string): string => {
+  const path = dataSlot
+    .replace(/\[(\w+)\]/g, ".$1")
+    .split(".")
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  const emptySample = path.reduceRight<Record<string, unknown>>(
+    (child, key, index) => ({ [key]: index === path.length - 1 ? [] : child }),
+    {},
+  );
+
+  return JSON.stringify(emptySample, null, 2);
+};
 
 type DisplayOption = string | DisplayValue;
 
@@ -64,7 +81,7 @@ const normalizeDisplayValue = (
   option: DisplayOption,
   index: number,
 ): DisplayValue => {
-  if (typeof option === 'string') {
+  if (typeof option === "string") {
     return {
       value: option,
       label: option,
@@ -89,7 +106,7 @@ const createDefaultOption = (index: number): DisplayValue => ({
 });
 
 const getDropboxDefaultValue = (value: string | string[]) =>
-  Array.isArray(value) ? (value[0] ?? '') : value;
+  Array.isArray(value) ? (value[0] ?? "") : value;
 
 const getDropboxDefaultValues = (value: string | string[]) =>
   Array.isArray(value) ? value : value ? [value] : [];
@@ -101,47 +118,50 @@ function OptionLayoutEditor({
   onChange,
   isReadonly,
 }: {
-  element: Extract<FormElement, { type: 'checkbox' | 'radio' }>;
+  element: Extract<FormElement, { type: "checkbox" | "radio" }>;
   onChange: (element: FormElement) => void;
   isReadonly: boolean;
 }) {
   const { t } = useTranslation();
-  const optionLayout = element.optionLayout ?? 'vertical';
+  const optionLayout = element.optionLayout ?? "vertical";
 
   return (
     <Stack spacing={2} direction="row">
       <FormControl fullWidth size="small">
         <InputLabel id={`${element.id}-option-layout-label`}>
-          {t('Option Layout')}
+          {t("Option Layout")}
         </InputLabel>
         <Select
           labelId={`${element.id}-option-layout-label`}
-          label={t('Option Layout')}
+          label={t("Option Layout")}
           disabled={isReadonly}
           value={optionLayout}
           onChange={(event) =>
             onChange({
               ...element,
-              optionLayout: event.target.value as 'vertical' | 'horizontal',
+              optionLayout: event.target.value as "vertical" | "horizontal",
             })
           }
         >
-          <MenuItem value="vertical">{t('Vertical')}</MenuItem>
-          <MenuItem value="horizontal">{t('Horizontal')}</MenuItem>
+          <MenuItem value="vertical">{t("Vertical")}</MenuItem>
+          <MenuItem value="horizontal">{t("Horizontal")}</MenuItem>
         </Select>
       </FormControl>
-      {optionLayout === 'horizontal' ? (
+      {optionLayout === "horizontal" ? (
         <FormControl fullWidth size="small">
           <InputLabel id={`${element.id}-options-per-row-label`}>
-            {t('Items per Row')}
+            {t("Items per Row")}
           </InputLabel>
           <Select
             labelId={`${element.id}-options-per-row-label`}
-            label={t('Items per Row')}
+            label={t("Items per Row")}
             disabled={isReadonly}
             value={element.optionsPerRow ?? 2}
             onChange={(event) =>
-              onChange({ ...element, optionsPerRow: Number(event.target.value) })
+              onChange({
+                ...element,
+                optionsPerRow: Number(event.target.value),
+              })
             }
           >
             {layoutColumnOptions.map((count) => (
@@ -157,8 +177,8 @@ function OptionLayoutEditor({
 }
 
 const createDefaultDisplayKey = (): DisplayKey => ({
-  key: '',
-  label: '',
+  key: "",
+  label: "",
 });
 
 function DisplayKeysEditor({
@@ -174,8 +194,9 @@ function DisplayKeysEditor({
 }) {
   const { t } = useTranslation();
   const count = displayKeys.length || defaultCount;
-  const normalizedDisplayKeys = Array.from({ length: count }, (_, index) =>
-    displayKeys[index] ?? createDefaultDisplayKey(),
+  const normalizedDisplayKeys = Array.from(
+    { length: count },
+    (_, index) => displayKeys[index] ?? createDefaultDisplayKey(),
   );
   const countOptions = Array.from({ length: 20 }, (_, index) => index + 1);
 
@@ -205,10 +226,12 @@ function DisplayKeysEditor({
   return (
     <Stack spacing={1.25}>
       <FormControl fullWidth size="small">
-        <InputLabel id="grid-header-count-label">{t('Header Count')}</InputLabel>
+        <InputLabel id="grid-header-count-label">
+          {t("Header Count")}
+        </InputLabel>
         <Select
           labelId="grid-header-count-label"
-          label={t('Header Count')}
+          label={t("Header Count")}
           disabled={isReadonly}
           value={count}
           onChange={(event) => handleCountChange(Number(event.target.value))}
@@ -221,56 +244,55 @@ function DisplayKeysEditor({
         </Select>
       </FormControl>
 
-      <Typography variant="subtitle2">{t('Display Labels')}</Typography>
+      <Typography variant="subtitle2">{t("Display Labels")}</Typography>
       <Box
         sx={{
-          display: 'grid',
-          gridTemplateColumns: '32px minmax(0, 1fr) minmax(0, 1fr)',
+          display: "grid",
+          gridTemplateColumns: "32px minmax(0, 1fr) minmax(0, 1fr)",
           gap: 0.75,
-          alignItems: 'center',
+          alignItems: "center",
         }}
       >
         {normalizedDisplayKeys.map((displayKey, index) => (
-          <Box key={index} sx={{ display: 'contents' }}>
+          <Box key={index} sx={{ display: "contents" }}>
             <TextField
               size="small"
               value={index + 1}
               disabled
-              inputProps={{ sx: { textAlign: 'center', px: 0.5 } }}
+              inputProps={{ sx: { textAlign: "center", px: 0.5 } }}
             />
             <TextField
               size="small"
-              label={t('Key')}
+              label={t("Key")}
               disabled={isReadonly}
               value={displayKey.key}
               onChange={(event) =>
-                handleDisplayKeyChange(index, 'key', event.target.value)
+                handleDisplayKeyChange(index, "key", event.target.value)
               }
             />
             <TextField
               size="small"
-              label={t('Label')}
+              label={t("Label")}
               disabled={isReadonly}
               value={displayKey.label}
               onChange={(event) =>
-                handleDisplayKeyChange(index, 'label', event.target.value)
+                handleDisplayKeyChange(index, "label", event.target.value)
               }
             />
           </Box>
         ))}
       </Box>
-
     </Stack>
   );
 }
 
 const getValueAtPath = (value: unknown, path: string): unknown =>
   path
-    .replace(/\[(\w+)\]/g, '.$1')
-    .split('.')
+    .replace(/\[(\w+)\]/g, ".$1")
+    .split(".")
     .filter(Boolean)
     .reduce<unknown>((current, key) => {
-      if (current && typeof current === 'object') {
+      if (current && typeof current === "object") {
         return (current as Record<string, unknown>)[key];
       }
       return undefined;
@@ -288,24 +310,24 @@ function GridSampleDataControls({
   const { t } = useTranslation();
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [sampleJsonError, setSampleJsonError] = useState('');
+  const [sampleJsonError, setSampleJsonError] = useState("");
   const sampleJson = element.sampleJson ?? INITIAL_GRID_SAMPLE_JSON;
 
   let previewRows: Record<string, unknown>[] = [];
-  let previewError = '';
+  let previewError = "";
   try {
     const parsedJson: unknown = JSON.parse(sampleJson);
-    const data = getValueAtPath(parsedJson, element.optionsSlot?.trim() ?? '');
+    const data = getValueAtPath(parsedJson, element.optionsSlot?.trim() ?? "");
     if (!Array.isArray(data)) {
-      previewError = t('Data Slot must point to an array in the sample JSON.');
+      previewError = t("Data Slot must point to an array in the sample JSON.");
     } else {
       previewRows = data.filter(
         (row): row is Record<string, unknown> =>
-          Boolean(row) && typeof row === 'object' && !Array.isArray(row),
+          Boolean(row) && typeof row === "object" && !Array.isArray(row),
       );
     }
   } catch {
-    previewError = t('Invalid JSON format');
+    previewError = t("Invalid JSON format");
   }
 
   const previewKeys = element.displayKeys.length
@@ -318,9 +340,9 @@ function GridSampleDataControls({
         ...element,
         sampleJson: JSON.stringify(JSON.parse(sampleJson), null, 2),
       });
-      setSampleJsonError('');
+      setSampleJsonError("");
     } catch {
-      setSampleJsonError(t('Invalid JSON format'));
+      setSampleJsonError(t("Invalid JSON format"));
     }
   };
 
@@ -332,18 +354,18 @@ function GridSampleDataControls({
           variant="outlined"
           disabled={isReadonly}
           onClick={() => {
-            setSampleJsonError('');
+            setSampleJsonError("");
             setIsEditorOpen(true);
           }}
         >
-          {t('Sample Data')}
+          {t("Response Data")}
         </Button>
         <Button
           fullWidth
           variant="outlined"
           onClick={() => setIsPreviewOpen(true)}
         >
-          {t('Preview')}
+          {t("Preview")}
         </Button>
       </Stack>
 
@@ -353,10 +375,9 @@ function GridSampleDataControls({
         fullWidth
         maxWidth="sm"
       >
-        <DialogTitle>{t('Sample JSON Data')}</DialogTitle>
+        <DialogTitle>{t("Sample JSON Data")}</DialogTitle>
         <DialogContent dividers>
           <TextField
-            autoFocus
             fullWidth
             multiline
             minRows={14}
@@ -365,12 +386,12 @@ function GridSampleDataControls({
             helperText={sampleJsonError}
             onChange={(event) => {
               onChange({ ...element, sampleJson: event.target.value });
-              setSampleJsonError('');
+              setSampleJsonError("");
             }}
             onKeyDown={(event) => event.stopPropagation()}
             inputProps={{
               spellCheck: false,
-              sx: { fontFamily: 'monospace', fontSize: 13 },
+              sx: { fontFamily: "monospace", fontSize: 13 },
             }}
           />
         </DialogContent>
@@ -378,14 +399,16 @@ function GridSampleDataControls({
           <Button
             onClick={() => {
               onChange({ ...element, sampleJson: INITIAL_GRID_SAMPLE_JSON });
-              setSampleJsonError('');
+              setSampleJsonError("");
             }}
           >
-            {t('Reset')}
+            {t("Reset")}
           </Button>
-          <Button onClick={handleFormatSampleJson}>{t('JSON Formatter')}</Button>
+          <Button onClick={handleFormatSampleJson}>
+            {t("JSON Formatter")}
+          </Button>
           <Button variant="contained" onClick={() => setIsEditorOpen(false)}>
-            {t('Close')}
+            {t("Close")}
           </Button>
         </DialogActions>
       </Dialog>
@@ -396,7 +419,7 @@ function GridSampleDataControls({
         fullWidth
         maxWidth="md"
       >
-        <DialogTitle>{t('Grid Preview')}</DialogTitle>
+        <DialogTitle>{t("Grid Preview")}</DialogTitle>
         <DialogContent dividers>
           {previewError ? (
             <Typography color="error">{previewError}</Typography>
@@ -406,7 +429,9 @@ function GridSampleDataControls({
                 {element.hasHeader ? (
                   <TableHead>
                     <TableRow>
-                      {element.selectable ? <TableCell padding="checkbox" /> : null}
+                      {element.selectable ? (
+                        <TableCell padding="checkbox" />
+                      ) : null}
                       {previewKeys.map((item, index) => (
                         <TableCell key={`${item.key}-${index}`}>
                           {item.label || item.key}
@@ -425,9 +450,9 @@ function GridSampleDataControls({
                       ) : null}
                       {previewKeys.map((item, columnIndex) => (
                         <TableCell key={`${item.key}-${columnIndex}`}>
-                          {typeof row[item.key] === 'object'
+                          {typeof row[item.key] === "object"
                             ? JSON.stringify(row[item.key])
-                            : String(row[item.key] ?? '')}
+                            : String(row[item.key] ?? "")}
                         </TableCell>
                       ))}
                     </TableRow>
@@ -439,11 +464,220 @@ function GridSampleDataControls({
         </DialogContent>
         <DialogActions>
           <Button variant="contained" onClick={() => setIsPreviewOpen(false)}>
-            {t('Close')}
+            {t("Close")}
           </Button>
         </DialogActions>
       </Dialog>
     </>
+  );
+}
+
+type OptionsElement = Extract<
+  FormElement,
+  { type: "checkbox" | "radio" | "dropbox" }
+>;
+
+function OptionsSampleDataControls({
+  element,
+  onChange,
+  isReadonly,
+}: {
+  element: OptionsElement;
+  onChange: (element: OptionsElement) => void;
+  isReadonly: boolean;
+}) {
+  const { t } = useTranslation();
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [sampleJsonError, setSampleJsonError] = useState("");
+  const sampleJson = element.sampleJson ?? "";
+  let previewOptions: DisplayValue[] = [];
+  let previewError = "";
+
+  try {
+    const parsedJson: unknown = sampleJson ? JSON.parse(sampleJson) : {};
+    const rows = getValueAtPath(parsedJson, element.optionsSlot?.trim() ?? "");
+    if (!Array.isArray(rows)) {
+      previewError = t("Data Slot must point to an array in the sample JSON.");
+    } else if (!element.optionLabelKey || !element.optionValueKey) {
+      previewError = t("Label Key and Value Key are required.");
+    } else {
+      previewOptions = rows.flatMap((item) => {
+        if (!item || typeof item !== "object" || Array.isArray(item)) return [];
+        const row = item as Record<string, unknown>;
+        return [
+          {
+            label: String(row[element.optionLabelKey!] ?? ""),
+            value: String(row[element.optionValueKey!] ?? ""),
+          },
+        ];
+      });
+    }
+  } catch {
+    previewError = t("Invalid JSON format");
+  }
+
+  return (
+    <Stack spacing={2}>
+      <TextField
+        label={t("Data Slot")}
+        helperText={t("Bind to array in slot")}
+        size="small"
+        fullWidth
+        disabled={isReadonly}
+        value={element.optionsSlot ?? ""}
+        onChange={(event) => {
+          const optionsSlot = event.target.value;
+          const changed = optionsSlot !== (element.optionsSlot ?? "");
+          onChange({
+            ...element,
+            optionsSlot,
+            options: changed ? [] : element.options,
+            sampleJson: changed ? "" : element.sampleJson,
+            optionLabelKey: changed ? "" : element.optionLabelKey,
+            optionValueKey: changed ? "" : element.optionValueKey,
+          });
+        }}
+      />
+      {element.optionsSlot ? (
+        <>
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
+            <TextField
+              label={t("Label Key")}
+              size="small"
+              fullWidth
+              disabled={isReadonly}
+              value={element.optionLabelKey ?? ""}
+              onChange={(event) =>
+                onChange({ ...element, optionLabelKey: event.target.value })
+              }
+            />
+            <TextField
+              label={t("Value Key")}
+              size="small"
+              fullWidth
+              disabled={isReadonly}
+              value={element.optionValueKey ?? ""}
+              onChange={(event) =>
+                onChange({ ...element, optionValueKey: event.target.value })
+              }
+            />
+          </Stack>
+          <Stack direction="row" spacing={1}>
+            <Button
+              fullWidth
+              variant="outlined"
+              disabled={isReadonly}
+              onClick={() => {
+                setSampleJsonError("");
+                setIsEditorOpen(true);
+              }}
+            >
+              {t("Response Data")}
+            </Button>
+            <Button
+              fullWidth
+              variant="outlined"
+              onClick={() => setIsPreviewOpen(true)}
+            >
+              {t("Preview")}
+            </Button>
+          </Stack>
+
+          <Dialog
+            open={isEditorOpen}
+            onClose={() => setIsEditorOpen(false)}
+            fullWidth
+            maxWidth="sm"
+          >
+            <DialogTitle>{t("Sample JSON Data")}</DialogTitle>
+            <DialogContent dividers>
+              <TextField
+                fullWidth
+                multiline
+                minRows={14}
+                value={sampleJson}
+                error={Boolean(sampleJsonError)}
+                helperText={sampleJsonError}
+                onChange={(event) => {
+                  onChange({ ...element, sampleJson: event.target.value });
+                  setSampleJsonError("");
+                }}
+                inputProps={{
+                  spellCheck: false,
+                  sx: { fontFamily: "monospace" },
+                }}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button
+                onClick={() => {
+                  try {
+                    onChange({
+                      ...element,
+                      sampleJson: JSON.stringify(
+                        JSON.parse(sampleJson),
+                        null,
+                        2,
+                      ),
+                    });
+                    setSampleJsonError("");
+                  } catch {
+                    setSampleJsonError(t("Invalid JSON format"));
+                  }
+                }}
+              >
+                {t("JSON Formatter")}
+              </Button>
+              <Button
+                variant="contained"
+                onClick={() => setIsEditorOpen(false)}
+              >
+                {t("Close")}
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          <Dialog
+            open={isPreviewOpen}
+            onClose={() => setIsPreviewOpen(false)}
+            fullWidth
+            maxWidth="sm"
+          >
+            <DialogTitle>{t("Options Preview")}</DialogTitle>
+            <DialogContent dividers>
+              {previewError ? (
+                <Typography color="error">{previewError}</Typography>
+              ) : (
+                <TableContainer>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>label</TableCell>
+                        <TableCell>value</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {previewOptions.map((option, index) => (
+                        <TableRow key={`${option.value}-${index}`}>
+                          <TableCell>{option.label}</TableCell>
+                          <TableCell>{option.value}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setIsPreviewOpen(false)}>
+                {t("Close")}
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </>
+      ) : null}
+    </Stack>
   );
 }
 
@@ -533,10 +767,10 @@ function DisplayOptionsEditor({
   return (
     <Stack spacing={1.25}>
       <FormControl fullWidth size="small">
-        <InputLabel id="checkbox-options-count-label">{t('Count')}</InputLabel>
+        <InputLabel id="checkbox-options-count-label">{t("Count")}</InputLabel>
         <Select
           labelId="checkbox-options-count-label"
-          label={t('Count')}
+          label={t("Count")}
           disabled={isReadonly}
           value={normalizedOptions.length}
           onChange={(event) => handleCountChange(Number(event.target.value))}
@@ -559,17 +793,17 @@ function DisplayOptionsEditor({
               onChange={(event) => onSendByOptionChange(event.target.checked)}
             />
           }
-          label={t('Send by option')}
+          label={t("Send by option")}
           sx={{ mx: 0 }}
         />
       ) : null}
 
       <Box
         sx={{
-          display: 'grid',
-          gridTemplateColumns: '32px minmax(0, 1fr) 72px',
+          display: "grid",
+          gridTemplateColumns: "32px minmax(0, 1fr) 72px",
           gap: 0.75,
-          alignItems: 'center',
+          alignItems: "center",
         }}
       >
         <Typography variant="caption" color="text.secondary">
@@ -579,18 +813,18 @@ function DisplayOptionsEditor({
           Display
         </Typography>
         <Typography variant="caption" color="text.secondary">
-          {sendByOption ? 'Param' : 'Value'}
+          {sendByOption ? "Param" : "Value"}
         </Typography>
 
         {normalizedOptions.map((option, index) => (
-          <Box key={index} sx={{ display: 'contents' }}>
+          <Box key={index} sx={{ display: "contents" }}>
             <TextField
               size="small"
               value={index + 1}
               disabled
               inputProps={{
                 sx: {
-                  textAlign: 'center',
+                  textAlign: "center",
                   px: 0.5,
                 },
               }}
@@ -600,17 +834,17 @@ function DisplayOptionsEditor({
               disabled={isReadonly}
               value={option.label}
               onChange={(event) =>
-                handleOptionChange(index, 'label', event.target.value)
+                handleOptionChange(index, "label", event.target.value)
               }
             />
             <TextField
               size="small"
               disabled={isReadonly}
-              value={sendByOption ? (option.param ?? '') : option.value}
+              value={sendByOption ? (option.param ?? "") : option.value}
               onChange={(event) =>
                 handleOptionChange(
                   index,
-                  sendByOption ? 'param' : 'value',
+                  sendByOption ? "param" : "value",
                   event.target.value,
                 )
               }
@@ -632,7 +866,7 @@ function ElementPropertyEditor({
   onChange: (element: FormElement) => void;
   onGridSizeChange: (
     element: GridElement,
-    key: 'rows' | 'columns',
+    key: "rows" | "columns",
     value: number,
   ) => void;
   isReadonly?: boolean;
@@ -640,11 +874,11 @@ function ElementPropertyEditor({
   const { t } = useTranslation();
 
   switch (element.type) {
-    case 'input':
+    case "input":
       return (
         <Stack spacing={2}>
           <TextField
-            label={t('Default Value')}
+            label={t("Default Value")}
             size="small"
             fullWidth
             disabled={isReadonly}
@@ -659,7 +893,7 @@ function ElementPropertyEditor({
             )}
           </Typography>
           <TextField
-            label={t('Placeholder')}
+            label={t("Placeholder")}
             size="small"
             fullWidth
             disabled={isReadonly}
@@ -670,52 +904,55 @@ function ElementPropertyEditor({
           />
           {/* Minimum Length, Maximum Length */}
           <TextField
-            label={t('Minimum Text Length')}
+            label={t("Minimum Text Length")}
             size="small"
-            type='number'
+            type="number"
             fullWidth
             disabled={isReadonly}
-            value={element.minLength ?? '' }
+            value={element.minLength ?? ""}
             onChange={(event) =>
               onChange({ ...element, minLength: event.target.value })
             }
           />
           <TextField
-            label={t('Maximum Text Length')}
+            label={t("Maximum Text Length")}
             size="small"
-            type='number'
+            type="number"
             fullWidth
             disabled={isReadonly}
-            value={element.maxLength ?? '' }
+            value={element.maxLength ?? ""}
             onChange={(event) =>
               onChange({ ...element, maxLength: event.target.value })
             }
           />
           <FormControl fullWidth size="small">
-            <InputLabel id="transformTextType-label">{t('Transform Text')}</InputLabel>
+            <InputLabel id="transformTextType-label">
+              {t("Transform Text")}
+            </InputLabel>
             <Select
               labelId="transformTextType-label"
-              label={t('Transform Text')}
+              label={t("Transform Text")}
               disabled={isReadonly}
-              value={element.transformTextType ?? ''}
+              value={element.transformTextType ?? ""}
               onChange={(event) =>
                 onChange({
                   ...element,
-                  transformTextType: event.target.value as InputElement['transformTextType'],
+                  transformTextType: event.target
+                    .value as InputElement["transformTextType"],
                 })
               }
             >
-              <MenuItem value="">{t('None')}</MenuItem>
-              <MenuItem value="uppercase">{t('Uppercase')}</MenuItem>
-              <MenuItem value="lowercase">{t('Lowercase')}</MenuItem>
-              <MenuItem value="capitalize">{t('Capitalize')}</MenuItem>
+              <MenuItem value="">{t("None")}</MenuItem>
+              <MenuItem value="uppercase">{t("Uppercase")}</MenuItem>
+              <MenuItem value="lowercase">{t("Lowercase")}</MenuItem>
+              <MenuItem value="capitalize">{t("Capitalize")}</MenuItem>
             </Select>
           </FormControl>
           <FormControl fullWidth size="small">
-            <InputLabel id="validation-label">{t('validation')}</InputLabel>
+            <InputLabel id="validation-label">{t("validation")}</InputLabel>
             <Select
               labelId="validation-label"
-              label={t('validation')}
+              label={t("validation")}
               disabled={isReadonly}
               value={element.validation.type}
               onChange={(event) =>
@@ -723,20 +960,20 @@ function ElementPropertyEditor({
                   ...element,
                   validation: {
                     type: event.target
-                      .value as InputElement['validation']['type'],
+                      .value as InputElement["validation"]["type"],
                   },
                 })
               }
             >
-              <MenuItem value="text">{t('text')}</MenuItem>
-              <MenuItem value="email">{t('email')}</MenuItem>
-              <MenuItem value="number">{t('number')}</MenuItem>
-              <MenuItem value="custom">{t('custom')}</MenuItem>
+              <MenuItem value="text">{t("text")}</MenuItem>
+              <MenuItem value="email">{t("email")}</MenuItem>
+              <MenuItem value="number">{t("number")}</MenuItem>
+              <MenuItem value="custom">{t("custom")}</MenuItem>
             </Select>
           </FormControl>
-          {element.validation.type === 'custom' && (
+          {element.validation.type === "custom" && (
             <TextField
-              label={t('Regex')}
+              label={t("Regex")}
               size="small"
               fullWidth
               disabled={isReadonly}
@@ -748,7 +985,7 @@ function ElementPropertyEditor({
           )}
         </Stack>
       );
-    case 'date':
+    case "date":
       return (
         <Stack spacing={2}>
           {/* 라디오 버튼 그룹 (가로 배치: row 속성) */}
@@ -758,30 +995,33 @@ function ElementPropertyEditor({
             name="hasFromTo"
             value={element.hasFromTo ?? false}
             onChange={(event) =>
-              onChange({ ...element, hasFromTo: event.target.value === 'true' })
+              onChange({ ...element, hasFromTo: event.target.value === "true" })
             }
           >
             <FormControlLabel
               value={false}
               control={<Radio size="small" />}
-              label={t('Single')}
+              label={t("Single")}
             />
             <FormControlLabel
               value={true}
               control={<Radio size="small" />}
-              label={t('From-To')}
+              label={t("From-To")}
             />
           </RadioGroup>
           {element.hasFromTo && (
             <TextField
-              label={t('auto set to today')}
+              label={t("auto set to today")}
               size="small"
-              type='number'
+              type="number"
               fullWidth
               disabled={isReadonly}
-              value={element.defaultToDateOffset ?? 0 }
+              value={element.defaultToDateOffset ?? 0}
               onChange={(event) =>
-                onChange({ ...element, defaultToDateOffset: Number(event.target.value) })
+                onChange({
+                  ...element,
+                  defaultToDateOffset: Number(event.target.value),
+                })
               }
             />
           )}
@@ -789,12 +1029,12 @@ function ElementPropertyEditor({
             <>
               <Stack spacing={1} direction="row" alignItems="center">
                 <TextField
-                  label={t('Default From Value')}
+                  label={t("Default From Value")}
                   size="small"
                   fullWidth
                   type="date"
                   disabled={isReadonly}
-                  value={element.defaultFromValue ?? ''}
+                  value={element.defaultFromValue ?? ""}
                   onChange={(event) => {
                     const nextDefaultValue = event.target.value;
                     onChange({
@@ -803,7 +1043,9 @@ function ElementPropertyEditor({
                       fromDateValue: element.fromDateValue || nextDefaultValue,
                       fromValue: toLocaleTimeValue(
                         nextDefaultValue,
-                        element.fromTimeValue || element.defaultFromTimeValue || element.defaultTimeValue,
+                        element.fromTimeValue ||
+                          element.defaultFromTimeValue ||
+                          element.defaultTimeValue,
                         element.hasTime,
                         element.locale,
                       ),
@@ -813,20 +1055,23 @@ function ElementPropertyEditor({
                 />
                 {element.hasTime ? (
                   <TextField
-                    label={t('Default From Time')}
+                    label={t("Default From Time")}
                     size="small"
                     fullWidth
                     type="time"
                     disabled={isReadonly}
-                    value={element.defaultFromTimeValue ?? ''}
+                    value={element.defaultFromTimeValue ?? ""}
                     onChange={(event) => {
                       const nextDefaultValue = event.target.value;
                       onChange({
                         ...element,
                         defaultFromTimeValue: nextDefaultValue,
-                        fromTimeValue: element.fromTimeValue || nextDefaultValue,
+                        fromTimeValue:
+                          element.fromTimeValue || nextDefaultValue,
                         fromValue: toLocaleTimeValue(
-                          element.fromDateValue || element.defaultFromValue || element.defaultValue,
+                          element.fromDateValue ||
+                            element.defaultFromValue ||
+                            element.defaultValue,
                           nextDefaultValue,
                           element.hasTime,
                           element.locale,
@@ -840,12 +1085,12 @@ function ElementPropertyEditor({
               </Stack>
               <Stack spacing={1} direction="row" alignItems="center">
                 <TextField
-                  label={t('Default To Value')}
+                  label={t("Default To Value")}
                   size="small"
                   fullWidth
                   type="date"
                   disabled={isReadonly}
-                  value={element.defaultToValue ?? ''}
+                  value={element.defaultToValue ?? ""}
                   onChange={(event) => {
                     const nextDefaultValue = event.target.value;
                     onChange({
@@ -854,7 +1099,9 @@ function ElementPropertyEditor({
                       toDateValue: element.toDateValue || nextDefaultValue,
                       toValue: toLocaleTimeValue(
                         nextDefaultValue,
-                        element.toTimeValue || element.defaultToTimeValue || element.defaultTimeValue,
+                        element.toTimeValue ||
+                          element.defaultToTimeValue ||
+                          element.defaultTimeValue,
                         element.hasTime,
                         element.locale,
                       ),
@@ -864,12 +1111,12 @@ function ElementPropertyEditor({
                 />
                 {element.hasTime ? (
                   <TextField
-                    label={t('Default To Time')}
+                    label={t("Default To Time")}
                     size="small"
                     fullWidth
                     type="time"
                     disabled={isReadonly}
-                    value={element.defaultToTimeValue ?? ''}
+                    value={element.defaultToTimeValue ?? ""}
                     onChange={(event) => {
                       const nextDefaultValue = event.target.value;
                       onChange({
@@ -877,7 +1124,7 @@ function ElementPropertyEditor({
                         defaultToTimeValue: nextDefaultValue,
                         toTimeValue: element.toTimeValue || nextDefaultValue,
                         toValue: toLocaleTimeValue(
-                          element.toDateValue || element.defaultToValue || '',
+                          element.toDateValue || element.defaultToValue || "",
                           nextDefaultValue,
                           element.hasTime,
                           element.locale,
@@ -893,7 +1140,7 @@ function ElementPropertyEditor({
           ) : (
             <Stack spacing={1} direction="row" alignItems="center">
               <TextField
-                label={t('Default Value')}
+                label={t("Default Value")}
                 size="small"
                 fullWidth
                 type="date"
@@ -918,12 +1165,12 @@ function ElementPropertyEditor({
               />
               {element.hasTime ? (
                 <TextField
-                  label={t('Default Time')}
+                  label={t("Default Time")}
                   size="small"
                   fullWidth
                   type="time"
                   disabled={isReadonly}
-                  value={element.defaultTimeValue ?? ''}
+                  value={element.defaultTimeValue ?? ""}
                   onChange={(event) => {
                     const nextDefaultValue = event.target.value;
                     onChange({
@@ -954,54 +1201,102 @@ function ElementPropertyEditor({
                 onChange={(event) => {
                   const hasTime = event.target.checked;
                   const fromDate = element.hasFromTo
-                    ? element.fromDateValue || element.defaultFromValue || element.defaultValue
+                    ? element.fromDateValue ||
+                      element.defaultFromValue ||
+                      element.defaultValue
                     : element.dateValue || element.defaultValue;
-                  const toDate = element.toDateValue || element.defaultToValue || '';
-                  const fromTime = element.fromTimeValue || element.defaultFromTimeValue || element.defaultTimeValue;
-                  const toTime = element.toTimeValue || element.defaultToTimeValue || element.defaultTimeValue;
+                  const toDate =
+                    element.toDateValue || element.defaultToValue || "";
+                  const fromTime =
+                    element.fromTimeValue ||
+                    element.defaultFromTimeValue ||
+                    element.defaultTimeValue;
+                  const toTime =
+                    element.toTimeValue ||
+                    element.defaultToTimeValue ||
+                    element.defaultTimeValue;
 
                   onChange({
                     ...element,
                     hasTime,
-                    value: toLocaleTimeValue(fromDate, fromTime, hasTime, element.locale),
+                    value: toLocaleTimeValue(
+                      fromDate,
+                      fromTime,
+                      hasTime,
+                      element.locale,
+                    ),
                     fromValue: element.hasFromTo
-                      ? toLocaleTimeValue(fromDate, fromTime, hasTime, element.locale)
+                      ? toLocaleTimeValue(
+                          fromDate,
+                          fromTime,
+                          hasTime,
+                          element.locale,
+                        )
                       : undefined,
                     toValue: element.hasFromTo
-                      ? toLocaleTimeValue(toDate, toTime, hasTime, element.locale)
+                      ? toLocaleTimeValue(
+                          toDate,
+                          toTime,
+                          hasTime,
+                          element.locale,
+                        )
                       : undefined,
                   });
                 }}
               />
             }
-            label={t('Use Time')}
+            label={t("Use Time")}
           />
           {element.hasTime ? (
             <FormControl fullWidth size="small">
-              <InputLabel id="date-locale-label">{t('Locale')}</InputLabel>
+              <InputLabel id="date-locale-label">{t("Locale")}</InputLabel>
               <Select
                 labelId="date-locale-label"
-                label={t('Locale')}
+                label={t("Locale")}
                 disabled={isReadonly}
                 value={element.locale}
                 onChange={(event) => {
                   const locale = event.target.value as LOCALE_TIME;
                   const fromDate = element.hasFromTo
-                    ? element.fromDateValue || element.defaultFromValue || element.defaultValue
+                    ? element.fromDateValue ||
+                      element.defaultFromValue ||
+                      element.defaultValue
                     : element.dateValue || element.defaultValue;
-                  const toDate = element.toDateValue || element.defaultToValue || '';
-                  const fromTime = element.fromTimeValue || element.defaultFromTimeValue || element.defaultTimeValue;
-                  const toTime = element.toTimeValue || element.defaultToTimeValue || element.defaultTimeValue;
+                  const toDate =
+                    element.toDateValue || element.defaultToValue || "";
+                  const fromTime =
+                    element.fromTimeValue ||
+                    element.defaultFromTimeValue ||
+                    element.defaultTimeValue;
+                  const toTime =
+                    element.toTimeValue ||
+                    element.defaultToTimeValue ||
+                    element.defaultTimeValue;
 
                   onChange({
                     ...element,
                     locale,
-                    value: toLocaleTimeValue(fromDate, fromTime, element.hasTime, locale),
+                    value: toLocaleTimeValue(
+                      fromDate,
+                      fromTime,
+                      element.hasTime,
+                      locale,
+                    ),
                     fromValue: element.hasFromTo
-                      ? toLocaleTimeValue(fromDate, fromTime, element.hasTime, locale)
+                      ? toLocaleTimeValue(
+                          fromDate,
+                          fromTime,
+                          element.hasTime,
+                          locale,
+                        )
                       : undefined,
                     toValue: element.hasFromTo
-                      ? toLocaleTimeValue(toDate, toTime, element.hasTime, locale)
+                      ? toLocaleTimeValue(
+                          toDate,
+                          toTime,
+                          element.hasTime,
+                          locale,
+                        )
                       : undefined,
                   });
                 }}
@@ -1016,7 +1311,7 @@ function ElementPropertyEditor({
           ) : null}
         </Stack>
       );
-    case 'checkbox':
+    case "checkbox":
       return (
         <Stack spacing={2}>
           <OptionLayoutEditor
@@ -1024,40 +1319,49 @@ function ElementPropertyEditor({
             onChange={onChange}
             isReadonly={isReadonly}
           />
-          <DisplayOptionsEditor
-            options={element.options}
-            sendByOption={element.sendByOption}
-            onSendByOptionChange={(checked) =>
-              onChange({
-                ...element,
-                sendByOption: checked,
-                defaultValue: [],
-                options: element.options.map((option, index) => {
-                  const normalized = normalizeDisplayValue(option, index);
-                  return {
-                    ...normalized,
-                    param: normalized.param || normalized.value,
-                  };
-                }),
-              })
-            }
-            onOptionsChange={(options) => {
-              const optionValues = options.map((option) => option.value);
-              onChange({
-                ...element,
-                options,
-                defaultValue: element.defaultValue.filter((item) =>
-                  optionValues.includes(item),
-                ),
-              });
-            }}
+          <OptionsSampleDataControls
+            element={element}
+            onChange={onChange}
             isReadonly={isReadonly}
           />
+
+          {!element.optionsSlot ? (
+            <DisplayOptionsEditor
+              options={element.options}
+              sendByOption={element.sendByOption}
+              onSendByOptionChange={(checked) =>
+                onChange({
+                  ...element,
+                  sendByOption: checked,
+                  defaultValue: [],
+                  options: element.options.map((option, index) => {
+                    const normalized = normalizeDisplayValue(option, index);
+                    return {
+                      ...normalized,
+                      param: normalized.param || normalized.value,
+                    };
+                  }),
+                })
+              }
+              onOptionsChange={(options) => {
+                const optionValues = options.map((option) => option.value);
+                onChange({
+                  ...element,
+                  options,
+                  defaultValue: element.defaultValue.filter((item) =>
+                    optionValues.includes(item),
+                  ),
+                });
+              }}
+              isReadonly={isReadonly}
+            />
+          ) : null}
+
           {!element.sendByOption && (
             <DraftTextField
-              label={t('Default Value')}
+              label={t("Default Value")}
               helperText={t(
-                'Enter the value of the option to check in comma or line-up',
+                "Enter the value of the option to check in comma or line-up",
               )}
               minRows={2}
               isReadonly={isReadonly}
@@ -1074,9 +1378,7 @@ function ElementPropertyEditor({
           )}
         </Stack>
       );
-    case 'radio': {
-      const normalizedOptions = element.options.map(normalizeDisplayValue);
-
+    case "radio": {
       return (
         <Stack spacing={2}>
           <FormControlLabel
@@ -1093,7 +1395,7 @@ function ElementPropertyEditor({
                 }
               />
             }
-            label={t('Allow Deselection')}
+            label={t("Allow Deselection")}
             sx={{ mx: 0 }}
           />
           <OptionLayoutEditor
@@ -1101,65 +1403,68 @@ function ElementPropertyEditor({
             onChange={onChange}
             isReadonly={isReadonly}
           />
-          <DisplayOptionsEditor
-            options={element.options}
-            sendByOption={element.sendByOption}
-            onSendByOptionChange={(checked) =>
-              onChange({
-                ...element,
-                sendByOption: checked,
-                defaultValue: '',
-                options: element.options.map((option, index) => {
-                  const normalized = normalizeDisplayValue(option, index);
-                  return {
-                    ...normalized,
-                    param: normalized.param || normalized.value,
-                  };
-                }),
-              })
-            }
-            onOptionsChange={(options) => {
-              const optionValues = options.map((option) => option.value);
-              onChange({
-                ...element,
-                options,
-                defaultValue: optionValues.includes(element.defaultValue)
-                  ? element.defaultValue
-                  : '',
-              });
-            }}
+          <OptionsSampleDataControls
+            element={element}
+            onChange={onChange}
             isReadonly={isReadonly}
           />
+
+          {!element.optionsSlot ? (
+            <DisplayOptionsEditor
+              options={element.options}
+              sendByOption={element.sendByOption}
+              onSendByOptionChange={(checked) =>
+                onChange({
+                  ...element,
+                  sendByOption: checked,
+                  defaultValue: [],
+                  options: element.options.map((option, index) => {
+                    const normalized = normalizeDisplayValue(option, index);
+                    return {
+                      ...normalized,
+                      param: normalized.param || normalized.value,
+                    };
+                  }),
+                })
+              }
+              onOptionsChange={(options) => {
+                const optionValues = options.map((option) => option.value);
+                onChange({
+                  ...element,
+                  options,
+                  defaultValue: element.defaultValue.filter((item) =>
+                    optionValues.includes(item),
+                  ),
+                });
+              }}
+              isReadonly={isReadonly}
+            />
+          ) : null}
+
           {!element.sendByOption && (
-            <FormControl fullWidth size="small">
-              <InputLabel id="radio-default-label">
-                {t('Default Value')}
-              </InputLabel>
-              <Select
-                labelId="radio-default-label"
-                label={t('Default Value')}
-                disabled={isReadonly}
-                value={element.defaultValue}
-                onChange={(event) =>
-                  onChange({ ...element, defaultValue: event.target.value })
-                }
-              >
-                <MenuItem value="">
-                  <em>{t('None')}</em>
-                </MenuItem>
-                {normalizedOptions.map((option, index) => (
-                  <MenuItem key={option.value || index} value={option.value}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <DraftTextField
+              label={t("Default Value")}
+              helperText={t(
+                "Enter the value of the option to check in comma or line-up",
+              )}
+              minRows={2}
+              isReadonly={isReadonly}
+              value={formatList(element.defaultValue)}
+              onCommit={(value) =>
+                onChange({
+                  ...element,
+                  defaultValue: splitList(value).filter((item) =>
+                    getOptionValues(element.options).includes(item),
+                  ),
+                })
+              }
+            />
           )}
         </Stack>
       );
     }
-    case 'dropbox': {
-      const isMultiSelect = element.selectKind === 'multi';
+    case "dropbox": {
+      const isMultiSelect = element.selectKind === "multi";
       const normalizedOptions = element.options.map(normalizeDisplayValue);
       const optionLabels = new Map(
         normalizedOptions.map((option) => [option.value, option.label]),
@@ -1169,67 +1474,65 @@ function ElementPropertyEditor({
         <Stack spacing={2}>
           <FormControl fullWidth size="small">
             <InputLabel id="dropbox-select-kind-label">
-              {t('Select Kind')}
+              {t("Select Kind")}
             </InputLabel>
             <Select
               labelId="dropbox-select-kind-label"
-              label={t('Select Kind')}
+              label={t("Select Kind")}
               disabled={isReadonly}
               value={element.selectKind}
               onChange={(event) => {
-                const selectKind = event.target.value as 'single' | 'multi';
+                const selectKind = event.target.value as "single" | "multi";
 
                 onChange({
                   ...element,
                   selectKind,
                   defaultValue:
-                    selectKind === 'multi'
+                    selectKind === "multi"
                       ? getDropboxDefaultValues(element.defaultValue)
                       : getDropboxDefaultValue(element.defaultValue),
                 });
               }}
             >
-              <MenuItem value="single">{t('single select')}</MenuItem>
-              <MenuItem value="multi">{t('multi select')}</MenuItem>
+              <MenuItem value="single">{t("single select")}</MenuItem>
+              <MenuItem value="multi">{t("multi select")}</MenuItem>
             </Select>
           </FormControl>
-          <DisplayOptionsEditor
-            options={element.options}
-            onOptionsChange={(options) => {
-              const optionValues = options.map((option) => option.value);
-              onChange({
-                ...element,
-                options,
-                defaultValue: isMultiSelect
-                  ? getDropboxDefaultValues(element.defaultValue).filter(
-                      (item) => optionValues.includes(item),
-                    )
-                  : optionValues.includes(
-                        getDropboxDefaultValue(element.defaultValue),
-                      )
-                    ? getDropboxDefaultValue(element.defaultValue)
-                    : '',
-              });
-            }}
+          <OptionsSampleDataControls
+            element={element}
+            onChange={onChange}
             isReadonly={isReadonly}
           />
-          <TextField
-            label={t('Options Slot')}
-            size="small"
-            fullWidth
-            disabled={isReadonly}
-            value={element.optionsSlot}
-            onChange={(event) =>
-              onChange({ ...element, optionsSlot: event.target.value })
-            }
-          />
+
+          {!element.optionsSlot ? (
+            <DisplayOptionsEditor
+              options={element.options}
+              onOptionsChange={(options) => {
+                const optionValues = options.map((option) => option.value);
+                onChange({
+                  ...element,
+                  options,
+                  defaultValue: isMultiSelect
+                    ? getDropboxDefaultValues(element.defaultValue).filter(
+                        (item) => optionValues.includes(item),
+                      )
+                    : optionValues.includes(
+                          getDropboxDefaultValue(element.defaultValue),
+                        )
+                      ? getDropboxDefaultValue(element.defaultValue)
+                      : "",
+                });
+              }}
+              isReadonly={isReadonly}
+            />
+          ) : null}
           <FormControl fullWidth size="small">
             <InputLabel id="dropbox-default-label">
-              {t('Default Value')}
+              {t("Default Value")}
             </InputLabel>
             <Select
               labelId="dropbox-default-label"
-              label={t('Default Value')}
+              label={t("Default Value")}
               disabled={isReadonly}
               multiple={isMultiSelect}
               value={
@@ -1244,7 +1547,7 @@ function ElementPropertyEditor({
                     ? [String(selected)]
                     : [];
 
-                if (!selectedValues.length) return <em>{t('None')}</em>;
+                if (!selectedValues.length) return <em>{t("None")}</em>;
 
                 if (!isMultiSelect) {
                   return (
@@ -1253,7 +1556,7 @@ function ElementPropertyEditor({
                 }
 
                 return (
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
                     {selectedValues.map((value) => (
                       <Chip
                         key={value}
@@ -1270,8 +1573,8 @@ function ElementPropertyEditor({
                 onChange({
                   ...element,
                   defaultValue: isMultiSelect
-                    ? typeof value === 'string'
-                      ? value.split(',').filter(Boolean)
+                    ? typeof value === "string"
+                      ? value.split(",").filter(Boolean)
                       : value
                     : String(value),
                 });
@@ -1279,7 +1582,7 @@ function ElementPropertyEditor({
             >
               {!isMultiSelect ? (
                 <MenuItem value="">
-                  <em>{t('None')}</em>
+                  <em>{t("None")}</em>
                 </MenuItem>
               ) : null}
               {normalizedOptions.map((option, index) => (
@@ -1300,11 +1603,11 @@ function ElementPropertyEditor({
         </Stack>
       );
     }
-    case 'search':
+    case "search":
       return (
         <Stack spacing={2}>
           <TextField
-            label={t('Default Value')}
+            label={t("Default Value")}
             size="small"
             fullWidth
             disabled={isReadonly}
@@ -1314,7 +1617,7 @@ function ElementPropertyEditor({
             }
           />
           <TextField
-            label={t('Placeholder')}
+            label={t("Placeholder")}
             size="small"
             fullWidth
             disabled={isReadonly}
@@ -1324,7 +1627,7 @@ function ElementPropertyEditor({
             }
           />
           <TextField
-            label={t('API URL')}
+            label={t("API URL")}
             size="small"
             fullWidth
             disabled={isReadonly}
@@ -1340,10 +1643,10 @@ function ElementPropertyEditor({
             }
           />
           <FormControl fullWidth size="small">
-            <InputLabel id="search-method-label">{t('Method')}</InputLabel>
+            <InputLabel id="search-method-label">{t("Method")}</InputLabel>
             <Select
               labelId="search-method-label"
-              label={t('Method')}
+              label={t("Method")}
               disabled={isReadonly}
               value={element.apiConfig.method}
               onChange={(event) =>
@@ -1361,9 +1664,9 @@ function ElementPropertyEditor({
             </Select>
           </FormControl>
           <DraftTextField
-            label={t('Headers')}
+            label={t("Headers")}
             helperText={t(
-              'Use {{slotName}} for dynamic values in JSON header strings',
+              "Use {{slotName}} for dynamic values in JSON header strings",
             )}
             minRows={3}
             isReadonly={isReadonly}
@@ -1379,9 +1682,9 @@ function ElementPropertyEditor({
             }
           />
           <DraftTextField
-            label={t('Body Template')}
+            label={t("Body Template")}
             helperText={t(
-              'Use {{value}} to insert the search term. You can also use other slots like {{slotName}}',
+              "Use {{value}} to insert the search term. You can also use other slots like {{slotName}}",
             )}
             minRows={4}
             isReadonly={isReadonly}
@@ -1397,14 +1700,14 @@ function ElementPropertyEditor({
             }
           />
           <TextField
-            label={t('Input Fill Key')}
+            label={t("Input Fill Key")}
             helperText={t(
-              'Key from the selected grid row to fill the search input field. (Defaults to the first column if empty)',
+              "Key from the selected grid row to fill the search input field. (Defaults to the first column if empty)",
             )}
             size="small"
             fullWidth
             disabled={isReadonly}
-            value={element.inputFillKey ?? ''}
+            value={element.inputFillKey ?? ""}
             onChange={(event) =>
               onChange({
                 ...element,
@@ -1415,7 +1718,7 @@ function ElementPropertyEditor({
             }
           />
           <TextField
-            label={t('Result Slot')}
+            label={t("Result Slot")}
             helperText={t(
               "The API response data will be stored in this slot. A Grid element can use this slot in its 'Data Slot' field",
             )}
@@ -1429,7 +1732,7 @@ function ElementPropertyEditor({
           />
         </Stack>
       );
-    case 'grid':
+    case "grid":
       return (
         <Stack spacing={2}>
           <FormControlLabel
@@ -1443,7 +1746,7 @@ function ElementPropertyEditor({
                 }
               />
             }
-            label={t('Selectable')}
+            label={t("Selectable")}
           />
           <FormControlLabel
             control={
@@ -1463,27 +1766,36 @@ function ElementPropertyEditor({
                             { length: Math.max(1, element.columns) },
                             () => createDefaultDisplayKey(),
                           )
-                        : hasHeader
-                          ? element.displayKeys
-                          : [],
+                        : element.displayKeys,
                   });
                 }}
               />
             }
-            label={t('Header Row')}
+            label={t("Header Row")}
           />
           <TextField
-            label={t('Data Slot')}
-            helperText={t('Bind to array in slot')}
+            label={t("Data Slot")}
+            helperText={t("Bind to array in slot")}
             size="small"
             fullWidth
             disabled={isReadonly}
-            value={element.optionsSlot ?? ''}
-            onChange={(event) =>
-              onChange({ ...element, optionsSlot: event.target.value })
-            }
+            value={element.optionsSlot ?? ""}
+            onChange={(event) => {
+              const optionsSlot = event.target.value;
+              const isDataSlotChanged =
+                optionsSlot !== (element.optionsSlot ?? "");
+
+              onChange({
+                ...element,
+                optionsSlot,
+                displayKeys: isDataSlotChanged ? [] : element.displayKeys,
+                sampleJson: isDataSlotChanged
+                  ? createEmptyGridSampleJson(optionsSlot)
+                  : element.sampleJson,
+              });
+            }}
           />
-          {(element.optionsSlot ?? '').trim() ? (
+          {(element.optionsSlot ?? "").trim() ? (
             <GridSampleDataControls
               element={element}
               isReadonly={isReadonly}
@@ -1498,7 +1810,7 @@ function ElementPropertyEditor({
               onChange={(displayKeys) => onChange({ ...element, displayKeys })}
             />
           ) : null}
-          {!(element.optionsSlot ?? '').trim() ? (
+          {!(element.optionsSlot ?? "").trim() ? (
             <>
               <Stack direction="row" spacing={1}>
                 <TextField
@@ -1512,7 +1824,7 @@ function ElementPropertyEditor({
                   onChange={(event) =>
                     onGridSizeChange(
                       element,
-                      'rows',
+                      "rows",
                       Math.max(1, Number(event.target.value) || 1),
                     )
                   }
@@ -1528,7 +1840,7 @@ function ElementPropertyEditor({
                   onChange={(event) =>
                     onGridSizeChange(
                       element,
-                      'columns',
+                      "columns",
                       Math.max(1, Number(event.target.value) || 1),
                     )
                   }
@@ -1541,8 +1853,8 @@ function ElementPropertyEditor({
               />
               <DraftTextField
                 hidden
-                label={t('Data')}
-                helperText={t('Enter each cell value as a comma or a new line')}
+                label={t("Data")}
+                helperText={t("Enter each cell value as a comma or a new line")}
                 minRows={3}
                 isReadonly={isReadonly}
                 value={formatList(element.data)}
@@ -1551,7 +1863,7 @@ function ElementPropertyEditor({
                     ...element,
                     data: Array.from(
                       { length: element.rows * element.columns },
-                      (_, index) => splitList(value)[index] ?? '',
+                      (_, index) => splitList(value)[index] ?? "",
                     ),
                   })
                 }

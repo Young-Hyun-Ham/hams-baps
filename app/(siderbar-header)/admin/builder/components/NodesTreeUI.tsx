@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   Box,
@@ -6,17 +6,17 @@ import {
   IconButton,
   Switch,
   Typography,
-} from '@mui/material';
-import { memo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+} from "@mui/material";
+import { memo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
-import NodesTree from './NodesTree';
-import { MOCK_UP_TREE_DATA } from '../store';
+import NodesTree from "./NodesTree";
+import { MOCK_UP_TREE_DATA } from "../store";
 
-import { COLORS } from '@/lib/constants/color';
-import Image from 'next/image';
-import leftPanelOpenIcon from '@/assets/icon-left-panel-open.svg';
-import leftPanelCloseIcon from '@/assets/icon-left-panel-close.svg';
+import { COLORS } from "@/lib/constants/color";
+import Image from "next/image";
+import leftPanelOpenIcon from "@/assets/icon-left-panel-open.svg";
+import leftPanelCloseIcon from "@/assets/icon-left-panel-close.svg";
 
 // import LeftPanelCloseIcon from '@/assets/icon-left-panel-close.svg';
 
@@ -41,19 +41,19 @@ function NodesTreeUI({
       aria-expanded={!isMenuCollapsed}
       borderRight={1}
       borderColor={COLORS.blueGrey[100]}
-      width={isMenuCollapsed ? '46px' : '264px'}
+      width={isMenuCollapsed ? "46px" : "264px"}
       sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
         minHeight: 0,
-        transition: 'width 240ms ease-in-out',
-        willChange: 'width',
+        transition: "width 240ms ease-in-out",
+        willChange: "width",
       }}
     >
       <Box
-        display={'flex'}
-        alignItems={'center'}
+        display={"flex"}
+        alignItems={"center"}
         gap={0.5}
         px={0.5}
         py={1}
@@ -62,7 +62,7 @@ function NodesTreeUI({
       >
         <IconButton
           aria-label={
-            isMenuCollapsed ? 'Expand Nodes Tree' : 'Collapse Nodes Tree'
+            isMenuCollapsed ? "Expand Nodes Tree" : "Collapse Nodes Tree"
           }
           onClick={() => {
             if (props?.onToggleCollapse) {
@@ -84,19 +84,19 @@ function NodesTreeUI({
           fontWeight={500}
           color="text.primary"
           sx={{
-            transition: 'opacity 200ms ease, transform 200ms ease',
+            transition: "opacity 200ms ease, transform 200ms ease",
             opacity: isMenuCollapsed ? 0 : 1,
-            transform: isMenuCollapsed ? 'translateX(-4px)' : 'none',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
+            transform: isMenuCollapsed ? "translateX(-4px)" : "none",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
           }}
         >
-          {t('Node Library')}
+          {t("Node Library")}
         </Typography>
         <Box flex={0.5} />
-        {!isMenuCollapsed &&  (
-          <Box display={'flex'} alignItems={'center'} gap={0.5}>
+        {!isMenuCollapsed && (
+          <Box display={"flex"} alignItems={"center"} gap={0.5}>
             <FormControlLabel
               control={
                 <Switch
@@ -106,13 +106,13 @@ function NodesTreeUI({
                   // disabled={selectedChunk != null}
                 />
               }
-              label={t('Drag & Drop')}
+              label={t("Drag & Drop")}
               sx={{
                 mr: 0,
-                '& .MuiFormControlLabel-label': {
+                "& .MuiFormControlLabel-label": {
                   fontSize: 12,
                   fontWeight: 500,
-                  color: 'text.primary',
+                  color: "text.primary",
                 },
               }}
             />
@@ -122,15 +122,15 @@ function NodesTreeUI({
       <Box
         sx={{
           flex: 1,
-          width: '264px',
-          minWidth: '264px',
-          overflowY: 'auto',
-          overflowX: 'hidden',
-          transition: 'opacity 200ms ease, transform 200ms ease',
-          willChange: 'transform, opacity',
+          width: "264px",
+          minWidth: "264px",
+          overflowY: "auto",
+          overflowX: "hidden",
+          transition: "opacity 200ms ease, transform 200ms ease",
+          willChange: "transform, opacity",
           opacity: isMenuCollapsed ? 0 : 1,
-          transform: isMenuCollapsed ? 'translateX(-218px)' : 'none',
-          pointerEvents: isMenuCollapsed ? 'none' : 'auto',
+          transform: isMenuCollapsed ? "translateX(-218px)" : "none",
+          pointerEvents: isMenuCollapsed ? "none" : "auto",
         }}
         aria-hidden={isMenuCollapsed}
       >

@@ -1,13 +1,13 @@
 // builder/components/VersionTree.tsx
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import { Box } from '@mui/material';
+import { useState, useMemo } from "react";
+import { Box } from "@mui/material";
 
-import { TreeItem, VersionTreeItem } from '../types/types';
-import { useBuilderStore } from '../store/index';
-import ScenarioGroupModal from './modals/ScenarioGroupModal';
-import { getScenarioVersion } from '../services/backendService';
+import { TreeItem, VersionTreeItem } from "../types/types";
+import { useBuilderStore } from "../store/index";
+import ScenarioGroupModal from "./modals/ScenarioGroupModal";
+import { getScenarioVersion } from "../services/backendService";
 
 type Props = {
   data: VersionTreeItem[];
@@ -43,17 +43,17 @@ export default function VersionsTree({ data, isDragMode }: Props) {
     item: VersionTreeItem,
   ) => {
     switch (section.id) {
-      case 'sec-biz':
+      case "sec-biz":
         break;
-      case 'sec-user':
+      case "sec-user":
         break;
-      case 'sec-default':
+      case "sec-default":
       default:
-        if ('dataTransfer' in e) {
+        if ("dataTransfer" in e) {
           // drag
           if (!isDragMode) return;
-          e.dataTransfer.setData('application/reactflow', item.type ?? '');
-          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData("application/reactflow", item.type ?? "");
+          e.dataTransfer.effectAllowed = "move";
         } else {
           // click
           if (isDragMode) return;
@@ -76,22 +76,22 @@ export default function VersionsTree({ data, isDragMode }: Props) {
       sx={{
         width: 260,
         // bgcolor: '#1b1c48',
-        bgcolor: '#fff',
-        color: '#fff',
+        bgcolor: "#fff",
+        color: "#fff",
         borderRadius: 1.5,
-        overflow: 'hidden',
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        boxShadow: '0 6px 20px rgba(0,0,0,0.25)',
+        overflow: "hidden",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        boxShadow: "0 6px 20px rgba(0,0,0,0.25)",
       }}
     >
       {/* Sections */}
-      <Box sx={{ overflowY: 'auto', flex: 1 }}>
+      <Box sx={{ overflowY: "auto", flex: 1 }}>
         {sections.map((section) => (
           <Box
             key={section.id}
-            sx={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}
+            sx={{ borderBottom: "1px solid rgba(255,255,255,0.1)" }}
           >
             {/* Section header (accordion) */}
             <Box
@@ -101,18 +101,18 @@ export default function VersionsTree({ data, isDragMode }: Props) {
                 px: 2,
                 py: 1.2,
                 fontWeight: 700,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                bgcolor: '#25275a',
-                cursor: 'pointer',
-                '&:hover': { bgcolor: '#555679ff' },
-                userSelect: 'none',
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                bgcolor: "#25275a",
+                cursor: "pointer",
+                "&:hover": { bgcolor: "#555679ff" },
+                userSelect: "none",
               }}
             >
               <Box component="span">{section.label}</Box>
               <Box component="span" sx={{ fontSize: 12 }}>
-                {openSections[section.id] ? '▾' : '▸'}
+                {openSections[section.id] ? "▾" : "▸"}
               </Box>
             </Box>
 
@@ -121,14 +121,14 @@ export default function VersionsTree({ data, isDragMode }: Props) {
               <Box
                 sx={{
                   p: 1.5,
-                  bgcolor: '#ffffff',
+                  bgcolor: "#ffffff",
                   // bgcolor: '#21224d',
-                  display: 'grid',
+                  display: "grid",
                   gap: 1,
                 }}
               >
                 {section.children.length === 0 ? (
-                  <Box sx={{ fontSize: 12, color: '#000', px: 1 }}>
+                  <Box sx={{ fontSize: 12, color: "#000", px: 1 }}>
                     No items
                   </Box>
                 ) : (
@@ -146,40 +146,40 @@ export default function VersionsTree({ data, isDragMode }: Props) {
                           addNodeEvent(e, section, item)
                         }
                         sx={{
-                          display: 'flex',
-                          alignItems: 'center',
+                          display: "flex",
+                          alignItems: "center",
                           gap: 1.2,
                           px: 1.5,
                           py: 1,
-                          bgcolor: '#E9ECF3',
+                          bgcolor: "#E9ECF3",
                           borderRadius: 2,
-                          border: '1px solid transparent',
+                          border: "1px solid transparent",
                           outline:
                             selectedId === item.id
-                              ? '2px solid #7a7cff'
-                              : 'none',
+                              ? "2px solid #7a7cff"
+                              : "none",
                           outlineOffset: 0,
-                          '&:hover': {
+                          "&:hover": {
                             // bgcolor: '#3a3b7e',
-                            bgcolor: '#aeaeca',
-                            borderColor: '#7a7cff',
+                            bgcolor: "#aeaeca",
+                            borderColor: "#7a7cff",
                           },
-                          transition: 'all .12s ease',
-                          cursor: 'grab',
+                          transition: "all .12s ease",
+                          cursor: "grab",
                         }}
                       >
                         <Box
                           component="span"
                           sx={{
-                            bgcolor: '#ffffff',
-                            color: '#9cc2ff',
-                            alignItems: 'center',
-                            alignContent: 'center',
+                            bgcolor: "#ffffff",
+                            color: "#9cc2ff",
+                            alignItems: "center",
+                            alignContent: "center",
                             borderRadius: 1,
                           }}
                         >
                           &nbsp;
-                          {item.depn_yn === 'Y' ? (
+                          {item.depn_yn === "Y" ? (
                             <>★</>
                           ) : (
                             <>&nbsp;&nbsp;&nbsp;&nbsp;</>
@@ -190,12 +190,12 @@ export default function VersionsTree({ data, isDragMode }: Props) {
                           component="span"
                           sx={{
                             flex: 1,
-                            textAlign: 'left',
+                            textAlign: "left",
                             fontSize: 14,
-                            color: '#000000',
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
+                            color: "#000000",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
                           }}
                         >
                           {item.label}

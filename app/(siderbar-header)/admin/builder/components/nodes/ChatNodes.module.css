@@ -1,5 +1,30 @@
 /* app/(siderbar-header)/admin/builder/components/nodes/ChatNodes.module.css */
 
+.bodyToggleButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.bodyToggleButton:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.bodyToggleButton:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
 .nodeWrapper {
   position: relative;
   overflow: visible;
@@ -40,7 +65,7 @@
 
 /* Keep the group hovered while the pointer crosses the gap to Add Node. */
 .groupNodeWrapper::after {
-  content: '';
+  content: "";
   position: absolute;
   right: 0;
   bottom: -10px;

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import { useState } from "react";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import {
   Box,
   IconButton,
@@ -7,10 +7,10 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Tooltip,
-} from '@mui/material';
-import { useTranslation } from 'react-i18next';
+} from "@mui/material";
+import { useTranslation } from "react-i18next";
 
-type CopyMode = 'singleLine' | 'original';
+type CopyMode = "singleLine" | "original";
 
 type JsonPanelProps = {
   jsonText: string;
@@ -20,15 +20,15 @@ type JsonPanelProps = {
 
 function JsonPanel({ jsonText, applyJsonText, jsonError }: JsonPanelProps) {
   const { t } = useTranslation();
-  const [copyMode, setCopyMode] = useState<CopyMode>('singleLine');
+  const [copyMode, setCopyMode] = useState<CopyMode>("singleLine");
 
   const getCopyText = () => {
-    if (copyMode === 'original') return jsonText;
+    if (copyMode === "original") return jsonText;
 
     try {
       return JSON.stringify(JSON.parse(jsonText));
     } catch {
-      return jsonText.replace(/\s+/g, ' ').trim();
+      return jsonText.replace(/\s+/g, " ").trim();
     }
   };
 
@@ -40,13 +40,13 @@ function JsonPanel({ jsonText, applyJsonText, jsonError }: JsonPanelProps) {
       return;
     }
 
-    const textarea = document.createElement('textarea');
+    const textarea = document.createElement("textarea");
     textarea.value = copyText;
-    textarea.style.position = 'fixed';
-    textarea.style.opacity = '0';
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
     document.body.appendChild(textarea);
     textarea.select();
-    document.execCommand('copy');
+    document.execCommand("copy");
     document.body.removeChild(textarea);
   };
 
@@ -54,28 +54,28 @@ function JsonPanel({ jsonText, applyJsonText, jsonError }: JsonPanelProps) {
     <Box
       sx={{
         flex: 1,
-        overflow: 'hidden',
+        overflow: "hidden",
         p: 3,
-        bgcolor: 'background.default',
-        display: 'flex',
+        bgcolor: "background.default",
+        display: "flex",
         minHeight: 0,
       }}
     >
       <Box
         sx={{
-          position: 'relative',
+          position: "relative",
           flex: 1,
           minHeight: 0,
         }}
       >
         <Box
           sx={{
-            position: 'absolute',
+            position: "absolute",
             top: 8,
             right: 10,
             zIndex: 1,
-            display: 'flex',
-            alignItems: 'center',
+            display: "flex",
+            alignItems: "center",
             gap: 0.75,
           }}
         >
@@ -87,8 +87,8 @@ function JsonPanel({ jsonText, applyJsonText, jsonError }: JsonPanelProps) {
               if (nextMode) setCopyMode(nextMode);
             }}
             sx={{
-              bgcolor: 'background.paper',
-              '& .MuiToggleButton-root': {
+              bgcolor: "background.paper",
+              "& .MuiToggleButton-root": {
                 px: 1.25,
                 py: 0.4,
                 fontSize: 12,
@@ -96,22 +96,22 @@ function JsonPanel({ jsonText, applyJsonText, jsonError }: JsonPanelProps) {
             }}
           >
             <ToggleButton value="singleLine">
-              {t('a line of copy')}
+              {t("a line of copy")}
             </ToggleButton>
-            <ToggleButton value="original">{t('original copy')}</ToggleButton>
+            <ToggleButton value="original">{t("original copy")}</ToggleButton>
           </ToggleButtonGroup>
 
-          <Tooltip title={t('Copy JSON')}>
+          <Tooltip title={t("Copy JSON")}>
             <IconButton
               aria-label="Copy JSON"
               size="small"
               onClick={copyJsonText}
               sx={{
-                bgcolor: 'background.paper',
+                bgcolor: "background.paper",
                 border: 1,
-                borderColor: 'divider',
-                '&:hover': {
-                  bgcolor: 'action.hover',
+                borderColor: "divider",
+                "&:hover": {
+                  bgcolor: "action.hover",
                 },
               }}
             >
@@ -129,25 +129,25 @@ function JsonPanel({ jsonText, applyJsonText, jsonError }: JsonPanelProps) {
           helperText={
             jsonError ||
             t(
-              'If it is a valid JSON, it will immediately be reflected in the preview status',
+              "If it is a valid JSON, it will immediately be reflected in the preview status",
             )
           }
           sx={{
             flex: 1,
             minHeight: 0,
-            height: '100%',
-            '& .MuiInputBase-root': {
-              height: 'calc(100% - 28px)',
-              alignItems: 'flex-start',
-              bgcolor: 'background.paper',
-              fontFamily: 'monospace',
+            height: "100%",
+            "& .MuiInputBase-root": {
+              height: "calc(100% - 28px)",
+              alignItems: "flex-start",
+              bgcolor: "background.paper",
+              fontFamily: "monospace",
               fontSize: 12,
               pt: 5,
             },
-            '& textarea': {
-              height: '100% !important',
-              overflow: 'auto !important',
-              whiteSpace: 'pre',
+            "& textarea": {
+              height: "100% !important",
+              overflow: "auto !important",
+              whiteSpace: "pre",
             },
           }}
         />

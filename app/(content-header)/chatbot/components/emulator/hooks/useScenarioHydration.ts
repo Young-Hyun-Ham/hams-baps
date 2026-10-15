@@ -4,13 +4,15 @@
 import { useEffect, useRef, useState } from "react";
 import type { AnyNode, ChatStep } from "../../../types";
 
-type PersistedRun = {
-  currentNodeId?: string | null;
-  steps?: ChatStep[];
-  slotValues?: Record<string, any>;
-  formValues?: Record<string, any>;
-  finished?: boolean;
-} | undefined;
+type PersistedRun =
+  | {
+      currentNodeId?: string | null;
+      steps?: ChatStep[];
+      slotValues?: Record<string, any>;
+      formValues?: Record<string, any>;
+      finished?: boolean;
+    }
+  | undefined;
 
 export function useScenarioHydration(args: {
   nodesReady: boolean;

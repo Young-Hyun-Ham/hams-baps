@@ -1,18 +1,18 @@
-import dagre from '@dagrejs/dagre';
-import { Node, Edge } from '@xyflow/react';
+import dagre from "@dagrejs/dagre";
+import { Node, Edge } from "@xyflow/react";
 
 export const getNodeDimensions = (node: any) => {
-  if (node.type === 'ynBranch') {
+  if (node.type === "ynBranch") {
     return { width: 30, height: 30 };
   }
-  if (node.type === 'delay') {
+  if (node.type === "delay") {
     return { width: 36, height: 36 };
   }
-  if (node.type === 'scenario') {
+  if (node.type === "scenario") {
     const isCollapsed = node.data?.isCollapsed !== false;
     return { width: 450, height: isCollapsed ? 50 : 120 };
   }
-  if (node.type === 'selectionGroup') {
+  if (node.type === "selectionGroup") {
     const isCollapsed = node.data?.isCollapsed !== false;
     return { width: 450, height: isCollapsed ? 50 : 120 };
   }
@@ -25,24 +25,24 @@ export const getHandleSide = (
   node: any,
   isSource: boolean,
   handleId?: string,
-): 'left' | 'right' | 'top' | 'bottom' => {
-  if (!node) return isSource ? 'right' : 'left';
+): "left" | "right" | "top" | "bottom" => {
+  if (!node) return isSource ? "right" : "left";
 
-  if (node.type === 'ynBranch') {
+  if (node.type === "ynBranch") {
     if (isSource) {
-      const hId = handleId === 'N' ? 'N' : 'Y';
-      const posY = node.data?.outputPositions?.['Y'] || 'right';
-      const posN = node.data?.outputPositions?.['N'] || 'bottom';
-      return hId === 'Y' ? posY : posN;
+      const hId = handleId === "N" ? "N" : "Y";
+      const posY = node.data?.outputPositions?.["Y"] || "right";
+      const posN = node.data?.outputPositions?.["N"] || "bottom";
+      return hId === "Y" ? posY : posN;
     } else {
-      return node.data?.inputPosition ?? 'left';
+      return node.data?.inputPosition ?? "left";
     }
   }
 
   if (isSource) {
-    if (node.type === 'branch' || node.type === 'llm') {
+    if (node.type === "branch" || node.type === "llm") {
       const isConditionType =
-        node.type === 'llm' || node.data?.evaluationType === 'CONDITION';
+        node.type === "llm" || node.data?.evaluationType === "CONDITION";
 
       let allHandles: string[] = [];
 
@@ -52,7 +52,7 @@ export const getHandleSide = (
           (c: any, idx: number) =>
             node.data?.replies?.[idx]?.value || c.id || String(idx),
         );
-        allHandles.push('default');
+        allHandles.push("default");
       } else {
         const replies = node.data?.replies || [];
         allHandles = replies.map((r: any) => String(r.value));
@@ -61,19 +61,19 @@ export const getHandleSide = (
       const getPos = (hId: string) =>
         node.data?.outputPositions?.[hId] ||
         node.data?.outputPosition ||
-        'right';
+        "right";
 
-      const targetHandleId = handleId || 'default';
+      const targetHandleId = handleId || "default";
       return getPos(targetHandleId);
     }
 
     return (
-      node.data?.outputPositions?.[handleId || 'default'] ||
+      node.data?.outputPositions?.[handleId || "default"] ||
       node.data?.outputPosition ||
-      'right'
+      "right"
     );
   } else {
-    return node.data?.inputPosition ?? 'left';
+    return node.data?.inputPosition ?? "left";
   }
 };
 
@@ -84,52 +84,52 @@ export const getHandleOffset = (
 ) => {
   const { width, height } = getNodeDimensions(node);
 
-  if (node.type === 'ynBranch') {
+  if (node.type === "ynBranch") {
     if (isSource) {
-      const hId = handleId === 'N' ? 'N' : 'Y';
-      const posY = node.data?.outputPositions?.['Y'] || 'right';
-      const posN = node.data?.outputPositions?.['N'] || 'bottom';
+      const hId = handleId === "N" ? "N" : "Y";
+      const posY = node.data?.outputPositions?.["Y"] || "right";
+      const posN = node.data?.outputPositions?.["N"] || "bottom";
 
-      const targetSide = hId === 'Y' ? posY : posN;
-      const sameSideHandles = ['Y', 'N'].filter(
-        (id) => (id === 'Y' ? posY : posN) === targetSide,
+      const targetSide = hId === "Y" ? posY : posN;
+      const sameSideHandles = ["Y", "N"].filter(
+        (id) => (id === "Y" ? posY : posN) === targetSide,
       );
       const indexOnSide = sameSideHandles.indexOf(hId);
       const countOnSide = sameSideHandles.length || 1;
       const ratio = (indexOnSide + 1) / (countOnSide + 1);
 
-      if (targetSide === 'bottom') {
+      if (targetSide === "bottom") {
         return { offsetX: width * ratio, offsetY: height };
       }
       return { offsetX: width, offsetY: height * ratio };
     } else {
-      const inputPos = node.data?.inputPosition ?? 'left';
-      if (inputPos === 'top') {
+      const inputPos = node.data?.inputPosition ?? "left";
+      if (inputPos === "top") {
         return { offsetX: width / 2, offsetY: 0 };
       }
       return { offsetX: 0, offsetY: height / 2 };
     }
   }
 
-  if (node.type === 'delay') {
+  if (node.type === "delay") {
     if (isSource) {
       const pos =
-        node.data?.outputPositions?.['default'] ||
+        node.data?.outputPositions?.["default"] ||
         node.data?.outputPosition ||
-        'right';
-      if (pos === 'bottom') return { offsetX: width / 2, offsetY: height };
+        "right";
+      if (pos === "bottom") return { offsetX: width / 2, offsetY: height };
       return { offsetX: width, offsetY: height / 2 };
     } else {
-      const inputPos = node.data?.inputPosition ?? 'left';
-      if (inputPos === 'top') return { offsetX: width / 2, offsetY: 0 };
+      const inputPos = node.data?.inputPosition ?? "left";
+      if (inputPos === "top") return { offsetX: width / 2, offsetY: 0 };
       return { offsetX: 0, offsetY: height / 2 };
     }
   }
 
   if (isSource) {
-    if (node.type === 'branch' || node.type === 'llm') {
+    if (node.type === "branch" || node.type === "llm") {
       const isConditionType =
-        node.type === 'llm' || node.data?.evaluationType === 'CONDITION';
+        node.type === "llm" || node.data?.evaluationType === "CONDITION";
 
       let allHandles: string[] = [];
 
@@ -139,7 +139,7 @@ export const getHandleOffset = (
           (c: any, idx: number) =>
             node.data?.replies?.[idx]?.value || c.id || String(idx),
         );
-        allHandles.push('default');
+        allHandles.push("default");
       } else {
         const replies = node.data?.replies || [];
         allHandles = replies.map((r: any) => String(r.value));
@@ -148,9 +148,9 @@ export const getHandleOffset = (
       const getPos = (hId: string) =>
         node.data?.outputPositions?.[hId] ||
         node.data?.outputPosition ||
-        'right';
+        "right";
 
-      const targetHandleId = handleId || 'default';
+      const targetHandleId = handleId || "default";
       const targetSide = getPos(targetHandleId);
 
       const handlesOnSide = allHandles.filter((h) => getPos(h) === targetSide);
@@ -159,24 +159,24 @@ export const getHandleOffset = (
       const countOnSide = handlesOnSide.length || 1;
       const ratio = (indexOnSide + 1) / (countOnSide + 1);
 
-      if (targetSide === 'bottom') {
+      if (targetSide === "bottom") {
         return { offsetX: width * ratio, offsetY: height };
       }
       return { offsetX: width, offsetY: height * ratio };
     }
 
     const pos =
-      node.data?.outputPositions?.[handleId || 'default'] ||
+      node.data?.outputPositions?.[handleId || "default"] ||
       node.data?.outputPosition ||
-      'right';
+      "right";
 
-    if (pos === 'bottom') {
+    if (pos === "bottom") {
       return { offsetX: width / 2, offsetY: height };
     }
     return { offsetX: width, offsetY: height / 2 };
   } else {
-    const inputPos = node.data?.inputPosition ?? 'left';
-    if (inputPos === 'top') {
+    const inputPos = node.data?.inputPosition ?? "left";
+    if (inputPos === "top") {
       return { offsetX: width / 2, offsetY: 0 };
     }
     return { offsetX: 0, offsetY: height / 2 };
@@ -190,8 +190,8 @@ export function alignScenarioNodes(nodes: Node[], edges: Edge[]) {
   nodes.forEach((node) => nodeMap.set(node.id, node));
 
   // Separate non-delay nodes and delay nodes
-  const regularNodes = nodes.filter((n) => n.type !== 'delay');
-  const delayNodes = nodes.filter((n) => n.type === 'delay');
+  const regularNodes = nodes.filter((n) => n.type !== "delay");
+  const delayNodes = nodes.filter((n) => n.type === "delay");
 
   // Find effective connections between regular nodes by bypassing delay nodes
   const effectiveEdges: {
@@ -213,7 +213,7 @@ export function alignScenarioNodes(nodes: Node[], edges: Edge[]) {
       const chainDelays: Node[] = [];
       let finalTargetHandle = outEdge.targetHandle ?? undefined;
 
-      while (currTargetNode && currTargetNode.type === 'delay') {
+      while (currTargetNode && currTargetNode.type === "delay") {
         chainDelays.push(currTargetNode);
         processedDelays.add(currTargetNode.id);
         const nextEdge = edges.find((e) => e.source === currTargetNode!.id);
@@ -223,7 +223,7 @@ export function alignScenarioNodes(nodes: Node[], edges: Edge[]) {
         currTargetNode = nodeMap.get(currTargetId);
       }
 
-      if (currTargetNode && currTargetNode.type !== 'delay') {
+      if (currTargetNode && currTargetNode.type !== "delay") {
         effectiveEdges.push({
           source: regNode.id,
           target: currTargetNode.id,
@@ -250,7 +250,7 @@ export function alignScenarioNodes(nodes: Node[], edges: Edge[]) {
     if (!srcNode || !tgtNode) return false;
     const srcSide = getHandleSide(srcNode, true, e.sourceHandle);
     const tgtSide = getHandleSide(tgtNode, false, e.targetHandle);
-    return srcSide === 'bottom' && tgtSide === 'top';
+    return srcSide === "bottom" && tgtSide === "top";
   };
 
   const verticalEdges = effectiveEdges.filter(isVerticalEdge);
@@ -260,14 +260,14 @@ export function alignScenarioNodes(nodes: Node[], edges: Edge[]) {
   edges.forEach((e) => {
     const src = nodeMap.get(e.source);
     const tgt = nodeMap.get(e.target);
-    if (src && tgt && src.type !== 'delay' && tgt.type !== 'delay') {
+    if (src && tgt && src.type !== "delay" && tgt.type !== "delay") {
       const exists = effectiveEdges.some(
         (ee) => ee.source === e.source && ee.target === e.target,
       );
       if (!exists) {
         const isVert =
-          getHandleSide(src, true, e.sourceHandle ?? undefined) === 'bottom' &&
-          getHandleSide(tgt, false, e.targetHandle ?? undefined) === 'top';
+          getHandleSide(src, true, e.sourceHandle ?? undefined) === "bottom" &&
+          getHandleSide(tgt, false, e.targetHandle ?? undefined) === "top";
         if (isVert) {
           verticalEdges.push({
             source: e.source,
@@ -292,7 +292,7 @@ export function alignScenarioNodes(nodes: Node[], edges: Edge[]) {
   // Dagre Graph for regular nodes
   const g = new dagre.graphlib.Graph();
   g.setGraph({
-    rankdir: 'LR',
+    rankdir: "LR",
     nodesep: 40,
     ranksep: 100,
     marginx: 50,
@@ -510,7 +510,7 @@ export function alignScenarioNodes(nodes: Node[], edges: Edge[]) {
             true,
             inEdge.sourceHandle ?? undefined,
           );
-          if (srcSide === 'bottom') {
+          if (srcSide === "bottom") {
             posMap.set(dNode.id, {
               x: Math.round(parentPos.x + srcOffset.offsetX - 18),
               y: Math.round(

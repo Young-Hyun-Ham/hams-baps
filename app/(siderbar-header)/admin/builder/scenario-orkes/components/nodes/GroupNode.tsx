@@ -1,12 +1,12 @@
-import { ChevronsUpDown, UnfoldVertical } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { ChevronsUpDown, UnfoldVertical } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
-import styles from './ChatNodes.module.css';
-import { useBuilderStore } from '../../../store';
-import NodeWrapper from './NodeWrapper';
-import { FLOW_NODE_SIZES } from '../../constants/nodeSizes';
+import styles from "./ChatNodes.module.css";
+import { useBuilderStore } from "../../../store";
+import NodeWrapper from "./NodeWrapper";
+import { FLOW_NODE_SIZES } from "../../constants/nodeSizes";
 
-import type { NodeProps } from 'reactflow';
+import type { NodeProps } from "reactflow";
 
 type GroupNodeData = {
   label?: string;
@@ -21,7 +21,7 @@ function GroupNode({ id, data }: NodeProps<GroupNodeData>) {
   const nodes = useBuilderStore((state) => state.nodes);
   const setNodes = useBuilderStore((state) => state.setNodes);
 
-  const title = data?.label || data?.title || 'Selected Group';
+  const title = data?.label || data?.title || "Selected Group";
   const updateDescendantCollapsed = (collapsed: boolean) => {
     const nodeById = new Map(nodes.map((node) => [node.id, node]));
     const isGroupDescendant = (nodeId: string) => {
@@ -58,7 +58,7 @@ function GroupNode({ id, data }: NodeProps<GroupNodeData>) {
           updateDescendantCollapsed(false);
         }}
         className={styles.anchorButton}
-        title={t('All Expand')}
+        title={t("All Expand")}
       >
         <ChevronsUpDown size={14} />
       </button>
@@ -68,7 +68,7 @@ function GroupNode({ id, data }: NodeProps<GroupNodeData>) {
           updateDescendantCollapsed(true);
         }}
         className={styles.anchorButton}
-        title={t('All Collapse')}
+        title={t("All Collapse")}
       >
         <UnfoldVertical size={14} />
       </button>
@@ -78,12 +78,12 @@ function GroupNode({ id, data }: NodeProps<GroupNodeData>) {
   return (
     <NodeWrapper
       id={id}
-      typeLabel={`${t('Group')}: ${title}`}
+      typeLabel={`${t("Group")}: ${title}`}
       icon={null}
       nodeColor="#475569"
       textColor="#ffffff"
       headerButtons={headerButtons}
-      customClassName={`${styles.groupNodeWrapper} ${data?.flowCollapsed ? styles.groupNodeCollapsed : ''}`}
+      customClassName={`${styles.groupNodeWrapper} ${data?.flowCollapsed ? styles.groupNodeCollapsed : ""}`}
       style={{
         width: data?.flowGroupWidth || FLOW_NODE_SIZES.groupMinWidth,
         minHeight: data?.flowCollapsed
@@ -92,7 +92,7 @@ function GroupNode({ id, data }: NodeProps<GroupNodeData>) {
       }}
     >
       <p className={styles.groupNodeDescription}>
-        {t('This group contains selected nodes from the current scenario')}.
+        {t("This group contains selected nodes from the current scenario")}.
       </p>
     </NodeWrapper>
   );

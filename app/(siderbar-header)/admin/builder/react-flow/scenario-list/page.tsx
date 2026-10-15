@@ -1,29 +1,29 @@
-'use client';
+"use client";
 
-import { Fragment, useCallback, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Controller, useForm } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
-import { AddCircle } from '@mui/icons-material';
-import { Box, Button, IconButton, Typography, Dialog } from '@mui/material';
-import RestartAltIcon from '@mui/icons-material/RestartAlt';
-import BuildIcon from '@mui/icons-material/Build';
-import { format } from 'date-fns';
+import { Fragment, useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Controller, useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import { AddCircle } from "@mui/icons-material";
+import { Box, Button, IconButton, Typography, Dialog } from "@mui/material";
+import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import BuildIcon from "@mui/icons-material/Build";
+import { format } from "date-fns";
 
-import { useBuilderStore } from '../../store/index';
-import { Scenario } from '../../types/types';
-import { ScenarioCard } from '../../components/ScenarioCard';
+import { useBuilderStore } from "../../store/index";
+import { Scenario } from "../../types/types";
+import { ScenarioCard } from "../../components/ScenarioCard";
 
-import { COLORS } from '@/lib/constants/color';
-import SelectWithLabel from '@/components/common/Select';
-import InputWithLabel from '@/components/common/Input';
-import { formatDateTime } from '../../utils/util';
-import { AppLoadingOverlay } from '@/components/common/AppLoadingOverlay';
-import { useModal } from '@/providers/ModalProvider';
+import { COLORS } from "@/lib/constants/color";
+import SelectWithLabel from "@/components/common/Select";
+import InputWithLabel from "@/components/common/Input";
+import { formatDateTime } from "../../utils/util";
+import { AppLoadingOverlay } from "@/components/common/AppLoadingOverlay";
+import { useModal } from "@/providers/ModalProvider";
 
 import { useStore } from "@/store";
 
-const SCENARIO_SEARCH_OPTIONS = [{ label: 'Scenario Name', value: 'scenario' }];
+const SCENARIO_SEARCH_OPTIONS = [{ label: "Scenario Name", value: "scenario" }];
 
 type SearchFilter = {
   type?: string;
@@ -33,7 +33,7 @@ type SearchFilter = {
   sortOrder?: string;
 };
 
-type MODE = 'create' | 'edit' | null;
+type MODE = "create" | "edit" | null;
 
 // ===========================================
 type ScenarioItem = Scenario & {
@@ -51,9 +51,11 @@ const ScenarioList = () => {
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<MODE>(null);
   const [selectedScenario, setSelectedScenario] = useState(false);
-  const [selectedScenarioId, setSelectedScenarioId] = useState('');
+  const [selectedScenarioId, setSelectedScenarioId] = useState("");
 
-  const setAdminSidebarCollapsed = useStore((s: any) => s.setAdminSidebarCollapsed);
+  const setAdminSidebarCollapsed = useStore(
+    (s: any) => s.setAdminSidebarCollapsed,
+  );
 
   const {
     scenario,
@@ -78,11 +80,11 @@ const ScenarioList = () => {
     getValues: getSearchValues,
   } = useForm<SearchFilter>({
     defaultValues: {
-      type: 'scenario',
-      name: '',
-      deployment: 'all',
-      period: 'all',
-      sortOrder: 'updated',
+      type: "scenario",
+      name: "",
+      deployment: "all",
+      period: "all",
+      sortOrder: "updated",
     },
   });
   const onSubmit = (data?: SearchFilter, keepEditorOpen?: boolean) => {
@@ -95,7 +97,7 @@ const ScenarioList = () => {
     try {
       await Promise.all(tasks);
     } catch (err) {
-      alert('Something wrong!!!');
+      alert("Something wrong!!!");
       setLoading(false);
     } finally {
       setLoading(false);
@@ -112,17 +114,17 @@ const ScenarioList = () => {
         const data: any = await fetchScenarios(filters);
         // console.log('==========================> fetchData : ', data, );
         // Sort based on sortOrder (default: 'updated')
-        const sortOrder = filters?.sortOrder || 'updated';
+        const sortOrder = filters?.sortOrder || "updated";
         let sortedData = [...data];
 
-        if (sortOrder === 'name') {
+        if (sortOrder === "name") {
           // Sort alphabetically by name (A-Z)
           sortedData.sort((a: any, b: any) => {
-            const nameA = a.name || '';
-            const nameB = b.name || '';
-            return nameA.localeCompare(nameB, 'ko', { sensitivity: 'base' });
+            const nameA = a.name || "";
+            const nameB = b.name || "";
+            return nameA.localeCompare(nameB, "ko", { sensitivity: "base" });
           });
-        } else if (sortOrder === 'deployed') {
+        } else if (sortOrder === "deployed") {
           // Sort by deployment (latest deployment first)
           sortedData.sort((a: any, b: any) => {
             if (a.depn_ver_id && !b.depn_ver_id) return -1;
@@ -146,15 +148,15 @@ const ScenarioList = () => {
         }
 
         // Filter by deployment status
-        if (filters?.deployment === 'deployed') {
+        if (filters?.deployment === "deployed") {
           sortedData = sortedData.filter((s: any) => !!s.depn_ver_id);
-        } else if (filters?.deployment === 'undeployed') {
+        } else if (filters?.deployment === "undeployed") {
           sortedData = sortedData.filter((s: any) => !s.depn_ver_id);
         }
 
         // Filter by period (today, week, all)
-        const period = filters?.period || 'all';
-        if (period === 'today') {
+        const period = filters?.period || "all";
+        if (period === "today") {
           const startOfToday = new Date();
           startOfToday.setHours(0, 0, 0, 0);
           sortedData = sortedData.filter((s: any) => {
@@ -163,7 +165,7 @@ const ScenarioList = () => {
               ? new Date(date).getTime() >= startOfToday.getTime()
               : false;
           });
-        } else if (period === 'week') {
+        } else if (period === "week") {
           const oneWeekAgo = new Date();
           oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
           sortedData = sortedData.filter((s: any) => {
@@ -176,14 +178,16 @@ const ScenarioList = () => {
 
         setScenarios(sortedData);
       } catch (error) {
-        console.error('Error fetching rows:', error);
-        throw new Error('Failed to fetch');
+        console.error("Error fetching rows:", error);
+        throw new Error("Failed to fetch");
       }
     },
     [scenarios, setScenarios],
   );
 
   useEffect(() => {
+    // admin sidebar를 닫는 로직 추가
+    setAdminSidebarCollapsed(true);
     onSubmit(getSearchValues());
   }, []);
 
@@ -196,12 +200,12 @@ const ScenarioList = () => {
     setValue,
   } = useForm<any>({
     defaultValues: {
-      id: '',
-      name: '',
-      description: '',
-      created_at: '',
-      updated_at: '',
-      last_used_at: '',
+      id: "",
+      name: "",
+      description: "",
+      created_at: "",
+      updated_at: "",
+      last_used_at: "",
     },
   });
   const onFormSubmit = (data?: any) => {
@@ -221,9 +225,15 @@ const ScenarioList = () => {
             id: scenarioData.id,
             name: scenarioData.name,
             description: scenarioData.description,
-            created_at: formatDateTime(scenarioData.created_at || scenarioData.createdAt),
-            updated_at: formatDateTime(scenarioData.updated_at || scenarioData.updatedAt),
-            last_used_at: formatDateTime(scenarioData.last_used_at || scenarioData.lastUsedAt),
+            created_at: formatDateTime(
+              scenarioData.created_at || scenarioData.createdAt,
+            ),
+            updated_at: formatDateTime(
+              scenarioData.updated_at || scenarioData.updatedAt,
+            ),
+            last_used_at: formatDateTime(
+              scenarioData.last_used_at || scenarioData.lastUsedAt,
+            ),
           });
         }
       } catch (e: any) {
@@ -233,28 +243,27 @@ const ScenarioList = () => {
       }
     };
 
-    if (mode === 'edit') {
+    if (mode === "edit") {
       getScenario();
     } else {
       const createData: any[] = scenarios.filter((item: any) => !item.id);
       formReset({
-        id: createData[0]?.id ?? '',
-        name: createData[0]?.name ?? '',
-        description: createData[0]?.description ?? '',
-        created_at: formatDateTime(createData[0]?.created_at) ?? '',
-        updated_at: formatDateTime(createData[0]?.updated_at) ?? '',
-        last_used_at: formatDateTime(createData[0]?.updated_at) ?? '',
+        id: createData[0]?.id ?? "",
+        name: createData[0]?.name ?? "",
+        description: createData[0]?.description ?? "",
+        created_at: formatDateTime(createData[0]?.created_at) ?? "",
+        updated_at: formatDateTime(createData[0]?.updated_at) ?? "",
+        last_used_at: formatDateTime(createData[0]?.updated_at) ?? "",
       });
     }
-
   }, [mode, scenario?.id, formReset]);
 
   const handleSelectScenario = async (data?: Scenario) => {
     // console.log('select scenario ==================> : ', data);
-    setMode(data?.id ? 'edit' : 'create');
+    setMode(data?.id ? "edit" : "create");
     setSelectedScenario(true);
     setScenario(data);
-    setSelectedScenarioId(data?.id ?? '');
+    setSelectedScenarioId(data?.id ?? "");
   };
 
   const handleAddScenario = async () => {
@@ -262,24 +271,24 @@ const ScenarioList = () => {
     if (isChk) return;
 
     formReset({
-      id: '',
-      name: '',
-      description: '',
-      created_at: '',
-      updated_at: '',
-      last_used_at: '',
+      id: "",
+      name: "",
+      description: "",
+      created_at: "",
+      updated_at: "",
+      last_used_at: "",
     });
 
     const data: Scenario = {
-      name: '',
-      description: '',
+      name: "",
+      description: "",
     };
     await setScenarios([data, ...scenarios]);
 
-    setMode('create');
+    setMode("create");
     setSelectedScenario(true);
     setScenario(data);
-    setSelectedScenarioId('');
+    setSelectedScenarioId("");
   };
 
   const handleMoveScenario = async (data?: Scenario) => {
@@ -308,16 +317,16 @@ const ScenarioList = () => {
   };
 
   const handleEditScenario = async (data: Scenario) => {
-    setMode('edit');
+    setMode("edit");
     // console.log('==========================> Edit : ', data);
     setScenario(data);
-    setSelectedScenarioId(data?.id ?? '');
+    setSelectedScenarioId(data?.id ?? "");
   };
 
   const handleDeleteScenario = async (data?: Scenario) => {
     // console.log('==========================> Delete : ', data);
     const deleteDatas: string[] = [];
-    deleteDatas.push(data?.id ?? '');
+    deleteDatas.push(data?.id ?? "");
     await deleteScenario(deleteDatas);
     onSubmit();
   };
@@ -329,22 +338,22 @@ const ScenarioList = () => {
     };
     // console.log('==========================> save : ', mode, payload);
     let res: any = null;
-    if (mode === 'edit') {
+    if (mode === "edit") {
       const { name, nodes, edges, start_node_id, ...patchData } = payload;
       res = await patchScenario(patchData);
     } else {
       res = await createScenario(payload);
       if (res) {
-        setMode('edit');
+        setMode("edit");
         setScenario(res);
-        setSelectedScenarioId(res.id ?? '');
+        setSelectedScenarioId(res.id ?? "");
       }
     }
     setSelectedScenario(false);
-    setSelectedScenarioId('');
+    setSelectedScenarioId("");
     setMode(null);
     onSubmit(getSearchValues());
-    await showAlert('저장되었습니다.');
+    await showAlert("저장되었습니다.");
   };
 
   const handleDataChange = (type: string, data: string) => {
@@ -368,7 +377,7 @@ const ScenarioList = () => {
     const newData = {
       ...resData,
       clone_from_id: data.id,
-      id: '',
+      id: "",
       name: `[clone]_${data.name}`,
     };
     await cloneScenario(newData);
@@ -377,14 +386,14 @@ const ScenarioList = () => {
 
   return (
     <Box
-      display={'flex'}
-      flexDirection={'column'}
-      height={'100%'}
+      display={"flex"}
+      flexDirection={"column"}
+      height={"100%"}
       sx={{ minHeight: 0 }}
     >
       <AppLoadingOverlay loading={loading} />
-      <Box sx={{ display: 'flex', flex: 1, minHeight: 0, gap: 1 }}>
-        <Box display={'flex'} flexDirection={'column'} flex={1}>
+      <Box sx={{ display: "flex", flex: 1, minHeight: 0, gap: 1 }}>
+        <Box display={"flex"} flexDirection={"column"} flex={1}>
           <Box px={2}>
             <Box
               border={1}
@@ -394,23 +403,23 @@ const ScenarioList = () => {
             >
               <form
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
                 }}
                 onSubmit={handleSubmit((data) => onSubmit(data))}
               >
                 <SelectWithLabel
-                  label={t('Sort Order')}
+                  label={t("Sort Order")}
                   size="small"
                   sx={{ minWidth: 160 }}
-                  defaultValue={'updated'}
+                  defaultValue={"updated"}
                   options={[
-                    { label: t('Last Updated'), value: 'updated' },
-                    { label: t('Name'), value: 'name' },
-                    { label: t('Last Deployed'), value: 'deployed' },
+                    { label: t("Last Updated"), value: "updated" },
+                    { label: t("Name"), value: "name" },
+                    { label: t("Last Deployed"), value: "deployed" },
                   ]}
-                  {...register('sortOrder', {
+                  {...register("sortOrder", {
                     onChange: (e) => {
                       onSubmit({
                         ...getSearchValues(),
@@ -420,16 +429,16 @@ const ScenarioList = () => {
                   })}
                 />
                 <SelectWithLabel
-                  label={t('Period')}
+                  label={t("Period")}
                   size="small"
                   sx={{ minWidth: 160 }}
-                  defaultValue={'all'}
+                  defaultValue={"all"}
                   options={[
-                    { label: t('All'), value: 'all' },
-                    { label: t('Today'), value: 'today' },
-                    { label: t('1 Week'), value: 'week' },
+                    { label: t("All"), value: "all" },
+                    { label: t("Today"), value: "today" },
+                    { label: t("1 Week"), value: "week" },
                   ]}
-                  {...register('period', {
+                  {...register("period", {
                     onChange: (e) => {
                       onSubmit({
                         ...getSearchValues(),
@@ -439,16 +448,16 @@ const ScenarioList = () => {
                   })}
                 />
                 <SelectWithLabel
-                  label={t('Deployment Status')}
+                  label={t("Deployment Status")}
                   size="small"
                   sx={{ minWidth: 160 }}
-                  defaultValue={'all'}
+                  defaultValue={"all"}
                   options={[
-                    { label: t('All'), value: 'all' },
-                    { label: t('Deployed'), value: 'deployed' },
-                    { label: t('Not Deployed'), value: 'undeployed' },
+                    { label: t("All"), value: "all" },
+                    { label: t("Deployed"), value: "deployed" },
+                    { label: t("Not Deployed"), value: "undeployed" },
                   ]}
-                  {...register('deployment', {
+                  {...register("deployment", {
                     onChange: (e) => {
                       onSubmit({
                         ...getSearchValues(),
@@ -466,21 +475,21 @@ const ScenarioList = () => {
                   {...register('type')}
                 /> */}
                 <InputWithLabel
-                  label={t('Name')}
+                  label={t("Name")}
                   sx={{ minWidth: 320 }}
                   size="small"
-                  placeholder={t('Please enter your search scenario name')}
+                  placeholder={t("Please enter your search scenario name")}
                   onKeyDown={(e: any) => {
-                    if (e.key === 'Enter') {
+                    if (e.key === "Enter") {
                       e.preventDefault();
                       handleSubmit((data) => onSubmit(data))();
                     }
                   }}
-                  {...register('name')}
+                  {...register("name")}
                 />
                 <Box
                   flex={1}
-                  sx={{ alignSelf: 'stretch' }}
+                  sx={{ alignSelf: "stretch" }}
                   onClick={() => {
                     setMode(null);
                     setSelectedScenario(false);
@@ -506,7 +515,7 @@ const ScenarioList = () => {
                   <RestartAltIcon />
                 </IconButton>
                 <Button type="submit" variant="contained" size="small">
-                  {t('Search')}
+                  {t("Search")}
                 </Button>
               </form>
             </Box>
@@ -514,63 +523,63 @@ const ScenarioList = () => {
 
           {/* List와 Editor를 감싸는 수평 Flex 컨테이너 */}
           <Box
-            display={'flex'}
-            flexDirection={'row'} // 수평 배치
+            display={"flex"}
+            flexDirection={"row"} // 수평 배치
             flexGrow={1} // 남은 세로 공간 모두 차지
-            sx={{ minHeight: 0, overflow: 'hidden' }} // 스크롤은 자식에서 개별 처리
+            sx={{ minHeight: 0, overflow: "hidden" }} // 스크롤은 자식에서 개별 처리
           >
             {/* 1. 시나리오 리스트 영역 */}
             <Box
               flexGrow={1}
               p={2}
               sx={{
-                overflow: 'auto',
-                minWidth: '184px',
+                overflow: "auto",
+                minWidth: "184px",
               }}
             >
               <Box
                 mt={1.5}
-                display={'grid'}
+                display={"grid"}
                 gap={1.5}
                 aria-label="Chunks"
                 px={2}
                 sx={{
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(252px, 1fr))',
-                  gridAutoRows: '80px',
-                  alignItems: 'stretch',
+                  gridTemplateColumns: "repeat(auto-fit, minmax(252px, 1fr))",
+                  gridAutoRows: "80px",
+                  alignItems: "stretch",
                 }}
               >
                 <Box
-                  display={'flex'}
-                  flexDirection={'column'}
+                  display={"flex"}
+                  flexDirection={"column"}
                   sx={{
-                    border: '2px dashed',
+                    border: "2px dashed",
                     borderColor: COLORS.blueGrey[100],
                     borderRadius: 2,
-                    cursor: 'pointer',
-                    height: '100%',
+                    cursor: "pointer",
+                    height: "100%",
                   }}
-                  justifyContent={'center'}
-                  alignItems={'center'}
+                  justifyContent={"center"}
+                  alignItems={"center"}
                   gap={0.5}
                   onClick={() => {
                     handleAddScenario();
                   }}
                 >
-                  <AddCircle sx={{ color: 'primary.main' }} />
+                  <AddCircle sx={{ color: "primary.main" }} />
                   <Typography
                     fontSize={14}
                     fontWeight={500}
                     color="primary.main"
                   >
-                    {t('New Job')}
+                    {t("New Job")}
                   </Typography>
                 </Box>
                 {scenarios.map((data: any, index: any) => (
                   <Fragment key={index}>
                     <ScenarioCard
                       scenario={data}
-                      selected={selectedScenarioId === (data.id ?? '')}
+                      selected={selectedScenarioId === (data.id ?? "")}
                       onSelect={handleSelectScenario}
                       onEdit={handleEditScenario}
                       onDelete={handleDeleteScenario}
@@ -596,21 +605,21 @@ const ScenarioList = () => {
                 sx: {
                   borderRadius: 2,
                   border: 2,
-                  borderColor: 'primary.main',
-                  overflow: 'hidden',
+                  borderColor: "primary.main",
+                  overflow: "hidden",
                 },
               }}
             >
               <form
                 onSubmit={handleFormSubmit(onFormSubmit)}
                 style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  width: '100%',
+                  display: "flex",
+                  flexDirection: "column",
+                  width: "100%",
                 }}
               >
                 {/* 전체 Edit Data 컨테이너 */}
-                <Box display={'flex'} flexDirection={'column'} gap={1} p={2}>
+                <Box display={"flex"} flexDirection={"column"} gap={1} p={2}>
                   {/* "Edit Data" 타이틀 */}
                   <Box
                     display="flex"
@@ -623,7 +632,7 @@ const ScenarioList = () => {
                       fontWeight={700}
                       color="text.primary"
                     >
-                      {t('Edit Scenario')}
+                      {t("Edit Scenario")}
                     </Typography>
 
                     <Box display="flex" gap={1}>
@@ -655,22 +664,22 @@ const ScenarioList = () => {
                           setAdminSidebarCollapsed(true);
                         }}
                       >
-                        {t('Edit')}
+                        {t("Edit")}
                       </Button>
                     </Box>
                   </Box>
 
                   {/* 편집 필드 컨테이너 */}
                   <Box
-                    display={'flex'}
-                    flexDirection={'column'}
+                    display={"flex"}
+                    flexDirection={"column"}
                     gap={2}
                     p={2}
                     sx={{
                       borderRadius: 1,
                       background:
-                        'linear-gradient(180deg, #FFF 0%, #F7F6FF 100%)',
-                      border: '1px solid',
+                        "linear-gradient(180deg, #FFF 0%, #F7F6FF 100%)",
+                      border: "1px solid",
                       borderColor: COLORS.blueGrey[50],
                     }}
                   >
@@ -681,16 +690,16 @@ const ScenarioList = () => {
                         <InputWithLabel
                           {...field}
                           fullWidth
-                          disabled={mode === 'create' ? false : true}
-                          label={`${t('Name')} *`}
+                          disabled={mode === "create" ? false : true}
+                          label={`${t("Name")} *`}
                           size="medium"
                           placeholder={t(
-                            'Please enter your search scenario name',
+                            "Please enter your search scenario name",
                           )}
                           sx={{ mb: 2 }}
                           onChange={(e: any) => {
                             field.onChange(e);
-                            handleDataChange('name', e.target.value);
+                            handleDataChange("name", e.target.value);
                           }}
                         />
                       )}
@@ -703,20 +712,20 @@ const ScenarioList = () => {
                           {...field}
                           multiline
                           fullWidth
-                          label={t('Description')}
+                          label={t("Description")}
                           size="medium"
                           placeholder={t(
-                            'Please enter your search scenario description',
+                            "Please enter your search scenario description",
                           )}
                           sx={{
                             mb: 2,
-                            '& .MuiInputBase-inputMultiline': {
+                            "& .MuiInputBase-inputMultiline": {
                               padding: 0,
                             },
                           }}
                           onChange={(e: any) => {
                             field.onChange(e);
-                            handleDataChange('description', e.target.value);
+                            handleDataChange("description", e.target.value);
                           }}
                         />
                       )}
@@ -724,12 +733,12 @@ const ScenarioList = () => {
                     {scenario?.id && (
                       <>
                         <InputWithLabel
-                          label={t('Last Used Date')}
+                          label={t("Last Used Date")}
                           InputProps={{
                             readOnly: true,
                           }}
                           sx={{ mb: 2 }}
-                          {...formRegister('last_used_at')}
+                          {...formRegister("last_used_at")}
                         />
 
                         <Box
@@ -745,7 +754,7 @@ const ScenarioList = () => {
                               color="text.primary"
                               mb={0.5}
                             >
-                              {t('Latest Version')}
+                              {t("Latest Version")}
                             </Typography>
                             <Box
                               display="flex"
@@ -773,7 +782,7 @@ const ScenarioList = () => {
                               color="text.primary"
                               mb={0.5}
                             >
-                              {t('Deploy Version')}
+                              {t("Deploy Version")}
                             </Typography>
                             <Box
                               display="flex"
@@ -817,9 +826,9 @@ const ScenarioList = () => {
 
                 {/* 하단 날짜 및 SAVE 버튼 영역 */}
                 <Box
-                  display={'flex'}
-                  justifyContent={'space-between'}
-                  alignItems={'center'}
+                  display={"flex"}
+                  justifyContent={"space-between"}
+                  alignItems={"center"}
                   p={2}
                   borderTop={1}
                   borderColor={COLORS.blueGrey[100]}
@@ -829,7 +838,7 @@ const ScenarioList = () => {
                 >
                   {/* 좌측 날짜 */}
                   <Typography variant="caption" color="text.secondary">
-                    {format(new Date(), 'yyyy-MM-dd HH:mm:ss')}
+                    {format(new Date(), "yyyy-MM-dd HH:mm:ss")}
                   </Typography>
 
                   {/* 우측 버튼 그룹 */}
@@ -839,7 +848,7 @@ const ScenarioList = () => {
                       color="primary"
                       onClick={handleSaveScenario}
                     >
-                      {t('SAVE')}
+                      {t("SAVE")}
                     </Button>
 
                     <Button
@@ -851,7 +860,7 @@ const ScenarioList = () => {
                         setSelectedScenario(false);
                       }}
                     >
-                      {t('CLOSE')}
+                      {t("CLOSE")}
                     </Button>
                   </Box>
                 </Box>

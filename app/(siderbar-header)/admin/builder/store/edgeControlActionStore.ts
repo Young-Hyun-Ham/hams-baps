@@ -1,8 +1,8 @@
-import useBuilderHistoryStore from './historyStore';
+import useBuilderHistoryStore from "./historyStore";
 
-import { makeSnapshot, type StoreState } from './index';
+import { makeSnapshot, type StoreState } from "./index";
 
-import type { Node, Edge } from 'reactflow';
+import type { Node, Edge } from "reactflow";
 
 export type EdgePoint = { x: number; y: number };
 
@@ -16,7 +16,7 @@ type GetState = () => StoreState;
 
 type EdgeControlActionSlice = Pick<
   StoreState,
-  'updateEdgeSegment' | 'updateEdgePoints'
+  "updateEdgeSegment" | "updateEdgePoints"
 >;
 
 function stripUndefinedDeep<T>(value: T): T {
@@ -24,7 +24,7 @@ function stripUndefinedDeep<T>(value: T): T {
     return value.map((item) => stripUndefinedDeep(item)) as T;
   }
 
-  if (value && typeof value === 'object') {
+  if (value && typeof value === "object") {
     const next: Record<string, unknown> = {};
 
     Object.entries(value as Record<string, unknown>).forEach(
@@ -105,24 +105,24 @@ export function sanitizeEdgesForSave(
       if (edge.sourceHandle) {
         // Standard fixed handles across various node types
         const standardFixedHandles = [
-          'default',
-          'onSuccess',
-          'onError',
-          'true',
-          'false',
-          'output-right',
-          'output-bottom',
-          'output',
-          'input-top',
-          'input-left',
-          'input',
-          'Y',
-          'N',
+          "default",
+          "onSuccess",
+          "onError",
+          "true",
+          "false",
+          "output-right",
+          "output-bottom",
+          "output",
+          "input-top",
+          "input-left",
+          "input",
+          "Y",
+          "N",
         ];
         if (
           standardFixedHandles.includes(edge.sourceHandle) ||
-          edge.sourceHandle.startsWith('output') ||
-          edge.sourceHandle.startsWith('input')
+          edge.sourceHandle.startsWith("output") ||
+          edge.sourceHandle.startsWith("input")
         ) {
           return true;
         }

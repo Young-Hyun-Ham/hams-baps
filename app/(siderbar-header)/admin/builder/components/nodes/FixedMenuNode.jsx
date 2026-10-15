@@ -1,12 +1,12 @@
-import { useEffect, useRef } from 'react';
-import { Handle, Position } from 'reactflow';
+import { useEffect, useRef } from "react";
+import { Handle, Position } from "reactflow";
 
-import styles from './ChatNodes.module.css';
-import { useBuilderStore } from '../../store/index';
+import styles from "./ChatNodes.module.css";
+import { useBuilderStore } from "../../store/index";
 // (AnchorIcon, StartNodeIcon 임포트 제거)
-import NodeWrapper from './NodeWrapper'; // 1. Wrapper 임포트
+import NodeWrapper from "./NodeWrapper"; // 1. Wrapper 임포트
 
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
 
 function FixedMenuNode({ id, data }) {
   const { t } = useTranslation();
@@ -37,7 +37,7 @@ function FixedMenuNode({ id, data }) {
             // 핸들 위치를 동적으로 계산 (NodeWrapper 내부의 ref를 사용하기 어려우므로 수동 계산)
             // 이 계산은 완벽하지 않을 수 있으며, 필요시 고정 위치로 변경
             top: `${70 + index * 40}px`, // 이 값은 노드 본문의 실제 레이아웃에 따라 조정 필요
-            background: '#555',
+            background: "#555",
           }}
         />
       ))}
@@ -56,16 +56,16 @@ function FixedMenuNode({ id, data }) {
     >
       {/* 6. 기존 nodeBody의 내용만 children으로 전달 */}
       <div className={styles.section}>
-        <span className={styles.sectionTitle}>{t('Menu Title')}</span>
+        <span className={styles.sectionTitle}>{t("Menu Title")}</span>
         <textarea
           className={styles.textInput}
-          value={data.content || ''}
+          value={data.content || ""}
           readOnly
           rows={2}
         />
       </div>
       <div className={styles.section}>
-        <span className={styles.sectionTitle}>{t('Menus')}:</span>
+        <span className={styles.sectionTitle}>{t("Menus")}:</span>
         <div className={styles.branchOptionsContainer}>
           {data.replies?.map((reply, index) => (
             <div
@@ -79,7 +79,7 @@ function FixedMenuNode({ id, data }) {
           ))}
           {data.replies?.length === 0 && (
             <div className={styles.formElementsPlaceholder}>
-              {t('No menus added')}.
+              {t("No menus added")}.
             </div>
           )}
         </div>

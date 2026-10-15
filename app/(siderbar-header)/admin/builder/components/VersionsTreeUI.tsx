@@ -1,26 +1,26 @@
 // @/components/VersionsTreeUI.tsx
-'use client';
+"use client";
 
-import { Box, IconButton, Typography } from '@mui/material';
-import { memo, useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Box, IconButton, Typography } from "@mui/material";
+import { memo, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
-import VersionsTree from './VersionsTree';
-import { TreeItem, VersionTreeItem } from '../types/types';
-import { getScenarioVersions } from '../services/backendService';
-import { useBuilderStore } from '../store';
+import VersionsTree from "./VersionsTree";
+import { TreeItem, VersionTreeItem } from "../types/types";
+import { getScenarioVersions } from "../services/backendService";
+import { useBuilderStore } from "../store";
 
-import { COLORS } from '@/lib/constants/color';
-import LeftPanelOpenIcon from '@/assets/icon-left-panel-open.svg';
-import LeftPanelCloseIcon from '@/assets/icon-left-panel-close.svg';
-import { useModal } from '@/providers/ModalProvider';
-import apiClient from '@/lib/api/apiClient';
+import { COLORS } from "@/lib/constants/color";
+import LeftPanelOpenIcon from "@/assets/icon-left-panel-open.svg";
+import LeftPanelCloseIcon from "@/assets/icon-left-panel-close.svg";
+import { useModal } from "@/providers/ModalProvider";
+import apiClient from "@/lib/api/apiClient";
 
 export const MOCK_UP_TREE_DATA: TreeItem[] = [
   {
-    id: 'sec-default',
+    id: "sec-default",
     index: 0,
-    label: 'Default',
+    label: "Default",
     children: [
       // {
       //   id: 'DEV_1000_000025_15',
@@ -67,31 +67,31 @@ function VersionsTreeUI({ props, versions }: any) {
         const data: any = await getScenarioVersions(backend, {
           scenario_id: scenario.id,
         });
-        console.log('VersionsTreeUI - loadVersions - data: ', data);
+        console.log("VersionsTreeUI - loadVersions - data: ", data);
         // const versionList = Array.isArray(data) ? data : data?.version_list ?? [];
 
         const versionChildren: any = (data?.version_list ?? []).map(
           (item: any, index: number) => ({
-            id: item.snro_id + ':' + item.ver_id + ':' + item.depn_yn,
+            id: item.snro_id + ":" + item.ver_id + ":" + item.depn_yn,
             snro_id: item.snro_id,
             ver_id: item.ver_id,
             depn_yn: item.depn_yn,
-            type: 'version',
+            type: "version",
             index,
-            label: item.ver_id ?? '',
+            label: item.ver_id ?? "",
           }),
         );
 
         setTreeData([
           {
-            id: 'sec-default',
+            id: "sec-default",
             index: 0,
-            label: t('Default'),
+            label: t("Default"),
             children: versionChildren,
           },
         ]);
       } catch (error) {
-        showAlert(t('Failed to load versions'),);
+        showAlert(t("Failed to load versions"));
       }
     };
 
@@ -104,19 +104,19 @@ function VersionsTreeUI({ props, versions }: any) {
       aria-expanded={!isMenuCollapsed}
       borderRight={1}
       borderColor={COLORS.blueGrey[100]}
-      width={isMenuCollapsed ? '46px' : '264px'}
+      width={isMenuCollapsed ? "46px" : "264px"}
       sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
         minHeight: 0,
-        transition: 'width 240ms ease-in-out',
-        willChange: 'width',
+        transition: "width 240ms ease-in-out",
+        willChange: "width",
       }}
     >
       <Box
-        display={'flex'}
-        alignItems={'center'}
+        display={"flex"}
+        alignItems={"center"}
         gap={0.5}
         px={0.5}
         py={1}
@@ -125,7 +125,7 @@ function VersionsTreeUI({ props, versions }: any) {
       >
         <IconButton
           aria-label={
-            isMenuCollapsed ? 'Expand Version Tree' : 'Collapse Version Tree'
+            isMenuCollapsed ? "Expand Version Tree" : "Collapse Version Tree"
           }
           onClick={() => setIsUserCollapsed((prev) => !prev)}
         >
@@ -136,31 +136,31 @@ function VersionsTreeUI({ props, versions }: any) {
           fontWeight={500}
           color="text.primary"
           sx={{
-            transition: 'opacity 200ms ease, transform 200ms ease',
+            transition: "opacity 200ms ease, transform 200ms ease",
             opacity: isMenuCollapsed ? 0 : 1,
-            transform: isMenuCollapsed ? 'translateX(-4px)' : 'none',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
+            transform: isMenuCollapsed ? "translateX(-4px)" : "none",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
           }}
         >
-          {t('Verions')}
+          {t("Verions")}
         </Typography>
         <Box flex={0.5} />
-        <Box display={'flex'} alignItems={'center'} gap={0.5} />
+        <Box display={"flex"} alignItems={"center"} gap={0.5} />
       </Box>
       <Box
         sx={{
           flex: 1,
-          width: '264px',
-          minWidth: '264px',
-          overflowY: 'auto',
-          overflowX: 'hidden',
-          transition: 'opacity 200ms ease, transform 200ms ease',
-          willChange: 'transform, opacity',
+          width: "264px",
+          minWidth: "264px",
+          overflowY: "auto",
+          overflowX: "hidden",
+          transition: "opacity 200ms ease, transform 200ms ease",
+          willChange: "transform, opacity",
           opacity: isMenuCollapsed ? 0 : 1,
-          transform: isMenuCollapsed ? 'translateX(-218px)' : 'none',
-          pointerEvents: isMenuCollapsed ? 'none' : 'auto',
+          transform: isMenuCollapsed ? "translateX(-218px)" : "none",
+          pointerEvents: isMenuCollapsed ? "none" : "auto",
         }}
         aria-hidden={isMenuCollapsed}
       >

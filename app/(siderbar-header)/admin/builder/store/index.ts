@@ -1,7 +1,7 @@
 // app/builder/store/index.js
-'use client';
+"use client";
 
-import { create } from 'zustand';
+import { create } from "zustand";
 import {
   addEdge,
   applyNodeChanges,
@@ -11,9 +11,9 @@ import {
   type NodeChange,
   type EdgeChange,
   type Connection,
-} from 'reactflow';
+} from "reactflow";
 
-import { createNodeData, createFormElement } from '../utils/nodeFactory';
+import { createNodeData, createFormElement } from "../utils/nodeFactory";
 import {
   fetchScenarioData,
   fetchScenarios,
@@ -22,23 +22,23 @@ import {
   patchScenario,
   deleteScenario,
   cloneScenario,
-} from '../services/backendService';
-import { DB_TYPE, Scenario, TreeItem } from '../types/types';
-import useBuilderHistoryStore, { GraphSnapshot } from './historyStore';
-import { createGroupActionStore } from './groupActionStore';
+} from "../services/backendService";
+import { DB_TYPE, Scenario, TreeItem } from "../types/types";
+import useBuilderHistoryStore, { GraphSnapshot } from "./historyStore";
+import { createGroupActionStore } from "./groupActionStore";
 import {
   createEdgeControlActionStore,
   EdgePoint,
   sanitizeEdgesForSave,
   sanitizeNodesForSave,
-} from './edgeControlActionStore';
-import { useStore } from '@/store';
-import type { User } from '@/types/user';
+} from "./edgeControlActionStore";
+import { useStore } from "@/store";
+import type { User } from "@/types/user";
 
 // ================================================================
 // 플레이 타입 설정
 export type ExecutionPhase =
-  'start' | 'enter' | 'complete' | 'wait' | 'error' | 'finish';
+  "start" | "enter" | "complete" | "wait" | "error" | "finish";
 
 export type ExecutionLog = {
   at: string;
@@ -52,51 +52,51 @@ export type ExecutionLog = {
 
 /* 노드 타입(키) 고정 */
 export type NodeType =
-  | 'message'
-  | 'form'
-  | 'branch'
-  | 'slotfilling'
-  | 'api'
-  | 'llm'
-  | 'setSlot'
-  | 'delay'
-  | 'fixedmenu'
-  | 'link'
-  | 'toast'
-  | 'iframe'
-  | 'scenario';
+  | "message"
+  | "form"
+  | "branch"
+  | "slotfilling"
+  | "api"
+  | "llm"
+  | "setSlot"
+  | "delay"
+  | "fixedmenu"
+  | "link"
+  | "toast"
+  | "iframe"
+  | "scenario";
 
 /* 기본 색상/텍스트 색상: 키 누락 방지 */
 const defaultColors = {
-  message: '#f39c12',
-  form: '#9b59b6',
-  branch: '#2ecc71',
-  slotfilling: '#3498db',
-  api: '#e74c3c',
-  llm: '#1abc9c',
-  setSlot: '#8e44ad',
-  delay: '#f1c40f',
-  fixedmenu: '#e74c3c',
-  link: '#1977d4ff',
-  toast: '#95a5a6',
-  iframe: '#7e96afff',
-  scenario: '#7f8c8d',
+  message: "#f39c12",
+  form: "#9b59b6",
+  branch: "#2ecc71",
+  slotfilling: "#3498db",
+  api: "#e74c3c",
+  llm: "#1abc9c",
+  setSlot: "#8e44ad",
+  delay: "#f1c40f",
+  fixedmenu: "#e74c3c",
+  link: "#1977d4ff",
+  toast: "#95a5a6",
+  iframe: "#7e96afff",
+  scenario: "#7f8c8d",
 } satisfies any;
 
 const defaultTextColors = {
-  message: '#ffffff',
-  form: '#ffffff',
-  branch: '#ffffff',
-  slotfilling: '#ffffff',
-  api: '#ffffff',
-  llm: '#ffffff',
-  setSlot: '#ffffff',
-  delay: '#333333',
-  fixedmenu: '#ffffff',
-  link: '#ffffff',
-  toast: '#ffffff',
-  iframe: '#ffffff',
-  scenario: '#ffffff',
+  message: "#ffffff",
+  form: "#ffffff",
+  branch: "#ffffff",
+  slotfilling: "#ffffff",
+  api: "#ffffff",
+  llm: "#ffffff",
+  setSlot: "#ffffff",
+  delay: "#333333",
+  fixedmenu: "#ffffff",
+  link: "#ffffff",
+  toast: "#ffffff",
+  iframe: "#ffffff",
+  scenario: "#ffffff",
 } satisfies any;
 
 /* 키 배열을 NodeType[]로 고정 */
@@ -104,84 +104,84 @@ export const ALL_NODE_TYPES = Object.keys(defaultColors) as NodeType[];
 
 /* 기본 표시 타입 */
 const defaultVisibleNodeTypes: NodeType[] = [
-  'message',
-  'form',
-  'branch',
-  'slotfilling',
-  'api',
-  'setSlot',
-  'delay',
-  'fixedmenu',
-  'link',
-  'iframe',
-  'scenario',
+  "message",
+  "form",
+  "branch",
+  "slotfilling",
+  "api",
+  "setSlot",
+  "delay",
+  "fixedmenu",
+  "link",
+  "iframe",
+  "scenario",
   // 'llm','toast',
 ];
 
 /* scenario detail nodes data */
 export const MOCK_UP_TREE_DATA: TreeItem[] = [
   {
-    id: 'sec-default',
+    id: "sec-default",
     index: 0,
-    label: 'Default',
+    label: "Default",
     children: [
       {
-        id: 'message',
-        type: 'message',
+        id: "message",
+        type: "message",
         index: 0,
-        label: 'Message',
+        label: "Message",
         children: [],
       },
       {
-        id: 'setSlot',
-        type: 'setSlot',
+        id: "setSlot",
+        type: "setSlot",
         index: 1,
-        label: 'Set Slot',
+        label: "Set Slot",
         children: [],
       },
       {
-        id: 'branch',
-        type: 'branch',
+        id: "branch",
+        type: "branch",
         index: 2,
-        label: 'Condition Branch',
+        label: "Condition Branch",
         children: [],
       },
-      { id: 'form', type: 'form', index: 3, label: 'Form', children: [] },
-      { id: 'link', type: 'link', index: 4, label: 'Link', children: [] },
-      { id: 'api', type: 'api', index: 5, label: 'API', children: [] },
+      { id: "form", type: "form", index: 3, label: "Form", children: [] },
+      { id: "link", type: "link", index: 4, label: "Link", children: [] },
+      { id: "api", type: "api", index: 5, label: "API", children: [] },
       {
-        id: 'iframe',
-        type: 'iframe',
+        id: "iframe",
+        type: "iframe",
         index: 6,
-        label: 'iframe',
+        label: "iframe",
         children: [],
       },
     ],
   },
   {
-    id: 'sec-biz',
+    id: "sec-biz",
     index: 1,
-    label: 'Business',
+    label: "Business",
     children: [
       {
-        id: 'ScenarioGroup',
-        type: 'scenarioGroup',
+        id: "ScenarioGroup",
+        type: "scenarioGroup",
         index: 0,
-        label: 'Scenario Group',
+        label: "Scenario Group",
         children: [],
       },
     ],
   },
   {
-    id: 'sec-user',
+    id: "sec-user",
     index: 2,
-    label: 'User Defined',
+    label: "User Defined",
     children: [
       {
-        id: 'settingNodes',
-        type: 'settingNodes',
+        id: "settingNodes",
+        type: "settingNodes",
         index: 0,
-        label: 'Nodes Settings',
+        label: "Nodes Settings",
         children: [],
       },
     ],
@@ -189,11 +189,11 @@ export const MOCK_UP_TREE_DATA: TreeItem[] = [
 ];
 
 const userInfo: User = {
-  id: '',
-  sub: '',
-  email: '',
-  username: '',
-  roles: ['guest'],
+  id: "",
+  sub: "",
+  email: "",
+  username: "",
+  roles: ["guest"],
   unuseFormElements: [],
   unuseNodes: [],
   nodeColors: defaultColors,
@@ -264,7 +264,7 @@ export type StoreState = {
   updateReply: (
     nodeId: string,
     index: number,
-    part: 'display' | 'value',
+    part: "display" | "value",
     value: string,
   ) => void;
   deleteReply: (nodeId: string, index: number) => void;
@@ -342,9 +342,9 @@ export const makeSnapshot = (state: {
 const shouldRecordNodeChanges = (changes: NodeChange[]) =>
   changes.some((change) => {
     switch (change.type) {
-      case 'position':
-      case 'remove':
-      case 'add':
+      case "position":
+      case "remove":
+      case "add":
         return true;
       default:
         return false;
@@ -354,8 +354,8 @@ const shouldRecordNodeChanges = (changes: NodeChange[]) =>
 const shouldRecordEdgeChanges = (changes: EdgeChange[]) =>
   changes.some((change) => {
     switch (change.type) {
-      case 'remove':
-      case 'add':
+      case "remove":
+      case "add":
         return true;
       default:
         return false;
@@ -368,7 +368,7 @@ const createReconnectedEdge = (
   outgoingEdge: Edge<any>,
 ): Edge<any> => ({
   ...incomingEdge,
-  id: `reactflow__edge-${incomingEdge.source}${incomingEdge.sourceHandle || ''}-${outgoingEdge.target}${outgoingEdge.targetHandle || ''}`,
+  id: `reactflow__edge-${incomingEdge.source}${incomingEdge.sourceHandle || ""}-${outgoingEdge.target}${outgoingEdge.targetHandle || ""}`,
   target: outgoingEdge.target,
   targetHandle: outgoingEdge.targetHandle ?? null,
 });
@@ -398,15 +398,15 @@ const getNodeIdsToRemove = (
     removeSet.add(targetId);
 
     if (
-      targetNode.type === 'scenario' ||
-      targetNode.type === 'selectionGroup'
+      targetNode.type === "scenario" ||
+      targetNode.type === "selectionGroup"
     ) {
       nodes
         .filter((child) => child.parentNode === targetId)
         .forEach((child) => collectNodeAndChildren(child.id));
     }
 
-    if (targetNode.type === 'branch') {
+    if (targetNode.type === "branch") {
       outgoingEdgesBySourceId
         .get(targetId)
         ?.forEach((edge) => collectBranchDescendant(edge.target));
@@ -447,7 +447,7 @@ const reconnectEdgesAfterRemoval = (
       edge.sourceHandle ?? null,
       edge.target,
       edge.targetHandle ?? null,
-    ].join('|');
+    ].join("|");
   const existingKeys = new Set(nextEdges.map(edgeKey));
 
   incomingEdges.forEach((incomingEdge) => {
@@ -467,7 +467,7 @@ const reconnectEdgesAfterRemoval = (
 };
 
 export const useBuilderStore = create<StoreState>((set, get) => ({
-  backend: 'firebase',
+  backend: "firebase",
   setBackend: (kind: DB_TYPE) => set({ backend: kind }),
   treeNodes: [],
 
@@ -489,7 +489,9 @@ export const useBuilderStore = create<StoreState>((set, get) => ({
               storedBuilderUser.unuseFormElements ??
               [],
             unuseNodes:
-              authenticatedUser.unuseNodes ?? storedBuilderUser.unuseNodes ?? [],
+              authenticatedUser.unuseNodes ??
+              storedBuilderUser.unuseNodes ??
+              [],
             nodeColors:
               authenticatedUser.nodeColors ?? storedBuilderUser.nodeColors,
           }
@@ -502,7 +504,7 @@ export const useBuilderStore = create<StoreState>((set, get) => ({
 
       const userInfo: User = {
         ...currentUserInfo,
-        roles: currentUserInfo.roles ?? ['guest'],
+        roles: currentUserInfo.roles ?? ["guest"],
         unuseFormElements: currentUserInfo.unuseFormElements ?? [],
         unuseNodes: currentUserInfo.unuseNodes ?? [],
         nodeColors,
@@ -515,7 +517,7 @@ export const useBuilderStore = create<StoreState>((set, get) => ({
 
       return userInfo;
     } catch (error) {
-      console.error('Error loading user data:', error);
+      console.error("Error loading user data:", error);
       throw error;
     }
   },
@@ -533,11 +535,11 @@ export const useBuilderStore = create<StoreState>((set, get) => ({
       }));
       set({ treeNodes: filteredTreeData });
     } catch (error) {
-      console.error('Error loading tree nodes:', error);
+      console.error("Error loading tree nodes:", error);
     }
   },
 
-  scenario: { name: '', description: '' },
+  scenario: { name: "", description: "" },
   setScenario: (item: Scenario) => set({ scenario: item }),
   scenarios: [],
   setScenarios: (item: Scenario[]) => set({ scenarios: item }),
@@ -593,7 +595,7 @@ export const useBuilderStore = create<StoreState>((set, get) => ({
 
     const movedChanges = (changes as any[]).filter(
       (change: any) =>
-        change?.type === 'position' && change?.position && change?.dragging,
+        change?.type === "position" && change?.position && change?.dragging,
     );
 
     if (movedChanges.length === 0) {
@@ -645,11 +647,11 @@ export const useBuilderStore = create<StoreState>((set, get) => ({
               }))
             : edge.data?.points,
           controlX:
-            typeof edge.data?.controlX === 'number'
+            typeof edge.data?.controlX === "number"
               ? edge.data.controlX + dx
               : edge.data?.controlX,
           controlY:
-            typeof edge.data?.controlY === 'number'
+            typeof edge.data?.controlY === "number"
               ? edge.data.controlY + dy
               : edge.data?.controlY,
         },
@@ -761,7 +763,7 @@ export const useBuilderStore = create<StoreState>((set, get) => ({
       const newNodes = state.nodes.map((n) => {
         if (
           n.id === nodeId &&
-          (n.type === 'scenario' || n.type === 'selectionGroup')
+          (n.type === "scenario" || n.type === "selectionGroup")
         ) {
           const isCollapsed = !(n.data?.isCollapsed ?? false);
           const nextStyle: Record<string, any> = { ...(n.style as any) };
@@ -873,13 +875,13 @@ export const useBuilderStore = create<StoreState>((set, get) => ({
         if (n.id !== nodeId) return n;
         const t = n.type as NodeType;
         const label =
-          t === 'branch'
-            ? 'New Condition'
-            : t === 'fixedmenu'
-              ? 'New Menu'
-              : 'New Reply';
+          t === "branch"
+            ? "New Condition"
+            : t === "fixedmenu"
+              ? "New Menu"
+              : "New Reply";
         const prefix =
-          t === 'branch' ? 'cond' : t === 'fixedmenu' ? 'menu' : 'val';
+          t === "branch" ? "cond" : t === "fixedmenu" ? "menu" : "val";
         const newReply = {
           display: label,
           value: `${prefix}_${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
@@ -922,7 +924,7 @@ export const useBuilderStore = create<StoreState>((set, get) => ({
   addElement: (nodeId, elementType) => {
     set((state) => ({
       nodes: state.nodes.map((n) => {
-        if (n.id !== nodeId || n.type !== 'form') return n;
+        if (n.id !== nodeId || n.type !== "form") return n;
         const el = createFormElement(elementType);
         const elements = Array.isArray(n.data?.elements)
           ? n.data!.elements
@@ -938,7 +940,7 @@ export const useBuilderStore = create<StoreState>((set, get) => ({
   updateElement: (nodeId, elementIndex, elementUpdate) => {
     set((state) => ({
       nodes: state.nodes.map((n) => {
-        if (n.id !== nodeId || n.type !== 'form') return n;
+        if (n.id !== nodeId || n.type !== "form") return n;
         const elements = Array.isArray(n.data?.elements)
           ? [...n.data!.elements]
           : [];
@@ -947,13 +949,13 @@ export const useBuilderStore = create<StoreState>((set, get) => ({
         const nextEl = { ...oldEl, ...elementUpdate };
 
         if (
-          nextEl.type === 'grid' &&
+          nextEl.type === "grid" &&
           (oldEl.rows !== nextEl.rows || oldEl.columns !== nextEl.columns)
         ) {
           const oldData: string[] = oldEl.data || [];
           const newRows = nextEl.rows || 2;
           const newCols = nextEl.columns || 2;
-          const newData = Array(newRows * newCols).fill('');
+          const newData = Array(newRows * newCols).fill("");
           for (let r = 0; r < Math.min(oldEl.rows || 0, newRows); r++) {
             for (let c = 0; c < Math.min(oldEl.columns || 0, newCols); c++) {
               const oi = r * (oldEl.columns || 0) + c;
@@ -973,7 +975,7 @@ export const useBuilderStore = create<StoreState>((set, get) => ({
   deleteElement: (nodeId, elementIndex) => {
     set((state) => ({
       nodes: state.nodes.map((n) => {
-        if (n.id !== nodeId || n.type !== 'form') return n;
+        if (n.id !== nodeId || n.type !== "form") return n;
         const elements = Array.isArray(n.data?.elements)
           ? n.data!.elements.filter((_: any, i: number) => i !== elementIndex)
           : [];
@@ -985,10 +987,10 @@ export const useBuilderStore = create<StoreState>((set, get) => ({
   updateGridCell: (nodeId, elementIndex, rowIndex, colIndex, value) => {
     set((state) => ({
       nodes: state.nodes.map((n) => {
-        if (n.id !== nodeId || n.type !== 'form') return n;
+        if (n.id !== nodeId || n.type !== "form") return n;
         const elements = JSON.parse(JSON.stringify(n.data?.elements ?? []));
         const grid = elements[elementIndex];
-        if (!grid || grid.type !== 'grid') return n;
+        if (!grid || grid.type !== "grid") return n;
         const idx = rowIndex * grid.columns + colIndex;
         grid.data[idx] = value;
         return { ...n, data: { ...(n.data ?? {}), elements } };
@@ -999,7 +1001,7 @@ export const useBuilderStore = create<StoreState>((set, get) => ({
   moveElement: (nodeId, startIndex, endIndex) => {
     set((state) => ({
       nodes: state.nodes.map((n) => {
-        if (n.id !== nodeId || n.type !== 'form') return n;
+        if (n.id !== nodeId || n.type !== "form") return n;
         const elements = Array.isArray(n.data?.elements)
           ? [...n.data!.elements]
           : [];
@@ -1029,27 +1031,27 @@ export const useBuilderStore = create<StoreState>((set, get) => ({
           alert(`${selectedNodes.length} nodes exported to clipboard!`),
         )
         .catch((err) => {
-          console.error('Clipboard API failed: ', err);
+          console.error("Clipboard API failed: ", err);
           alert(`Failed to export nodes: ${err.message}`);
         });
     } else {
       try {
-        const ta = document.createElement('textarea');
+        const ta = document.createElement("textarea");
         ta.value = json;
-        ta.style.position = 'fixed';
-        ta.style.top = '-9999px';
-        ta.style.left = '-9999px';
+        ta.style.position = "fixed";
+        ta.style.top = "-9999px";
+        ta.style.left = "-9999px";
         document.body.appendChild(ta);
         ta.focus();
         ta.select();
-        document.execCommand('copy');
+        document.execCommand("copy");
         document.body.removeChild(ta);
         alert(
           `${selectedNodes.length} nodes exported to clipboard (fallback).`,
         );
       } catch (err) {
-        console.error('Fallback export failed: ', err);
-        alert('Failed to export nodes.');
+        console.error("Fallback export failed: ", err);
+        alert("Failed to export nodes.");
       }
     }
   },
@@ -1061,7 +1063,7 @@ export const useBuilderStore = create<StoreState>((set, get) => ({
       const text = await navigator.clipboard.readText();
       const parsed = JSON.parse(text);
       if (!parsed.nodes || !Array.isArray(parsed.nodes))
-        throw new Error('Invalid data format');
+        throw new Error("Invalid data format");
 
       const { nodes: curNodes, edges: curEdges } = get();
       const map = new Map<string, string>();
@@ -1087,7 +1089,7 @@ export const useBuilderStore = create<StoreState>((set, get) => ({
           if (s && t) {
             return {
               ...e,
-              id: `reactflow__edge-${s}${e.sourceHandle || ''}-${t}${e.targetHandle || ''}`,
+              id: `reactflow__edge-${s}${e.sourceHandle || ""}-${t}${e.targetHandle || ""}`,
               source: s,
               target: t,
             };
@@ -1102,14 +1104,16 @@ export const useBuilderStore = create<StoreState>((set, get) => ({
       });
       alert(`${newNodes.length} nodes imported successfully!`);
     } catch (err) {
-      console.error('Failed to import nodes: ', err);
-      alert('Failed to import nodes from clipboard.');
+      console.error("Failed to import nodes: ", err);
+      alert("Failed to import nodes from clipboard.");
     }
   },
 
   addScenarioAsGroup: async (scenario, position) => {
     const { nodes: curNodes, edges: curEdges } = get();
-    const data = await fetchScenarioData(get().backend, {scenarioId: scenario.id});
+    const data = await fetchScenarioData(get().backend, {
+      scenarioId: scenario.id,
+    });
     if (!data?.nodes?.length) {
       alert(
         `Failed to load scenario data for '${scenario.name}' or it is empty.`,
@@ -1150,13 +1154,13 @@ export const useBuilderStore = create<StoreState>((set, get) => ({
           y: n.position.y - minY + PADDING,
         },
         parentNode: groupId,
-        extent: 'parent',
+        extent: "parent",
       };
     });
 
     const groupNode: Node<any> = {
       id: groupId,
-      type: 'scenario',
+      type: "scenario",
       position: groupPos,
       data: {
         label: scenario.name,
@@ -1220,8 +1224,8 @@ export const useBuilderStore = create<StoreState>((set, get) => ({
       set({ scenarios: datas });
       return datas;
     } catch (e) {
-      console.error('Error fetching scenarios:', e);
-      alert('Failed to load scenario details.');
+      console.error("Error fetching scenarios:", e);
+      alert("Failed to load scenario details.");
       set({ nodes: [], edges: [], selectedNodeId: null, startNodeId: null });
     }
   },
@@ -1241,8 +1245,8 @@ export const useBuilderStore = create<StoreState>((set, get) => ({
       });
       return data;
     } catch (e) {
-      console.error('Error fetching scenario:', e);
-      alert('Failed to load scenario details.');
+      console.error("Error fetching scenario:", e);
+      alert("Failed to load scenario details.");
       set({ nodes: [], edges: [], selectedNodeId: null, startNodeId: null });
     }
   },
@@ -1274,7 +1278,7 @@ export const useBuilderStore = create<StoreState>((set, get) => ({
         options.onSuccess();
       } else {
         alert(
-          `Scenario '${scenario.name}' has been ${scenario.version_yn ? 'versioned' : 'saved'} successfully!`,
+          `Scenario '${scenario.name}' has been ${scenario.version_yn ? "versioned" : "saved"} successfully!`,
         );
       }
       return res;
@@ -1283,7 +1287,7 @@ export const useBuilderStore = create<StoreState>((set, get) => ({
       if (options?.onError) {
         options.onError(e);
       } else {
-        alert(`Failed to save scenario: ${e?.message ?? 'unknown error'}`);
+        alert(`Failed to save scenario: ${e?.message ?? "unknown error"}`);
       }
     }
   },
@@ -1294,8 +1298,8 @@ export const useBuilderStore = create<StoreState>((set, get) => ({
       alert(`Scenario '${scenario.name}' has been saved successfully!`);
       return res;
     } catch (e: any) {
-      console.error('Error saving scenario:', e);
-      alert(`Failed to save scenario: ${e?.message ?? 'unknown error'}`);
+      console.error("Error saving scenario:", e);
+      alert(`Failed to save scenario: ${e?.message ?? "unknown error"}`);
       throw e;
     }
   },
@@ -1307,8 +1311,8 @@ export const useBuilderStore = create<StoreState>((set, get) => ({
       // await showAlert("info", "success", `Scenario '${scenario.name}' has been saved successfully!`);
       return res;
     } catch (e: any) {
-      console.error('Error saving scenario:', e);
-      alert(`Failed to save scenario: ${e?.message ?? 'unknown error'}`);
+      console.error("Error saving scenario:", e);
+      alert(`Failed to save scenario: ${e?.message ?? "unknown error"}`);
       throw e;
     }
   },
@@ -1318,8 +1322,8 @@ export const useBuilderStore = create<StoreState>((set, get) => ({
       await deleteScenario(get().backend, scenarioId);
       alert(`Scenario '${scenarioId}' has been saved successfully!`);
     } catch (e: any) {
-      console.error('Error delete scenario:', e);
-      alert(`Failed to delete scenario: ${e?.message ?? 'unknown error'}`);
+      console.error("Error delete scenario:", e);
+      alert(`Failed to delete scenario: ${e?.message ?? "unknown error"}`);
     }
   },
 
@@ -1328,8 +1332,8 @@ export const useBuilderStore = create<StoreState>((set, get) => ({
       await cloneScenario(get().backend, scenario);
       alert(`Scenario '${scenario.name}' has been clone successfully!`);
     } catch (e: any) {
-      console.error('Error clone scenario:', e);
-      alert(`Failed to clone scenario: ${e?.message ?? 'unknown error'}`);
+      console.error("Error clone scenario:", e);
+      alert(`Failed to clone scenario: ${e?.message ?? "unknown error"}`);
     }
   },
 }));

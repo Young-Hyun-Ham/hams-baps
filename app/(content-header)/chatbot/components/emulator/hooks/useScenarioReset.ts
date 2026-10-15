@@ -42,7 +42,7 @@ export function useScenarioReset(args: {
 
     if (args.scenarioRunId) args.clearScenarioRun(args.scenarioRunId);
 
-    args.onResetRun?.(args.scenarioRunId)
+    args.onResetRun?.(args.scenarioRunId);
 
     setTimeout(() => {
       args.resetInFlightRef.current = false;

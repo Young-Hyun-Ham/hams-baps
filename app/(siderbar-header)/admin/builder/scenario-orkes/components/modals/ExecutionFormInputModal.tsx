@@ -17,10 +17,10 @@ import {
   Stack,
   TextField,
   Typography,
-} from '@mui/material';
-import { useTranslation } from 'react-i18next';
+} from "@mui/material";
+import { useTranslation } from "react-i18next";
 
-import type { ExecutionFormElement, ExecutionFormOption } from '../../types';
+import type { ExecutionFormElement, ExecutionFormOption } from "../../types";
 
 type PendingFormInput = {
   title?: string;
@@ -50,7 +50,7 @@ const normalizeExecutionFormOption = (
   option: ExecutionFormOption,
   index: number,
 ) => {
-  if (typeof option === 'object' && option !== null) {
+  if (typeof option === "object" && option !== null) {
     const value = String(option.value ?? option.label ?? index);
     return {
       value,
@@ -68,7 +68,7 @@ const normalizeExecutionFormOption = (
 };
 
 const getExecutionElementKey = (element: ExecutionFormElement, index: number) =>
-  element.name?.trim() || element.id || `${element.type || 'element'}-${index}`;
+  element.name?.trim() || element.id || `${element.type || "element"}-${index}`;
 
 const getGridDisplayColumns = (
   element: ExecutionFormElement,
@@ -81,7 +81,7 @@ const getGridDisplayColumns = (
 
   const columns = sourceColumns
     .map((column) => {
-      if (typeof column === 'string') {
+      if (typeof column === "string") {
         return { key: column, label: column };
       }
 
@@ -98,7 +98,7 @@ const getGridDisplayColumns = (
   return columns.filter((column) =>
     rows.some((row) => {
       const value = row[column.key];
-      return value !== null && value !== undefined && value !== '';
+      return value !== null && value !== undefined && value !== "";
     }),
   );
 };
@@ -124,7 +124,7 @@ export default function ExecutionFormInputModal({
       maxWidth="sm"
     >
       <DialogTitle sx={{ fontWeight: 700 }}>
-        {pendingFormInput?.title || t('Form input')}
+        {pendingFormInput?.title || t("Form input")}
       </DialogTitle>
       <DialogContent dividers>
         <Stack spacing={2} sx={{ py: 0.5 }}>
@@ -140,14 +140,14 @@ export default function ExecutionFormInputModal({
               ? pendingFormInput?.slots?.[element.optionsSlot]
               : undefined;
 
-            if (element.type === 'checkbox') {
+            if (element.type === "checkbox") {
               const options =
                 Array.isArray(slotValue) && slotValue.length > 0
                   ? (slotValue as ExecutionFormOption[])
                   : element.options || [];
               const checkedValues = Array.isArray(value) ? value : [];
               const optionParams =
-                value && typeof value === 'object' && !Array.isArray(value)
+                value && typeof value === "object" && !Array.isArray(value)
                   ? (value as Record<string, unknown>)
                   : {};
 
@@ -163,9 +163,9 @@ export default function ExecutionFormInputModal({
                     {options.length === 0 && (
                       <Typography
                         variant="body2"
-                        sx={{ color: 'text.secondary' }}
+                        sx={{ color: "text.secondary" }}
                       >
-                        {t('No options')}
+                        {t("No options")}
                       </Typography>
                     )}
                     {options.map((option, index: number) => {
@@ -173,8 +173,7 @@ export default function ExecutionFormInputModal({
                         value: optionValue,
                         label: optionLabel,
                         param: optionParam,
-                      } =
-                        normalizeExecutionFormOption(option, index);
+                      } = normalizeExecutionFormOption(option, index);
 
                       return (
                         <FormControlLabel
@@ -183,7 +182,7 @@ export default function ExecutionFormInputModal({
                             <Checkbox
                               checked={
                                 element.sendByOption
-                                  ? optionParams[optionParam] === 'Y'
+                                  ? optionParams[optionParam] === "Y"
                                   : checkedValues.includes(optionValue)
                               }
                               onChange={(event) =>
@@ -200,7 +199,7 @@ export default function ExecutionFormInputModal({
                           label={optionLabel}
                           sx={{
                             m: 0,
-                            '& .MuiFormControlLabel-label': {
+                            "& .MuiFormControlLabel-label": {
                               fontSize: 14,
                             },
                           }}
@@ -212,7 +211,7 @@ export default function ExecutionFormInputModal({
               );
             }
 
-            if (element.type === 'radio') {
+            if (element.type === "radio") {
               const options =
                 Array.isArray(slotValue) && slotValue.length > 0
                   ? (slotValue as ExecutionFormOption[])
@@ -230,9 +229,9 @@ export default function ExecutionFormInputModal({
                     {options.length === 0 && (
                       <Typography
                         variant="body2"
-                        sx={{ color: 'text.secondary' }}
+                        sx={{ color: "text.secondary" }}
                       >
-                        {t('No options')}
+                        {t("No options")}
                       </Typography>
                     )}
                     {options.map((option, index: number) => {
@@ -240,8 +239,7 @@ export default function ExecutionFormInputModal({
                         value: optionValue,
                         label: optionLabel,
                         param: optionParam,
-                      } =
-                        normalizeExecutionFormOption(option, index);
+                      } = normalizeExecutionFormOption(option, index);
 
                       return (
                         <FormControlLabel
@@ -252,32 +250,32 @@ export default function ExecutionFormInputModal({
                                 element.sendByOption
                                   ? Boolean(
                                       value &&
-                                        typeof value === 'object' &&
-                                        !Array.isArray(value) &&
-                                        (value as Record<string, unknown>)[
-                                          optionParam
-                                        ] === 'Y',
+                                      typeof value === "object" &&
+                                      !Array.isArray(value) &&
+                                      (value as Record<string, unknown>)[
+                                        optionParam
+                                      ] === "Y",
                                     )
-                                  : String(value ?? '') === optionValue
+                                  : String(value ?? "") === optionValue
                               }
                               onClick={() => {
                                 const isSelected = element.sendByOption
                                   ? Boolean(
                                       value &&
-                                        typeof value === 'object' &&
-                                        !Array.isArray(value) &&
-                                        (value as Record<string, unknown>)[
-                                          optionParam
-                                        ] === 'Y',
+                                      typeof value === "object" &&
+                                      !Array.isArray(value) &&
+                                      (value as Record<string, unknown>)[
+                                        optionParam
+                                      ] === "Y",
                                     )
-                                  : String(value ?? '') === optionValue;
+                                  : String(value ?? "") === optionValue;
                                 const shouldDeselect =
                                   element.allowDeselection && isSelected;
 
                                 if (!element.sendByOption) {
                                   onUpdateValue(
                                     elementName,
-                                    shouldDeselect ? '' : optionValue,
+                                    shouldDeselect ? "" : optionValue,
                                     element,
                                   );
                                   return;
@@ -296,8 +294,8 @@ export default function ExecutionFormInputModal({
                                         normalized.param,
                                         !shouldDeselect &&
                                         normalized.value === optionValue
-                                          ? 'Y'
-                                          : 'N',
+                                          ? "Y"
+                                          : "N",
                                       ];
                                     }),
                                   ),
@@ -310,7 +308,7 @@ export default function ExecutionFormInputModal({
                           label={optionLabel}
                           sx={{
                             m: 0,
-                            '& .MuiFormControlLabel-label': {
+                            "& .MuiFormControlLabel-label": {
                               fontSize: 14,
                             },
                           }}
@@ -322,7 +320,7 @@ export default function ExecutionFormInputModal({
               );
             }
 
-            if (element.type === 'dropbox') {
+            if (element.type === "dropbox") {
               const options =
                 Array.isArray(slotValue) && slotValue.length > 0
                   ? (slotValue as ExecutionFormOption[])
@@ -330,7 +328,7 @@ export default function ExecutionFormInputModal({
               const normalizedOptions = options.map((option, index) =>
                 normalizeExecutionFormOption(option, index),
               );
-              const isMultiSelect = element.selectKind === 'multi';
+              const isMultiSelect = element.selectKind === "multi";
               const selectedValues = Array.isArray(value)
                 ? value.map(String)
                 : value
@@ -351,7 +349,7 @@ export default function ExecutionFormInputModal({
                     label={label}
                     multiple={isMultiSelect}
                     value={
-                      isMultiSelect ? selectedValues : (selectedValues[0] ?? '')
+                      isMultiSelect ? selectedValues : (selectedValues[0] ?? "")
                     }
                     renderValue={(selected) => {
                       const selectedList = Array.isArray(selected)
@@ -360,7 +358,7 @@ export default function ExecutionFormInputModal({
                           ? [String(selected)]
                           : [];
 
-                      if (!selectedList.length) return t('Select');
+                      if (!selectedList.length) return t("Select");
 
                       if (!isMultiSelect) {
                         return (
@@ -370,7 +368,7 @@ export default function ExecutionFormInputModal({
 
                       return (
                         <Box
-                          sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}
+                          sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}
                         >
                           {selectedList.map((selectedValue) => (
                             <Chip
@@ -390,8 +388,8 @@ export default function ExecutionFormInputModal({
                       onUpdateValue(
                         elementName,
                         isMultiSelect
-                          ? typeof nextValue === 'string'
-                            ? nextValue.split(',').filter(Boolean)
+                          ? typeof nextValue === "string"
+                            ? nextValue.split(",").filter(Boolean)
                             : nextValue
                           : String(nextValue),
                         element,
@@ -400,7 +398,7 @@ export default function ExecutionFormInputModal({
                   >
                     {!isMultiSelect ? (
                       <MenuItem value="">
-                        <em>{t('Select')}</em>
+                        <em>{t("Select")}</em>
                       </MenuItem>
                     ) : null}
                     {normalizedOptions.map((option, index: number) => (
@@ -422,7 +420,7 @@ export default function ExecutionFormInputModal({
               );
             }
 
-            if (element.type === 'grid') {
+            if (element.type === "grid") {
               const slotGridData = Array.isArray(slotValue) ? slotValue : null;
               const gridData =
                 slotGridData && slotGridData.length > 0
@@ -430,7 +428,7 @@ export default function ExecutionFormInputModal({
                   : element.data || [];
               const objectRows = gridData.filter(
                 (row): row is Record<string, unknown> =>
-                  typeof row === 'object' &&
+                  typeof row === "object" &&
                   row !== null &&
                   !Array.isArray(row),
               );
@@ -448,22 +446,22 @@ export default function ExecutionFormInputModal({
                     >
                       {t(label)}
                     </Typography>
-                    <Box sx={{ overflowX: 'auto' }}>
+                    <Box sx={{ overflowX: "auto" }}>
                       <Box
                         component="table"
                         sx={{
-                          width: '100%',
-                          borderCollapse: 'collapse',
-                          '& th, & td': {
-                            border: '1px solid',
-                            borderColor: 'divider',
+                          width: "100%",
+                          borderCollapse: "collapse",
+                          "& th, & td": {
+                            border: "1px solid",
+                            borderColor: "divider",
                             px: 1,
                             py: 0.75,
                             fontSize: 13,
-                            textAlign: 'left',
+                            textAlign: "left",
                           },
-                          '& th': {
-                            bgcolor: 'grey.50',
+                          "& th": {
+                            bgcolor: "grey.50",
                             fontWeight: 700,
                           },
                         }}
@@ -480,7 +478,7 @@ export default function ExecutionFormInputModal({
                             <tr key={`${elementName}-${rowIndex}`}>
                               {columns.map((column) => (
                                 <td key={column.key}>
-                                  {String(row[column.key] ?? '')}
+                                  {String(row[column.key] ?? "")}
                                 </td>
                               ))}
                             </tr>
@@ -506,15 +504,15 @@ export default function ExecutionFormInputModal({
                   >
                     {t(label)}
                   </Typography>
-                  <Box sx={{ overflowX: 'auto' }}>
+                  <Box sx={{ overflowX: "auto" }}>
                     <Box
                       component="table"
                       sx={{
-                        width: '100%',
-                        borderCollapse: 'collapse',
-                        '& td': {
-                          border: '1px solid',
-                          borderColor: 'divider',
+                        width: "100%",
+                        borderCollapse: "collapse",
+                        "& td": {
+                          border: "1px solid",
+                          borderColor: "divider",
                           px: 1,
                           py: 0.75,
                           fontSize: 13,
@@ -531,7 +529,7 @@ export default function ExecutionFormInputModal({
                                   rowIndex * columns + columnIndex;
                                 return (
                                   <td key={columnIndex}>
-                                    {String(flatGridData[cellIndex] ?? '')}
+                                    {String(flatGridData[cellIndex] ?? "")}
                                   </td>
                                 );
                               },
@@ -551,14 +549,14 @@ export default function ExecutionFormInputModal({
                 fullWidth
                 size="small"
                 label={label}
-                type={element.type === 'date' ? 'date' : 'text'}
-                value={String(value ?? '')}
-                placeholder={t('element.placeholder') || ''}
+                type={element.type === "date" ? "date" : "text"}
+                value={String(value ?? "")}
+                placeholder={t("element.placeholder") || ""}
                 onChange={(event) =>
                   onUpdateValue(elementName, event.target.value, element)
                 }
                 InputLabelProps={
-                  element.type === 'date' ? { shrink: true } : undefined
+                  element.type === "date" ? { shrink: true } : undefined
                 }
               />
             );
@@ -567,10 +565,10 @@ export default function ExecutionFormInputModal({
       </DialogContent>
       <DialogActions sx={{ p: 2 }}>
         <Button onClick={onCancel} color="inherit">
-          {t('Cancel')}
+          {t("Cancel")}
         </Button>
         <Button variant="contained" onClick={() => onSubmit(values)}>
-          {t('Submit')}
+          {t("Submit")}
         </Button>
       </DialogActions>
     </Dialog>

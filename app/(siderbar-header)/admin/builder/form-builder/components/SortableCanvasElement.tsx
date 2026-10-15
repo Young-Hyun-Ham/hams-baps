@@ -1,9 +1,9 @@
-import { Box } from '@mui/material';
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import { Box } from "@mui/material";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
-import { FormElement } from '../type';
-import CanvasElement from './CanvasElement';
+import { FormElement } from "../type";
+import CanvasElement from "./CanvasElement";
 
 // Canvas 내 요소를 드래그하여 순서를 변경할 수 있도록 하는 래퍼 컴포넌트
 function SortableCanvasElement({

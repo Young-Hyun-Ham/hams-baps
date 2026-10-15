@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from "react";
 import {
   AppBar,
   Toolbar,
@@ -21,53 +21,62 @@ import {
   DialogContent,
   DialogActions,
   Checkbox,
-} from '@mui/material';
-import { Layers as LayersIcon } from '@mui/icons-material';
+} from "@mui/material";
+import { Layers as LayersIcon } from "@mui/icons-material";
 import {
   PointerSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
-} from '@dnd-kit/core';
-import { useTranslation } from 'react-i18next';
+} from "@dnd-kit/core";
+import { useTranslation } from "react-i18next";
 
 import {
   DisplayKey,
   DisplayValue,
   FormDataJson,
   InputElement,
+  LOCALE_LIST,
+  type LOCALE_TIME,
+  type LOCALE_TIME_TYPE,
   type ElementType,
+  type ElementApiSettings,
   type FormElement,
-} from './type';
-import SavedFormContentModal from './components/modals/SavedFormContentModal';
-import Canvas from './components/Canvas';
-import LeftPanel from './components/LeftPanel';
-import RightPanel from './components/RightPanel';
-import JsonPanel from './components/JsonPanel';
+  type BindApiSettings,
+  type TargetApiSettings,
+} from "./type";
+import SavedFormContentModal from "./components/modals/SavedFormContentModal";
+import Canvas from "./components/Canvas";
+import LeftPanel from "./components/LeftPanel";
+import RightPanel from "./components/RightPanel";
+import JsonPanel from "./components/JsonPanel";
 import {
   getElementDefaultValue,
   mapResponseToTargetElement,
   parseOptionalParameter,
-} from './components/CustomElementPropertyEditor';
+} from "./components/CustomElementPropertyEditor";
 import {
   FORM_ELEMENT_REGISTRY,
   FORM_ELEMENT_TYPES,
-} from './stores/elementRegistry';
-import { useFormEditorStore } from './stores/useFormEditorStore';
-import { useNodeController } from '../components/controllers/hooks/useNodeController';
+} from "./stores/elementRegistry";
+import { useFormEditorStore } from "./stores/useFormEditorStore";
+import { useNodeController } from "../components/controllers/hooks/useNodeController";
+import { toLocaleTimeValue } from "./utils/dateTimestamp";
 
-import { toLocaleTimeValue } from '../utils/util';
-import apiClient from '@/lib/api/apiClient';
-import { useModal } from '@/providers/ModalProvider';
-import { LOCALE_LIST, LOCALE_TIME, LOCALE_TIME_TYPE } from '../types/types';
+import type { NxMethod } from "./type/nxApis";
+
+import apiClient from "@/lib/api/apiClient";
+import { useModal } from "@/providers/ModalProvider";
+
+import { useStore } from "@/store";
 
 const createId = (type: string) =>
   `${type}-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 
-const createFormId = () => createId('form');
+const createFormId = () => createId("form");
 
 const isElementType = (value: unknown): value is ElementType =>
-  typeof value === 'string' &&
+  typeof value === "string" &&
   FORM_ELEMENT_TYPES.includes(value as ElementType);
 
 const isLocaleTime = (value: unknown): value is LOCALE_TIME =>
@@ -75,10 +84,10 @@ const isLocaleTime = (value: unknown): value is LOCALE_TIME =>
 
 const isLocaleTimeValue = (value: unknown): value is LOCALE_TIME_TYPE =>
   value !== null &&
-  typeof value === 'object' &&
-  'date' in value &&
-  typeof value.date === 'number' &&
-  'locale' in value &&
+  typeof value === "object" &&
+  "date" in value &&
+  typeof value.date === "number" &&
+  "locale" in value &&
   isLocaleTime(value.locale);
 
 const normalizeDisplayValues = (
@@ -89,14 +98,14 @@ const normalizeDisplayValues = (
 
   const displayValues = value
     .map((item) => {
-      if (typeof item === 'string') {
+      if (typeof item === "string") {
         return {
           value: item,
           label: item,
         };
       }
 
-      if (!item || typeof item !== 'object') return null;
+      if (!item || typeof item !== "object") return null;
 
       const displayValue = item as Partial<DisplayValue>;
       if (!displayValue.value) return null;
@@ -107,7 +116,9 @@ const normalizeDisplayValues = (
           ? String(displayValue.label)
           : String(displayValue.value),
         param:
-          typeof displayValue.param === 'string' ? displayValue.param : undefined,
+          typeof displayValue.param === "string"
+            ? displayValue.param
+            : undefined,
       };
     })
     .filter((item): item is DisplayValue => Boolean(item));
@@ -116,144 +127,280 @@ const normalizeDisplayValues = (
 };
 
 const normalizeElement = (value: unknown): FormElement | null => {
-  if (!value || typeof value !== 'object') return null;
+  if (!value || typeof value !== "object") return null;
 
   const element = value as Partial<FormElement> & Record<string, unknown>;
   if (!isElementType(element.type)) return null;
 
-  const eventType: FormElement['eventType'] =
-    element.eventType === 'onChange' || element.eventType === 'onClick'
-      ? element.eventType
-      : '';
+  const normalizeApiSettings = (
+    settings: unknown,
+    legacy: Record<string, unknown>,
+  ): ElementApiSettings => {
+    const source =
+      settings && typeof settings === "object" && !Array.isArray(settings)
+        ? (settings as Record<string, unknown>)
+        : legacy;
+    return {
+      apiId: typeof source.apiId === "string" ? source.apiId : "",
+      apiData:
+        source.apiData &&
+        typeof source.apiData === "object" &&
+        !Array.isArray(source.apiData)
+          ? (source.apiData as Record<string, unknown>)
+          : null,
+      method:
+        typeof source.method === "string"
+          ? source.method
+          : source.apiData &&
+              typeof source.apiData === "object" &&
+              "method" in source.apiData &&
+              typeof source.apiData.method === "string"
+            ? source.apiData.method
+            : "",
+      url:
+        typeof source.url === "string"
+          ? source.url
+          : typeof source.endpoint === "string"
+            ? source.endpoint
+            : source.apiData &&
+                typeof source.apiData === "object" &&
+                "endPoint" in source.apiData &&
+                typeof source.apiData.endPoint === "string"
+              ? source.apiData.endPoint
+              : "",
+      headers:
+        typeof source.headers === "string"
+          ? source.headers
+          : source.apiData &&
+              typeof source.apiData === "object" &&
+              "headers" in source.apiData &&
+              typeof source.apiData.headers === "string"
+            ? source.apiData.headers
+            : "",
+      body: typeof source.body === "string" ? source.body : "{}",
+      responseMapping: Array.isArray(source.responseMapping)
+        ? source.responseMapping.filter(
+            (item): item is { path: string; slot: string } =>
+              Boolean(
+                item &&
+                typeof item === "object" &&
+                "path" in item &&
+                typeof item.path === "string" &&
+                "slot" in item &&
+                typeof item.slot === "string",
+              ),
+          )
+        : [],
+      eventType:
+        source.eventType === "onChange" || source.eventType === "onClick"
+          ? source.eventType
+          : "",
+      parameterId:
+        typeof source.parameterId === "string" ? source.parameterId : "",
+      optionalParameter: Array.isArray(source.optionalParameter)
+        ? source.optionalParameter.flatMap((item, index) => {
+            if (!item || typeof item !== "object") return [];
+            const entry = item as Record<string, unknown>;
+            return typeof entry.key === "string"
+              ? [
+                  {
+                    id:
+                      typeof entry.id === "string"
+                        ? entry.id
+                        : `parameter-${index}`,
+                    key: entry.key,
+                    value: typeof entry.value === "string" ? entry.value : "",
+                  },
+                ]
+              : [];
+          })
+        : typeof source.optionalParameter === "string" &&
+            source.optionalParameter.trim()
+          ? (() => {
+              try {
+                const parsed = JSON.parse(source.optionalParameter);
+                return parsed &&
+                  typeof parsed === "object" &&
+                  !Array.isArray(parsed)
+                  ? Object.entries(parsed).map(([key, value], index) => ({
+                      id: `parameter-${index}`,
+                      key,
+                      value:
+                        typeof value === "string"
+                          ? value
+                          : JSON.stringify(value),
+                    }))
+                  : [];
+              } catch {
+                return [];
+              }
+            })()
+          : [],
+      responsePath:
+        typeof source.responsePath === "string" ? source.responsePath : "",
+    };
+  };
+
+  const legacySettings = element as Record<string, unknown>;
+  const legacyTargetId =
+    typeof legacySettings.targetElementId === "string"
+      ? legacySettings.targetElementId
+      : "";
+  const bindApi: BindApiSettings = {
+    mode: "bind",
+    ...normalizeApiSettings(
+      element.bindApi,
+      legacyTargetId ? {} : legacySettings,
+    ),
+  };
+  const targetApiSource =
+    element.targetApi &&
+    typeof element.targetApi === "object" &&
+    !Array.isArray(element.targetApi)
+      ? (element.targetApi as unknown as Record<string, unknown>)
+      : {};
+  const targetApi: TargetApiSettings = {
+    mode: "target",
+    ...normalizeApiSettings(
+      element.targetApi,
+      legacyTargetId ? legacySettings : {},
+    ),
+    targetElementId:
+      typeof targetApiSource.targetElementId === "string"
+        ? targetApiSource.targetElementId
+        : legacyTargetId,
+  };
 
   const base = {
-    id: typeof element.id === 'string' ? element.id : createId(element.type),
-    name: typeof element.name === 'string' ? element.name : '',
-    label: typeof element.label === 'string' ? element.label : '',
-    apiId: typeof element.apiId === 'string' ? element.apiId : '',
-    apiData:
-      element.apiData &&
-      typeof element.apiData === 'object' &&
-      !Array.isArray(element.apiData)
-        ? element.apiData
-        : null,
-    eventType,
-    parameterId:
-      typeof element.parameterId === 'string' ? element.parameterId : '',
-    optionalParameter:
-      typeof element.optionalParameter === 'string'
-        ? element.optionalParameter
-        : '',
-    targetElementId:
-      typeof element.targetElementId === 'string'
-        ? element.targetElementId
-        : '',
-    responsePath:
-      typeof element.responsePath === 'string' ? element.responsePath : '',
-    requires: Boolean(element.requires) ?? false,
+    id: typeof element.id === "string" ? element.id : createId(element.type),
+    name: typeof element.name === "string" ? element.name : "",
+    label: typeof element.label === "string" ? element.label : "",
+    bindApi,
+    targetApi,
+    optionsSlot:
+      typeof element.optionsSlot === "string" ? element.optionsSlot : "",
+    optionLabelKey:
+      typeof element.optionLabelKey === "string" ? element.optionLabelKey : "",
+    optionValueKey:
+      typeof element.optionValueKey === "string" ? element.optionValueKey : "",
+    sampleJson:
+      typeof element.sampleJson === "string" ? element.sampleJson : "",
+    requires: Boolean(element.requires),
     description:
-      typeof element.description === 'string' ? element.description : '',
+      typeof element.description === "string" ? element.description : "",
   };
 
   switch (element.type) {
-    case 'input':
+    case "input":
       return {
         ...base,
-        type: 'input',
+        type: "input",
         validation: {
           type:
             element.validation &&
-            typeof element.validation === 'object' &&
-            'type' in element.validation &&
-            ['text', 'email', 'number', 'custom'].includes(
+            typeof element.validation === "object" &&
+            "type" in element.validation &&
+            ["text", "email", "number", "custom"].includes(
               String(element.validation.type),
             )
-              ? (element.validation.type as InputElement['validation']['type'])
-              : 'text',
+              ? (element.validation.type as InputElement["validation"]["type"])
+              : "text",
         },
         placeholder:
-          typeof element.placeholder === 'string' ? element.placeholder : '',
+          typeof element.placeholder === "string" ? element.placeholder : "",
         defaultValue:
-          typeof element.defaultValue === 'string' ? element.defaultValue : '',
-        regex:
-          typeof element.regex === 'string' ? element.regex : undefined,
+          typeof element.defaultValue === "string" ? element.defaultValue : "",
+        regex: typeof element.regex === "string" ? element.regex : undefined,
         minLength:
-          typeof element.minLength === 'string' ? element.minLength : undefined,
+          typeof element.minLength === "string" ? element.minLength : undefined,
         maxLength:
-          typeof element.maxLength === 'string' ? element.maxLength : undefined,
+          typeof element.maxLength === "string" ? element.maxLength : undefined,
         transformTextType:
-          element.transformTextType === 'uppercase' ||
-          element.transformTextType === 'lowercase' ||
-          element.transformTextType === 'capitalize' ?
-          element.transformTextType : '',
+          element.transformTextType === "uppercase" ||
+          element.transformTextType === "lowercase" ||
+          element.transformTextType === "capitalize"
+            ? element.transformTextType
+            : "",
       };
-    case 'date': {
+    case "date": {
       const defaultValue =
-        typeof element.defaultValue === 'string' ? element.defaultValue : '';
+        typeof element.defaultValue === "string" ? element.defaultValue : "";
       const dateValue =
-        typeof element.dateValue === 'string' && element.dateValue
+        typeof element.dateValue === "string" && element.dateValue
           ? element.dateValue
           : defaultValue;
       const defaultFromValue =
-        typeof element.defaultFromValue === 'string' ? element.defaultFromValue : '';
+        typeof element.defaultFromValue === "string"
+          ? element.defaultFromValue
+          : "";
       const defaultToValue =
-        typeof element.defaultToValue === 'string' ? element.defaultToValue : '';
+        typeof element.defaultToValue === "string"
+          ? element.defaultToValue
+          : "";
       const hasTime = Boolean(element.hasTime);
       const locale = isLocaleTime(element.locale)
         ? element.locale
         : isLocaleTimeValue(element.value)
           ? element.value.locale
-          : 'ko';
+          : "ko";
       const defaultTimeValue =
-        typeof element.defaultTimeValue === 'string' ? element.defaultTimeValue : '';
+        typeof element.defaultTimeValue === "string"
+          ? element.defaultTimeValue
+          : "";
       const defaultFromTimeValue =
-        typeof element.defaultFromTimeValue === 'string' ? element.defaultFromTimeValue : '';
+        typeof element.defaultFromTimeValue === "string"
+          ? element.defaultFromTimeValue
+          : "";
       const defaultToTimeValue =
-        typeof element.defaultToTimeValue === 'string' ? element.defaultToTimeValue : '';
+        typeof element.defaultToTimeValue === "string"
+          ? element.defaultToTimeValue
+          : "";
       const fromDateValue =
-        typeof element.fromDateValue === 'string' && element.fromDateValue
+        typeof element.fromDateValue === "string" && element.fromDateValue
           ? element.fromDateValue
           : defaultFromValue || defaultValue;
       const toDateValue =
-        typeof element.toDateValue === 'string' && element.toDateValue
+        typeof element.toDateValue === "string" && element.toDateValue
           ? element.toDateValue
           : defaultToValue;
       const fromTimeValue =
-        typeof element.fromTimeValue === 'string' && element.fromTimeValue
+        typeof element.fromTimeValue === "string" && element.fromTimeValue
           ? element.fromTimeValue
           : defaultFromTimeValue || defaultTimeValue;
       const toTimeValue =
-        typeof element.toTimeValue === 'string' && element.toTimeValue
+        typeof element.toTimeValue === "string" && element.toTimeValue
           ? element.toTimeValue
           : defaultToTimeValue || defaultTimeValue;
 
       return {
         ...base,
-        type: 'date',
+        type: "date",
         locale,
         defaultValue,
         dateValue,
-        value:
-          isLocaleTimeValue(element.value)
-            ? { ...element.value, locale }
-            : toLocaleTimeValue(dateValue, defaultTimeValue, hasTime, locale),
-        fromValue:
-          isLocaleTimeValue(element.fromValue)
-            ? { ...element.fromValue, locale }
-            : toLocaleTimeValue(fromDateValue, fromTimeValue, hasTime, locale),
-        toValue:
-          isLocaleTimeValue(element.toValue)
-            ? { ...element.toValue, locale }
-            : toLocaleTimeValue(toDateValue, toTimeValue, hasTime, locale),
+        value: isLocaleTimeValue(element.value)
+          ? { ...element.value, locale }
+          : toLocaleTimeValue(dateValue, defaultTimeValue, hasTime, locale),
+        fromValue: isLocaleTimeValue(element.fromValue)
+          ? { ...element.fromValue, locale }
+          : toLocaleTimeValue(fromDateValue, fromTimeValue, hasTime, locale),
+        toValue: isLocaleTimeValue(element.toValue)
+          ? { ...element.toValue, locale }
+          : toLocaleTimeValue(toDateValue, toTimeValue, hasTime, locale),
         hasFromTo: Boolean(element.hasFromTo),
-        defaultToDateOffset: typeof element.defaultToDateOffset === 'number' ? element.defaultToDateOffset : undefined,
+        defaultToDateOffset:
+          typeof element.defaultToDateOffset === "number"
+            ? element.defaultToDateOffset
+            : undefined,
         defaultFromValue,
         defaultToValue,
         fromDateValue,
         toDateValue,
         hasTime,
         timeValue:
-          typeof element.timeValue === 'string' ? element.timeValue : defaultTimeValue,
+          typeof element.timeValue === "string"
+            ? element.timeValue
+            : defaultTimeValue,
         defaultTimeValue,
         defaultFromTimeValue,
         defaultToTimeValue,
@@ -261,97 +408,98 @@ const normalizeElement = (value: unknown): FormElement | null => {
         toTimeValue,
       };
     }
-    case 'checkbox':
+    case "checkbox":
       return {
         ...base,
-        type: 'checkbox',
+        type: "checkbox",
         options: normalizeDisplayValues(element.options, [
-          { value: 'Option 1', label: 'Option 1' },
-          { value: 'Option 2', label: 'Option 2' },
+          { value: "Option 1", label: "Option 1" },
+          { value: "Option 2", label: "Option 2" },
         ]),
         defaultValue: Array.isArray(element.defaultValue)
           ? element.defaultValue.map(String)
-          : [],
+          : typeof element.defaultValue === "string" && element.defaultValue
+            ? [element.defaultValue]
+            : [],
         optionLayout:
-          element.optionLayout === 'horizontal' ? 'horizontal' : 'vertical',
+          element.optionLayout === "horizontal" ? "horizontal" : "vertical",
         optionsPerRow:
-          typeof element.optionsPerRow === 'number' && element.optionsPerRow > 0
+          typeof element.optionsPerRow === "number" && element.optionsPerRow > 0
             ? Math.min(20, Math.floor(element.optionsPerRow))
             : 2,
         sendByOption: element.sendByOption === true,
       };
-    case 'radio':
+    case "radio":
       return {
         ...base,
-        type: 'radio',
+        type: "radio",
         options: normalizeDisplayValues(element.options, [
-          { value: 'Option 1', label: 'Option 1' },
-          { value: 'Option 2', label: 'Option 2' },
+          { value: "Option 1", label: "Option 1" },
+          { value: "Option 2", label: "Option 2" },
         ]),
-        defaultValue:
-          typeof element.defaultValue === 'string'
-            ? element.defaultValue
-            : Array.isArray(element.defaultValue)
-              ? String(element.defaultValue[0] ?? '')
-              : '',
+        defaultValue: Array.isArray(element.defaultValue)
+          ? element.defaultValue.map(String)
+          : typeof element.defaultValue === "string" && element.defaultValue
+            ? [element.defaultValue]
+            : [],
         optionLayout:
-          element.optionLayout === 'horizontal' ? 'horizontal' : 'vertical',
+          element.optionLayout === "horizontal" ? "horizontal" : "vertical",
         optionsPerRow:
-          typeof element.optionsPerRow === 'number' && element.optionsPerRow > 0
+          typeof element.optionsPerRow === "number" && element.optionsPerRow > 0
             ? Math.min(20, Math.floor(element.optionsPerRow))
             : 2,
         sendByOption: element.sendByOption === true,
         allowDeselection: element.allowDeselection === true,
       };
-    case 'dropbox': {
-      const selectKind = element.selectKind === 'multi' ? 'multi' : 'single';
+    case "dropbox": {
+      const selectKind = element.selectKind === "multi" ? "multi" : "single";
 
       return {
         ...base,
-        type: 'dropbox',
+        type: "dropbox",
         options: normalizeDisplayValues(element.options, [
-          { value: 'Option 1', label: 'Option 1' },
-          { value: 'Option 2', label: 'Option 2' },
+          { value: "Option 1", label: "Option 1" },
+          { value: "Option 2", label: "Option 2" },
         ]),
         optionsSlot:
-          typeof element.optionsSlot === 'string' ? element.optionsSlot : '',
+          typeof element.optionsSlot === "string" ? element.optionsSlot : "",
         selectKind,
         defaultValue:
-          selectKind === 'multi'
+          selectKind === "multi"
             ? Array.isArray(element.defaultValue)
               ? element.defaultValue.map(String)
-              : typeof element.defaultValue === 'string' && element.defaultValue
+              : typeof element.defaultValue === "string" && element.defaultValue
                 ? [element.defaultValue]
                 : []
-            : typeof element.defaultValue === 'string'
+            : typeof element.defaultValue === "string"
               ? element.defaultValue
               : Array.isArray(element.defaultValue)
-                ? String(element.defaultValue[0] ?? '')
-                : '',
+                ? String(element.defaultValue[0] ?? "")
+                : "",
       };
     }
-    case 'grid': {
+    case "grid": {
       const rows =
-        typeof element.rows === 'number' && element.rows > 0 ? element.rows : 2;
+        typeof element.rows === "number" && element.rows > 0 ? element.rows : 2;
       const columns =
-        typeof element.columns === 'number' && element.columns > 0
+        typeof element.columns === "number" && element.columns > 0
           ? element.columns
           : 2;
 
       return {
         ...base,
-        type: 'grid',
+        type: "grid",
         rows,
         columns,
         data: Array.from({ length: rows * columns }, (_, index) =>
           Array.isArray(element.data) && element.data[index] != null
             ? String(element.data[index])
-            : '',
+            : "",
         ),
         displayKeys: Array.isArray(element.displayKeys)
           ? element.displayKeys
               .map((item) => {
-                if (!item || typeof item !== 'object') return null;
+                if (!item || typeof item !== "object") return null;
                 const displayKey = item as Partial<DisplayKey>;
                 if (!displayKey.key) return null;
                 return {
@@ -364,51 +512,51 @@ const normalizeElement = (value: unknown): FormElement | null => {
               .filter((item): item is DisplayKey => Boolean(item))
           : [],
         optionsSlot:
-          typeof element.optionsSlot === 'string' ? element.optionsSlot : '',
+          typeof element.optionsSlot === "string" ? element.optionsSlot : "",
       };
     }
-    case 'search':
+    case "search":
       return {
         ...base,
-        type: 'search',
+        type: "search",
         placeholder:
-          typeof element.placeholder === 'string' ? element.placeholder : '',
+          typeof element.placeholder === "string" ? element.placeholder : "",
         defaultValue:
-          typeof element.defaultValue === 'string' ? element.defaultValue : '',
+          typeof element.defaultValue === "string" ? element.defaultValue : "",
         apiConfig:
           element.apiConfig &&
-          typeof element.apiConfig === 'object' &&
+          typeof element.apiConfig === "object" &&
           !Array.isArray(element.apiConfig)
             ? {
                 url:
-                  typeof element.apiConfig.url === 'string'
+                  typeof element.apiConfig.url === "string"
                     ? element.apiConfig.url
-                    : 'https://',
+                    : "https://",
                 method:
-                  typeof element.apiConfig.method === 'string'
+                  typeof element.apiConfig.method === "string"
                     ? element.apiConfig.method
-                    : 'POST',
+                    : "POST",
                 headers:
-                  typeof element.apiConfig.headers === 'string'
+                  typeof element.apiConfig.headers === "string"
                     ? element.apiConfig.headers
-                    : '{}',
+                    : "{}",
                 bodyTemplate:
-                  typeof element.apiConfig.bodyTemplate === 'string'
+                  typeof element.apiConfig.bodyTemplate === "string"
                     ? element.apiConfig.bodyTemplate
                     : '{"query": "{{value}}"}',
               }
             : {
-                url: 'https://',
-                method: 'POST',
-                headers: '{}',
+                url: "https://",
+                method: "POST",
+                headers: "{}",
                 bodyTemplate: '{"query": "{{value}}"}',
               },
         resultSlot:
-          typeof element.resultSlot === 'string'
+          typeof element.resultSlot === "string"
             ? element.resultSlot
-            : 'search_results',
+            : "search_results",
         inputFillKey:
-          typeof element.inputFillKey === 'string'
+          typeof element.inputFillKey === "string"
             ? element.inputFillKey
             : null,
       };
@@ -419,10 +567,10 @@ const normalizeElement = (value: unknown): FormElement | null => {
 
 function ScenarioFormBuilder() {
   const { t } = useTranslation();
-  const { showConfirm } = useModal();
+  const { showAlert, showConfirm } = useModal();
   const [activeTab, setActiveTab] = useState(0);
-  const [dataSource, setDataSource] = useState('');
-  const [dataSourceType, setDataSourceType] = useState<'json' | 'api'>('json');
+  const [dataSource, setDataSource] = useState("");
+  const [dataSourceType, setDataSourceType] = useState<"json" | "api">("json");
   const [enableExcelUpload, setEnableExcelUpload] = useState(false);
   const [elementFormId, setElementFormId] = useState(createFormId);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -431,8 +579,8 @@ function ScenarioFormBuilder() {
   const [isElementManagementDialogOpen, setIsElementManagementDialogOpen] =
     useState(false);
   const [isSavedContentModalOpen, setIsSavedContentModalOpen] = useState(false);
-  const [jsonText, setJsonText] = useState('');
-  const [jsonError, setJsonError] = useState('');
+  const [jsonText, setJsonText] = useState("");
+  const [jsonError, setJsonError] = useState("");
 
   const formId = useFormEditorStore((state) => state.formId);
   const setFormId = useFormEditorStore((state) => state.setFormId);
@@ -460,7 +608,13 @@ function ScenarioFormBuilder() {
     (state) => state.loadElementTypes,
   );
 
+  const setAdminSidebarCollapsed = useStore(
+    (s: any) => s.setAdminSidebarCollapsed,
+  );
+
   useEffect(() => {
+    // admin sidebar를 닫는 로직 추가
+    setAdminSidebarCollapsed(true);
     void loadElementTypes();
   }, [loadElementTypes]);
 
@@ -468,7 +622,10 @@ function ScenarioFormBuilder() {
     () =>
       elementTypes
         .map((item) => item.type_cd)
-        .filter((type): type is ElementType => isElementType(type) && type !== 'search'),
+        .filter(
+          (type): type is ElementType =>
+            isElementType(type) && type !== "search",
+        ),
     [elementTypes],
   );
 
@@ -483,11 +640,11 @@ function ScenarioFormBuilder() {
   const handleResetForm = () => {
     resetForm();
     setElementFormId(createFormId());
-    setDataSource('');
-    setDataSourceType('json');
+    setDataSource("");
+    setDataSourceType("json");
     setEnableExcelUpload(false);
-    setJsonText('');
-    setJsonError('');
+    setJsonText("");
+    setJsonError("");
   };
 
   const formJson = useMemo<FormDataJson>(
@@ -501,7 +658,7 @@ function ScenarioFormBuilder() {
         dataSourceType,
         enableExcelUpload,
       },
-      type: 'form',
+      type: "form",
       width: 320,
       height: 597,
       dragging: false,
@@ -519,7 +676,7 @@ function ScenarioFormBuilder() {
 
   const openJsonTab = () => {
     setJsonText(JSON.stringify(formJson, null, 2));
-    setJsonError('');
+    setJsonError("");
   };
 
   const applyJsonText = (value: string) => {
@@ -529,8 +686,8 @@ function ScenarioFormBuilder() {
       const parsed = JSON.parse(value) as Partial<FormDataJson>;
       const parsedData = parsed.data;
 
-      if (!parsedData || typeof parsedData !== 'object') {
-        throw new Error('data object is required.');
+      if (!parsedData || typeof parsedData !== "object") {
+        throw new Error("data object is required.");
       }
 
       const nextElements = Array.isArray(parsedData.elements)
@@ -540,9 +697,9 @@ function ScenarioFormBuilder() {
         : [];
 
       const nextFormId =
-        typeof parsedData.id === 'string'
+        typeof parsedData.id === "string"
           ? parsedData.id
-          : typeof parsed.id === 'string'
+          : typeof parsed.id === "string"
             ? parsed.id
             : elementFormId;
 
@@ -550,17 +707,17 @@ function ScenarioFormBuilder() {
       replaceForm({
         id: nextFormId,
         title:
-          typeof parsedData.title === 'string' ? parsedData.title : formTitle,
+          typeof parsedData.title === "string" ? parsedData.title : formTitle,
         elements: nextElements,
       });
       setDataSource(
-        typeof parsedData.dataSource === 'string' ? parsedData.dataSource : '',
+        typeof parsedData.dataSource === "string" ? parsedData.dataSource : "",
       );
-      setDataSourceType(parsedData.dataSourceType === 'api' ? 'api' : 'json');
+      setDataSourceType(parsedData.dataSourceType === "api" ? "api" : "json");
       setEnableExcelUpload(Boolean(parsedData.enableExcelUpload));
-      setJsonError('');
+      setJsonError("");
     } catch (error) {
-      setJsonError(error instanceof Error ? error.message : 'Invalid JSON');
+      setJsonError(error instanceof Error ? error.message : "Invalid JSON");
     }
   };
 
@@ -571,7 +728,7 @@ function ScenarioFormBuilder() {
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     const type = event.dataTransfer.getData(
-      'application/x-form-component',
+      "application/x-form-component",
     ) as ElementType;
     setIsDragOver(false);
 
@@ -601,29 +758,9 @@ function ScenarioFormBuilder() {
     value?: unknown,
   ) => {
     const sourceEventType =
-      value === undefined ? 'onClick' : ('onChange' as const);
-
-    if (sourceElement.eventType !== sourceEventType) return;
-
-    const apiData = sourceElement.apiData as
-      | { endPoint?: string }
-      | null
-      | undefined;
-    const endpoint = apiData?.endPoint?.trim();
-    const targetElement = elements.find(
-      (element) => element.id === sourceElement.targetElementId,
-    );
-
-    if (!endpoint || !targetElement) return;
+      value === undefined ? "onClick" : ("onChange" as const);
 
     const currentElementValue = value ?? getElementDefaultValue(sourceElement);
-    const parameterKey = sourceElement.parameterId?.trim();
-    const parameterParams = parameterKey
-      ? {
-          [parameterKey]: currentElementValue,
-        }
-      : {};
-
     const sourceValues = Object.fromEntries(
       elements.flatMap((element) => {
         const elementValue =
@@ -637,39 +774,71 @@ function ScenarioFormBuilder() {
         ];
       }),
     );
-    try {
-      const payload = parseOptionalParameter(
-        sourceElement.optionalParameter,
-        sourceValues,
-      );
+    const requests = [sourceElement.bindApi, sourceElement.targetApi].filter(
+      (settings) => settings.eventType === sourceEventType,
+    );
 
-      const response = await apiClient.post(endpoint, payload, {
-        params: parameterParams,
-      });
-      updateElement(
-        mapResponseToTargetElement(
-          targetElement,
-          response,
-          sourceElement.responsePath,
-        ),
-      );
-    } catch (error) {
-      console.error('Form builder element API event failed:', error);
-    }
+    await Promise.all(
+      requests.map(async (settings) => {
+        const endpoint = settings.url.trim();
+        const targetElement =
+          settings.mode === "bind"
+            ? sourceElement
+            : elements.find(
+                (element) => element.id === settings.targetElementId,
+              );
+        if (!endpoint || !targetElement) return;
+
+        const parameterKey = settings.parameterId?.trim();
+        const parameterParams = parameterKey
+          ? { [parameterKey]: currentElementValue }
+          : {};
+
+        try {
+          const payload = {
+            ...parseOptionalParameter(settings.body, sourceValues),
+            ...parseOptionalParameter(settings.optionalParameter, sourceValues),
+          };
+          const method = (settings.method.toLowerCase() || "post") as NxMethod;
+          const headers = settings.headers.trim()
+            ? JSON.parse(settings.headers)
+            : undefined;
+          const response =
+            method === "get" || method === "delete"
+              ? await apiClient[method](endpoint, {
+                  params: { ...payload, ...parameterParams },
+                  headers,
+                })
+              : await apiClient[method](endpoint, payload, {
+                  params: parameterParams,
+                  headers,
+                });
+          updateElement(
+            mapResponseToTargetElement(
+              targetElement,
+              response,
+              settings.responsePath,
+            ),
+          );
+        } catch (error) {
+          console.error("Form builder element API event failed:", error);
+        }
+      }),
+    );
   };
 
   const isFullFormData = (obj: Partial<FormDataJson>): obj is FormDataJson => {
     return (
       obj !== null &&
-      typeof obj === 'object' &&
-      'data' in obj &&
+      typeof obj === "object" &&
+      "data" in obj &&
       obj.data !== undefined &&
-      'id' in obj.data
+      "id" in obj.data
     );
   };
 
   const loadFormJson = (id: string, nextFormJson: Partial<FormDataJson>) => {
-    if (!nextFormJson || typeof nextFormJson !== 'object') return;
+    if (!nextFormJson || typeof nextFormJson !== "object") return;
 
     if (isFullFormData(nextFormJson)) {
       setElementFormId(nextFormJson.data.id);
@@ -683,29 +852,27 @@ function ScenarioFormBuilder() {
               .filter((element): element is FormElement => Boolean(element))
           : [],
       });
-      setDataSource(nextFormJson.data.dataSource ?? '');
-      setDataSourceType(nextFormJson.data.dataSourceType ?? 'json');
+      setDataSource(nextFormJson.data.dataSource ?? "");
+      setDataSourceType(nextFormJson.data.dataSourceType ?? "json");
       setEnableExcelUpload(nextFormJson.data.enableExcelUpload ?? false);
     } else {
       setElementFormId(createFormId);
       setFormId(null);
       replaceForm({
         id: createFormId(),
-        title: 'new form',
+        title: "new form",
         elements: [],
       });
-      setDataSource('');
-      setDataSourceType('json');
+      setDataSource("");
+      setDataSourceType("json");
       setEnableExcelUpload(false);
     }
     setJsonText(JSON.stringify(nextFormJson, null, 2));
-    setJsonError('');
+    setJsonError("");
   };
 
   async function saveFormBuilder() {
-    const confirmed = await showConfirm(
-      'Do you want to save the Form?',
-    );
+    const confirmed = await showConfirm("Do you want to save the Form?");
     if (!confirmed) return;
 
     await saveForm(formJson);
@@ -716,25 +883,25 @@ function ScenarioFormBuilder() {
       display="flex"
       flexDirection="column"
       height="100%"
-      sx={{ minHeight: 0, bgcolor: 'background.default' }}
+      sx={{ minHeight: 0, bgcolor: "background.default" }}
     >
       <AppBar
         position="static"
         elevation={0}
         sx={{
-          bgcolor: 'background.paper',
+          bgcolor: "background.paper",
           borderBottom: 1,
-          borderColor: 'divider',
-          color: 'text.primary',
+          borderColor: "divider",
+          color: "text.primary",
         }}
       >
-        <Toolbar sx={{ gap: 2, minHeight: '64px !important' }}>
+        <Toolbar sx={{ gap: 2, minHeight: "64px !important" }}>
           <LayersIcon
-            sx={{ color: 'primary.main', fontSize: 28 }}
+            sx={{ color: "primary.main", fontSize: 28 }}
             onClick={() => setIsElementManagementDialogOpen(true)}
           />
           <Typography variant="h6" fontWeight={700} sx={{ mr: 0.5 }}>
-            {t('Form Builder')}
+            {t("Form Builder")}
           </Typography>
           <Chip
             label="v0.1"
@@ -753,11 +920,11 @@ function ScenarioFormBuilder() {
             sx={{
               ml: 4,
               flex: 1,
-              '& .MuiTab-root': {
+              "& .MuiTab-root": {
                 minHeight: 64,
-                textTransform: 'none',
+                textTransform: "none",
                 fontWeight: 600,
-                fontSize: '0.875rem',
+                fontSize: "0.875rem",
               },
             }}
           >
@@ -772,9 +939,9 @@ function ScenarioFormBuilder() {
             color="inherit"
             size="small"
             onClick={() => setIsSavedContentModalOpen(true)}
-            sx={{ borderColor: 'divider' }}
+            sx={{ borderColor: "divider" }}
           >
-            {t('Get Saved Content')}
+            {t("Get Saved Content")}
           </Button>
           <Button
             variant="contained"
@@ -782,21 +949,21 @@ function ScenarioFormBuilder() {
             disableElevation
             onClick={saveFormBuilder}
           >
-            {t('Save Form')}
+            {t("Save Form")}
           </Button>
         </Toolbar>
       </AppBar>
 
       {activeTab === 0 ? (
-        <Box sx={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+        <Box sx={{ display: "flex", flex: 1, overflow: "hidden" }}>
           <Box
             sx={{
               width: 260,
-              bgcolor: 'background.paper',
+              bgcolor: "background.paper",
               borderRight: 1,
-              borderColor: 'divider',
-              display: 'flex',
-              flexDirection: 'column',
+              borderColor: "divider",
+              display: "flex",
+              flexDirection: "column",
               flexShrink: 0,
             }}
           >
@@ -826,11 +993,11 @@ function ScenarioFormBuilder() {
           <Box
             sx={{
               width: 340,
-              bgcolor: 'background.paper',
+              bgcolor: "background.paper",
               borderLeft: 1,
-              borderColor: 'divider',
-              display: 'flex',
-              flexDirection: 'column',
+              borderColor: "divider",
+              display: "flex",
+              flexDirection: "column",
               flexShrink: 0,
             }}
           >
@@ -854,17 +1021,17 @@ function ScenarioFormBuilder() {
         fullWidth
         maxWidth="md"
       >
-        <DialogTitle>{t('Form JSON')}</DialogTitle>
+        <DialogTitle>{t("Form JSON")}</DialogTitle>
         <DialogContent dividers>
           <Paper
             variant="outlined"
             sx={{
-              bgcolor: '#f6f8fa',
-              borderColor: 'grey.300',
+              bgcolor: "#f6f8fa",
+              borderColor: "grey.300",
               borderRadius: 1,
               p: 1.5,
-              overflow: 'auto',
-              maxHeight: '70vh',
+              overflow: "auto",
+              maxHeight: "70vh",
             }}
           >
             <Box
@@ -872,8 +1039,8 @@ function ScenarioFormBuilder() {
               sx={{
                 m: 0,
                 fontSize: 12,
-                fontFamily: 'monospace',
-                whiteSpace: 'pre',
+                fontFamily: "monospace",
+                whiteSpace: "pre",
                 minWidth: 720,
               }}
             >
@@ -883,7 +1050,7 @@ function ScenarioFormBuilder() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setIsJsonDialogOpen(false)}>
-            {t('Close')}
+            {t("Close")}
           </Button>
         </DialogActions>
       </Dialog>
@@ -894,11 +1061,11 @@ function ScenarioFormBuilder() {
         fullWidth
         maxWidth="xs"
       >
-        <DialogTitle>{t('Select Element')}</DialogTitle>
+        <DialogTitle>{t("Select Element")}</DialogTitle>
         <DialogContent dividers>
           <List
             disablePadding
-            sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}
+            sx={{ display: "flex", flexDirection: "column", gap: 1 }}
           >
             {availableElementTypes.map((type) => {
               const comp = FORM_ELEMENT_REGISTRY[type];
@@ -912,20 +1079,20 @@ function ScenarioFormBuilder() {
                   }}
                   sx={{
                     border: 1,
-                    borderColor: 'primary.light',
+                    borderColor: "primary.light",
                     borderRadius: 1,
-                    color: 'primary.main',
+                    color: "primary.main",
                     py: 1,
-                    '&:hover': { bgcolor: 'primary.50' },
+                    "&:hover": { bgcolor: "primary.50" },
                   }}
                 >
-                  <ListItemIcon sx={{ minWidth: 36, color: 'inherit' }}>
+                  <ListItemIcon sx={{ minWidth: 36, color: "inherit" }}>
                     {comp.icon}
                   </ListItemIcon>
                   <ListItemText
                     primary={comp.label}
                     primaryTypographyProps={{
-                      fontSize: '0.875rem',
+                      fontSize: "0.875rem",
                       fontWeight: 600,
                     }}
                   />
@@ -936,7 +1103,7 @@ function ScenarioFormBuilder() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setIsElementDialogOpen(false)}>
-            {t('Close')}
+            {t("Close")}
           </Button>
         </DialogActions>
       </Dialog>
@@ -947,14 +1114,14 @@ function ScenarioFormBuilder() {
         fullWidth
         maxWidth="xs"
       >
-        <DialogTitle>{t('Element Display Settings')} [ADMIN]</DialogTitle>
+        <DialogTitle>{t("Element Display Settings")} [ADMIN]</DialogTitle>
         <DialogContent dividers>
           <List
             disablePadding
-            sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}
+            sx={{ display: "flex", flexDirection: "column", gap: 1 }}
           >
             {formElementTypesJson
-              .filter((item) => item.del_yn !== 'Y' && item.type_cd !== 'search')
+              .filter((item) => item.del_yn !== "Y")
               .sort((a, b) => a.sort_order - b.sort_order)
               .map((item) => {
                 const type = item.type_cd;
@@ -965,23 +1132,23 @@ function ScenarioFormBuilder() {
                     key={type}
                     sx={{
                       border: 1,
-                      borderColor: 'primary.light',
+                      borderColor: "primary.light",
                       borderRadius: 1,
-                      color: 'primary.main',
+                      color: "primary.main",
                       py: 1,
                       px: 1.5,
-                      display: 'flex',
-                      alignItems: 'center',
+                      display: "flex",
+                      alignItems: "center",
                       gap: 1,
                     }}
                   >
-                    <ListItemIcon sx={{ minWidth: 36, color: 'inherit' }}>
+                    <ListItemIcon sx={{ minWidth: 36, color: "inherit" }}>
                       {comp.icon}
                     </ListItemIcon>
                     <ListItemText
                       primary={comp.label}
                       primaryTypographyProps={{
-                        fontSize: '0.875rem',
+                        fontSize: "0.875rem",
                         fontWeight: 600,
                       }}
                     />
@@ -1008,7 +1175,7 @@ function ScenarioFormBuilder() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setIsElementManagementDialogOpen(false)}>
-            {t('Close')}
+            {t("Close")}
           </Button>
         </DialogActions>
       </Dialog>

@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React from "react";
 import {
   Box,
   Typography,
@@ -8,10 +8,10 @@ import {
   MenuItem,
   FormControl,
   Pagination,
-} from '@mui/material';
-import { useTranslation } from 'react-i18next';
+} from "@mui/material";
+import { useTranslation } from "react-i18next";
 
-import { COLORS } from '@/lib/constants/color';
+import { COLORS } from "@/lib/constants/color";
 
 export interface GridPaginationProps {
   /** Current page number (1-based) */
@@ -67,9 +67,9 @@ export const GridPagination: React.FC<GridPaginationProps> = ({
       py={1}
     >
       {/* Page Size - Left */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
         <Typography variant="body2" sx={{ color: COLORS.blueGrey[700] }}>
-          {t('Page Size')}:
+          {t("Page Size")}:
         </Typography>
         <Select
           value={pageSize}
@@ -78,11 +78,11 @@ export const GridPagination: React.FC<GridPaginationProps> = ({
           size="small"
           sx={{
             height: 24,
-            fontSize: '0.8125rem',
-            '.MuiSelect-select': {
+            fontSize: "0.8125rem",
+            ".MuiSelect-select": {
               py: 0,
-              display: 'flex',
-              alignItems: 'center',
+              display: "flex",
+              alignItems: "center",
             },
           }}
         >

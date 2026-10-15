@@ -1,16 +1,27 @@
-import { useState, useEffect } from 'react';
-import { useModal } from '@/providers/ModalProvider';
+import { useState, useEffect } from "react";
+import { useModal } from "@/providers/ModalProvider";
 
-import { useBuilderStore } from '../../store/index';
-import styles from '../NodeController.module.css';
-import * as backendService from '../../services/backendService';
-import ApiTemplateModal from '../modals/ApiTemplateModal';
+import styles from "../NodeController.module.css";
+import * as backendService from "../../services/backendService";
 
-import { useNodeController } from './hooks/useNodeController';
-import ChainNextCheckbox from './common/ChainNextCheckbox';
+import { useNodeController } from "./hooks/useNodeController";
+import ChainNextCheckbox from "./common/ChainNextCheckbox";
 
-import { useRouter } from 'next/navigation';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
+
+const DEFAULT_API_HEADERS = JSON.stringify(
+  { "Content-Type": "application/json", Accept: "application/json" },
+  null,
+  2,
+);
+
+const initializeApiHeaders = (headers) => {
+  if (!headers) return DEFAULT_API_HEADERS;
+  if (typeof headers === "string" && /^\{\s*\}$/.test(headers.trim())) {
+    return DEFAULT_API_HEADERS;
+  }
+  return headers;
+};
 
 function ApiCallEditor({ apiCall, onUpdate, onDelete, onTest, isTesting }) {
   const { t } = useTranslation();
@@ -21,39 +32,39 @@ function ApiCallEditor({ apiCall, onUpdate, onDelete, onTest, isTesting }) {
   const handleMappingChange = (index, part, value) => {
     const newMapping = [...(apiCall.responseMapping || [])];
     newMapping[index] = { ...newMapping[index], [part]: value };
-    handleUpdate('responseMapping', newMapping);
+    handleUpdate("responseMapping", newMapping);
   };
 
   const addMapping = () => {
     const newMapping = [
       ...(apiCall.responseMapping || []),
-      { path: '', slot: '' },
+      { path: "", slot: "" },
     ];
-    handleUpdate('responseMapping', newMapping);
+    handleUpdate("responseMapping", newMapping);
   };
 
   const deleteMapping = (index) => {
     const newMapping = (apiCall.responseMapping || []).filter(
       (_, i) => i !== index,
     );
-    handleUpdate('responseMapping', newMapping);
+    handleUpdate("responseMapping", newMapping);
   };
 
   return (
     <div className={styles.elementEditor}>
       <div className={styles.formGroup}>
-        <label>{t('API Call Name')}</label>
+        <label>{t("API Call Name")}</label>
         <input
           type="text"
-          value={apiCall.name || ''}
-          onChange={(e) => handleUpdate('name', e.target.value)}
+          value={apiCall.name || ""}
+          onChange={(e) => handleUpdate("name", e.target.value)}
         />
       </div>
       <div className={styles.formGroup}>
-        <label>{t('Method')}</label>
+        <label>{t("Method")}</label>
         <select
-          value={apiCall.method || 'GET'}
-          onChange={(e) => handleUpdate('method', e.target.value)}
+          value={apiCall.method || "GET"}
+          onChange={(e) => handleUpdate("method", e.target.value)}
         >
           <option value="GET">GET</option>
           <option value="POST">POST</option>
@@ -62,38 +73,38 @@ function ApiCallEditor({ apiCall, onUpdate, onDelete, onTest, isTesting }) {
         </select>
       </div>
       <div className={styles.formGroup}>
-        <label>{t('URL')}</label>
-        <textarea
-          value={apiCall.url || ''}
-          onChange={(e) => handleUpdate('url', e.target.value)}
-          rows={3}
+        <label>{t("URL")}</label>
+        <input
+          type="text"
+          value={apiCall.url || ""}
+          onChange={(e) => handleUpdate("url", e.target.value)}
         />
       </div>
       <div className={styles.formGroup}>
         <label>
-          {t('Headers')} ({t('JSON')})
+          {t("Headers")} ({t("JSON")})
         </label>
         <textarea
-          value={apiCall.headers || '{}'}
-          onChange={(e) => handleUpdate('headers', e.target.value)}
+          value={apiCall.headers || DEFAULT_API_HEADERS}
+          onChange={(e) => handleUpdate("headers", e.target.value)}
           rows={4}
         />
       </div>
-      {apiCall.method !== 'GET' && (
+      {apiCall.method !== "GET" && (
         <div className={styles.formGroup}>
           <label>
-            {t('Body')} ({t('JSON')})
+            {t("Body")} ({t("JSON")})
           </label>
           <textarea
-            value={apiCall.body || '{}'}
-            onChange={(e) => handleUpdate('body', e.target.value)}
+            value={apiCall.body || "{}"}
+            onChange={(e) => handleUpdate("body", e.target.value)}
             rows={6}
           />
         </div>
       )}
       <div className={styles.separator} />
       <div className={styles.formGroup}>
-        <label>{t('Response Mapping')}</label>
+        <label>{t("Response Mapping")}</label>
         <div className={styles.repliesContainer}>
           {(apiCall.responseMapping || []).map((mapping, index) => (
             <div key={index} className={styles.quickReply}>
@@ -101,7 +112,7 @@ function ApiCallEditor({ apiCall, onUpdate, onDelete, onTest, isTesting }) {
                 className={styles.quickReplyInput}
                 value={mapping.path}
                 onChange={(e) =>
-                  handleMappingChange(index, 'path', e.target.value)
+                  handleMappingChange(index, "path", e.target.value)
                 }
                 placeholder="JSON Path (e.g., data.name)"
               />
@@ -109,9 +120,9 @@ function ApiCallEditor({ apiCall, onUpdate, onDelete, onTest, isTesting }) {
                 className={styles.quickReplyInput}
                 value={mapping.slot}
                 onChange={(e) =>
-                  handleMappingChange(index, 'slot', e.target.value)
+                  handleMappingChange(index, "slot", e.target.value)
                 }
-                placeholder={t('Slot Name')}
+                placeholder={t("Slot Name")}
               />
               <button
                 onClick={() => deleteMapping(index)}
@@ -122,7 +133,7 @@ function ApiCallEditor({ apiCall, onUpdate, onDelete, onTest, isTesting }) {
             </div>
           ))}
           <button onClick={addMapping} className={styles.addReplyButton}>
-            + {t('Add Mapping')}
+            + {t("Add Mapping")}
           </button>
         </div>
       </div>
@@ -132,23 +143,44 @@ function ApiCallEditor({ apiCall, onUpdate, onDelete, onTest, isTesting }) {
           onClick={() => onTest(apiCall)}
           disabled={isTesting}
         >
-          {isTesting ? t('Testing...') : t('Test')}
+          {isTesting ? t("Testing...") : t("Test")}
         </button>
         <button
           className={styles.deleteElementButton}
           onClick={() => onDelete(apiCall.id)}
         >
-          {t('Delete')}
+          {t("Delete")}
         </button>
       </div>
     </div>
   );
 }
 
-function ApiNodeController({ localNode, setLocalNode, backend }) {
+function ApiNodeController({ localNode, setLocalNode }) {
+  useEffect(() => {
+    setLocalNode((node) => {
+      if (!node) return node;
+      const headers = initializeApiHeaders(node.data.headers);
+      const apis = node.data.apis?.map((api) => {
+        const apiHeaders = initializeApiHeaders(api.headers);
+        return apiHeaders === api.headers
+          ? api
+          : { ...api, headers: apiHeaders };
+      });
+      if (
+        headers === node.data.headers &&
+        (!apis || apis.every((api, index) => api === node.data.apis[index]))
+      ) {
+        return node;
+      }
+      return {
+        ...node,
+        data: { ...node.data, headers, ...(apis ? { apis } : {}) },
+      };
+    });
+  }, [localNode.id, setLocalNode]);
+
   const { showAlert, showConfirm } = useModal();
-  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
-  const [apiTemplates, setApiTemplates] = useState([]);
   const [selectedApiCallId, setSelectedApiCallId] = useState(null);
   // 3. 훅 사용 및 로컬 함수 제거
   const { handleLocalDataChange } = useNodeController(setLocalNode);
@@ -158,125 +190,6 @@ function ApiNodeController({ localNode, setLocalNode, backend }) {
 
   // 20260325 - hyh
   const { t } = useTranslation();
-  const router = useRouter();
-  const [isRouterModalOpen, setIsRouterModalOpen] = useState(false);
-  const [isApiModalOpen, setIsApiModalOpen] = useState(false);
-  // const { setApiMainParams } = useApiMainStore();
-
-  const handleSelectRouter = (router) => {
-    handleLocalDataChange('routerId', router.id || '');
-    setIsRouterModalOpen(false);
-  };
-  const handleClearRouterId = () => {
-    handleLocalDataChange('routerId', '');
-  };
-  const handleApiDetailCall = () => {
-    // setApiMainParams({
-    //   routerId: localNode.data.routerId,
-    //   apiId: '',
-    //   userQuestion: '',
-    //   paramSetId: '',
-    // });
-    router.push(`/management/api-main`);
-  };
-  const handleSelectApi = (api) => {
-    handleLocalDataChange('apiId', api.id || '');
-    setIsApiModalOpen(false);
-  };
-  const handleClearApiId = () => {
-    handleLocalDataChange('apiId', '');
-  };
-
-  useEffect(() => {
-    const fetchTemplates = async () => {
-      try {
-        // const templates = await backendService.fetchApiTemplates(backend);
-        // setApiTemplates(templates);
-      } catch (error) {
-        console.error('Failed to fetch API templates:', error);
-      }
-    };
-    fetchTemplates();
-  }, [backend]);
-
-  const handleSaveTemplate = async (templateName) => {
-    const { isMulti, apis, ...singleApiData } = localNode.data;
-    let templateData;
-
-    if (isMulti) {
-      if (!selectedApiCallId) {
-        await showAlert(
-          t('Please select an API call from the list to save as a template.'),
-        );
-        return;
-      }
-      const selectedApi = apis.find((api) => api.id === selectedApiCallId);
-      templateData = { name: templateName, ...selectedApi };
-      delete templateData.id;
-    } else {
-      templateData = {
-        name: templateName,
-        method: singleApiData.method,
-        url: singleApiData.url,
-        headers: singleApiData.headers,
-        body: singleApiData.body,
-        responseMapping: singleApiData.responseMapping,
-      };
-    }
-
-    try {
-      const savedTemplate = await backendService.saveApiTemplate(
-        backend,
-        templateData,
-      );
-      setApiTemplates((prev) => [...prev, savedTemplate]);
-      setIsTemplateModalOpen(false);
-    } catch (error) {
-      console.error('Failed to save API template:', error);
-      await showAlert(t('Failed to save template.'));
-    }
-  };
-
-  const handleLoadTemplate = (template) => {
-    const { name, ...templateData } = template;
-
-    setLocalNode((prev) => {
-      const newData = { ...prev.data };
-      if (newData.isMulti) {
-        if (!selectedApiCallId) {
-          showAlert(
-            t('Please select an API call from the list to apply the template.'),
-          );
-          return prev;
-        }
-        newData.apis = newData.apis.map((api) =>
-          api.id === selectedApiCallId ? { ...api, ...templateData } : api,
-        );
-      } else {
-        Object.assign(newData, templateData);
-      }
-      return { ...prev, data: newData };
-    });
-    setIsTemplateModalOpen(false);
-  };
-
-  const handleDeleteTemplate = async (templateId) => {
-    const confirmed = await showConfirm(
-      t(
-        'Are you sure you want to delete this template? This action cannot be undone.',
-      ),
-    );
-    if (confirmed) {
-      try {
-        await backendService.deleteApiTemplate(backend, templateId);
-        setApiTemplates((prev) => prev.filter((t) => t.id !== templateId));
-      } catch (error) {
-        console.error('Failed to delete API template:', error);
-        await showAlert(t('Failed to delete template.'));
-      }
-    }
-  };
-
   const handleTestApiCall = async (apiCall) => {
     if (localNode.data.isMulti) {
       if (testingApiCallId) return;
@@ -324,10 +237,10 @@ function ApiNodeController({ localNode, setLocalNode, backend }) {
           newData.apis = [
             {
               id: `api-call-${Date.now()}`,
-              name: 'API Call 1',
+              name: "API Call 1",
               method: prev.data.method,
               url: prev.data.url,
-              headers: prev.data.headers,
+              headers: prev.data.headers || DEFAULT_API_HEADERS,
               body: prev.data.body,
               responseMapping: prev.data.responseMapping,
             },
@@ -335,10 +248,10 @@ function ApiNodeController({ localNode, setLocalNode, backend }) {
         }
       } else {
         const firstApi = prev.data.apis?.[0] || {};
-        newData.method = firstApi.method || 'GET';
-        newData.url = firstApi.url || '';
-        newData.headers = firstApi.headers || '{}';
-        newData.body = firstApi.body || '{}';
+        newData.method = firstApi.method || "GET";
+        newData.url = firstApi.url || "";
+        newData.headers = firstApi.headers || DEFAULT_API_HEADERS;
+        newData.body = firstApi.body || "{}";
         newData.responseMapping = firstApi.responseMapping || [];
         newData.apis = [];
       }
@@ -352,29 +265,29 @@ function ApiNodeController({ localNode, setLocalNode, backend }) {
     const handleMappingChange = (index, part, value) => {
       const newMapping = [...(data.responseMapping || [])];
       newMapping[index] = { ...newMapping[index], [part]: value };
-      handleLocalDataChange('responseMapping', newMapping); // 훅 함수 사용
+      handleLocalDataChange("responseMapping", newMapping); // 훅 함수 사용
     };
     const addMapping = () => {
       const newMapping = [
         ...(data.responseMapping || []),
-        { path: '', slot: '' },
+        { path: "", slot: "" },
       ];
-      handleLocalDataChange('responseMapping', newMapping); // 훅 함수 사용
+      handleLocalDataChange("responseMapping", newMapping); // 훅 함수 사용
     };
     const deleteMapping = (index) => {
       const newMapping = (data.responseMapping || []).filter(
         (_, i) => i !== index,
       );
-      handleLocalDataChange('responseMapping', newMapping); // 훅 함수 사용
+      handleLocalDataChange("responseMapping", newMapping); // 훅 함수 사용
     };
 
     return (
       <>
         <div className={styles.formGroup}>
-          <label>{t('Method')}</label>
+          <label>{t("Method")}</label>
           <select
-            value={data.method || 'GET'}
-            onChange={(e) => handleLocalDataChange('method', e.target.value)}
+            value={data.method || "GET"}
+            onChange={(e) => handleLocalDataChange("method", e.target.value)}
           >
             <option value="GET">GET</option>
             <option value="POST">POST</option>
@@ -383,38 +296,38 @@ function ApiNodeController({ localNode, setLocalNode, backend }) {
           </select>
         </div>
         <div className={styles.formGroup}>
-          <label>{t('URL')}</label>
-          <textarea
-            value={data.url || ''}
-            onChange={(e) => handleLocalDataChange('url', e.target.value)}
-            rows={3}
+          <label>{t("URL")}</label>
+          <input
+            type="text"
+            value={data.url || ""}
+            onChange={(e) => handleLocalDataChange("url", e.target.value)}
           />
         </div>
         <div className={styles.formGroup}>
           <label>
-            {t('Headers')} ({t('JSON')})
+            {t("Headers")} ({t("JSON")})
           </label>
           <textarea
-            value={data.headers || '{}'}
-            onChange={(e) => handleLocalDataChange('headers', e.target.value)}
+            value={data.headers || DEFAULT_API_HEADERS}
+            onChange={(e) => handleLocalDataChange("headers", e.target.value)}
             rows={4}
           />
         </div>
-        {data.method !== 'GET' && (
+        {data.method !== "GET" && (
           <div className={styles.formGroup}>
             <label>
-              {t('Body')} ({t('JSON')})
+              {t("Body")} ({t("JSON")})
             </label>
             <textarea
-              value={data.body || '{}'}
-              onChange={(e) => handleLocalDataChange('body', e.target.value)}
+              value={data.body || "{}"}
+              onChange={(e) => handleLocalDataChange("body", e.target.value)}
               rows={6}
             />
           </div>
         )}
         <div className={styles.separator} />
         <div className={styles.formGroup}>
-          <label>{t('Response Mapping')}</label>
+          <label>{t("Response Mapping")}</label>
           <div className={styles.repliesContainer}>
             {(data.responseMapping || []).map((mapping, index) => (
               <div key={index} className={styles.quickReply}>
@@ -422,17 +335,17 @@ function ApiNodeController({ localNode, setLocalNode, backend }) {
                   className={styles.quickReplyInput}
                   value={mapping.path}
                   onChange={(e) =>
-                    handleMappingChange(index, 'path', e.target.value)
+                    handleMappingChange(index, "path", e.target.value)
                   }
-                  placeholder={t('JSON Path (e.g., data.name)')}
+                  placeholder={t("JSON Path (e.g., data.name)")}
                 />
                 <input
                   className={styles.quickReplyInput}
                   value={mapping.slot}
                   onChange={(e) =>
-                    handleMappingChange(index, 'slot', e.target.value)
+                    handleMappingChange(index, "slot", e.target.value)
                   }
-                  placeholder={t('Slot Name')}
+                  placeholder={t("Slot Name")}
                 />
                 <button
                   onClick={() => deleteMapping(index)}
@@ -443,7 +356,7 @@ function ApiNodeController({ localNode, setLocalNode, backend }) {
               </div>
             ))}
             <button onClick={addMapping} className={styles.addReplyButton}>
-              + {t('Add Mapping')}
+              + {t("Add Mapping")}
             </button>
           </div>
         </div>
@@ -459,23 +372,23 @@ function ApiNodeController({ localNode, setLocalNode, backend }) {
       const newApiCall = {
         id: `api-call-${Date.now()}`,
         name: `API Call ${apis.length + 1}`,
-        method: 'GET',
-        url: '',
-        headers: '{}',
-        body: '{}',
+        method: "GET",
+        url: "",
+        headers: DEFAULT_API_HEADERS,
+        body: "{}",
         responseMapping: [],
       };
-      handleLocalDataChange('apis', [...apis, newApiCall]); // 훅 함수 사용
+      handleLocalDataChange("apis", [...apis, newApiCall]); // 훅 함수 사용
     };
     const handleUpdateApiCall = (updatedApiCall) => {
       const newApis = apis.map((api) =>
         api.id === updatedApiCall.id ? updatedApiCall : api,
       );
-      handleLocalDataChange('apis', newApis); // 훅 함수 사용
+      handleLocalDataChange("apis", newApis); // 훅 함수 사용
     };
     const handleDeleteApiCall = (apiIdToDelete) => {
       const newApis = apis.filter((api) => api.id !== apiIdToDelete);
-      handleLocalDataChange('apis', newApis); // 훅 함수 사용
+      handleLocalDataChange("apis", newApis); // 훅 함수 사용
       if (selectedApiCallId === apiIdToDelete) {
         setSelectedApiCallId(null);
       }
@@ -484,22 +397,22 @@ function ApiNodeController({ localNode, setLocalNode, backend }) {
     return (
       <>
         <div className={styles.formGroup}>
-          <label>{t('API Calls')}</label>
+          <label>{t("API Calls")}</label>
           <div className={styles.elementsContainer}>
             {apis.map((api) => (
               <div
                 key={api.id}
-                className={`${styles.elementItem} ${api.id === selectedApiCallId ? styles.selected : ''}`}
+                className={`${styles.elementItem} ${api.id === selectedApiCallId ? styles.selected : ""}`}
                 onClick={() => setSelectedApiCallId(api.id)}
               >
-                <span>{api.name || t('API Call')}</span>
+                <span>{api.name || t("API Call")}</span>
               </div>
             ))}
             <button
               onClick={handleAddApiCall}
               className={styles.addReplyButton}
             >
-              + {t('Add API Call')}
+              + {t("Add API Call")}
             </button>
           </div>
         </div>
@@ -519,23 +432,8 @@ function ApiNodeController({ localNode, setLocalNode, backend }) {
 
   return (
     <>
-      <ApiTemplateModal
-        isOpen={isTemplateModalOpen}
-        onClose={() => setIsTemplateModalOpen(false)}
-        onSave={handleSaveTemplate}
-        onSelect={handleLoadTemplate}
-        onDelete={handleDeleteTemplate}
-        templates={apiTemplates}
-        isMulti={localNode.data.isMulti}
-        selectedApiCallName={
-          localNode.data.isMulti
-            ? localNode.data.apis?.find((api) => api.id === selectedApiCallId)
-                ?.name
-            : null
-        }
-      />
       <div className={styles.apiMultiToggle}>
-        <label htmlFor="multiApiToggle">{t('Enable Multi API')}</label>
+        <label htmlFor="multiApiToggle">{t("Enable Multi API")}</label>
         <input
           type="checkbox"
           id="multiApiToggle"
@@ -546,126 +444,8 @@ function ApiNodeController({ localNode, setLocalNode, backend }) {
       {/* 기존 UI를 공통 컴포넌트로 대체 */}
       <ChainNextCheckbox
         checked={localNode.data.chainNext}
-        onChange={(value) => handleLocalDataChange('chainNext', value)}
+        onChange={(value) => handleLocalDataChange("chainNext", value)}
       />
-      <div className={styles.templateActions}>
-        <button onClick={() => setIsTemplateModalOpen(true)}>
-          {t('Templates')}
-        </button>
-      </div>
-      <div className={styles.separator} />
-
-      {/* 신규 라우터 검색 추가 - hyh */}
-      <div className={styles.routerModalPopup}>
-        <button onClick={() => setIsRouterModalOpen(true)}>
-          {t('Router Modal Popup')}
-        </button>
-        <button onClick={() => setIsApiModalOpen(true)}>
-          {t('API Modal Popup')}
-        </button>
-      </div>
-
-      <div className={styles.formGroup}>
-        <label>{t('Router ID')}</label>
-        <div
-          style={{
-            position: 'relative',
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-          }}
-        >
-          <input
-            type="text"
-            value={localNode.data.routerId || ''}
-            readOnly={true}
-            style={{
-              width: '100%',
-              paddingRight: '32px',
-              cursor: 'pointer',
-            }}
-            // onDoubleClick={handleApiDetailCall}
-          />
-          {localNode.data.routerId && (
-            <button
-              type="button"
-              onClick={handleClearRouterId}
-              style={{
-                position: 'absolute',
-                top: '50%',
-                right: '10px',
-                transform: 'translateY(-50%)',
-                width: '20px',
-                height: '20px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: 'none',
-                background: 'transparent',
-                color: '#999',
-                fontSize: '16px',
-                lineHeight: 1,
-                cursor: 'pointer',
-                padding: 0,
-                zIndex: 1,
-              }}
-            >
-              x
-            </button>
-          )}
-        </div>
-      </div>
-      <div className={styles.formGroup}>
-        <label>{t('API ID')}</label>
-        <div
-          style={{
-            position: 'relative',
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-          }}
-        >
-          <input
-            type="text"
-            value={localNode.data.apiId || ''}
-            readOnly={true}
-            style={{
-              width: '100%',
-              paddingRight: '32px',
-              cursor: 'pointer',
-            }}
-            // onDoubleClick={handleApiDetailCall}
-          />
-          {localNode.data.apiId && (
-            <button
-              type="button"
-              onClick={handleClearApiId}
-              style={{
-                position: 'absolute',
-                top: '50%',
-                right: '10px',
-                transform: 'translateY(-50%)',
-                width: '20px',
-                height: '20px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: 'none',
-                background: 'transparent',
-                color: '#999',
-                fontSize: '16px',
-                lineHeight: 1,
-                cursor: 'pointer',
-                padding: 0,
-                zIndex: 1,
-              }}
-            >
-              x
-            </button>
-          )}
-        </div>
-      </div>
-
       <div className={styles.separator} />
       {localNode.data.isMulti
         ? renderMultiApiControls()

@@ -12,10 +12,20 @@
 - 시나리오 목록 조회, 선택, 생성, 이름 수정, 삭제
 - 선택한 시나리오를 React Flow 상세 편집 화면으로 전환
 - 노드 추가, 드래그 배치, 연결, 삭제, 복제, import/export
+- API 노드 설정은 Method, 한 줄 URL, Headers, Body 및 응답 매핑을 직접 편집하며 Templates와 Router/API 선택 모달·ID 필드는 제공하지 않음 (단일/Multi API 공통)
+- API Headers의 기본값은 Content-Type과 Accept가 모두 application/json인 JSON
+- 새 API 노드 생성 시 기본 Headers를 저장하며, 기존 노드의 비어 있거나 빈 객체인 Headers는 편집 시작 시 기본값으로 초기화 (기존 사용자 지정 Headers 유지)
+- 공통 노드 헤더 타입 라벨 옆 ChevronUp/ChevronDown 버튼으로 본문 접기/펼치기 (본문 입력 상태 유지, 화면 로컬 상태)
 - 다른 시나리오를 `scenario` 그룹 노드로 import
 - 선택 노드를 `selectionGroup` 으로 그룹화
 - 그룹 노드 collapse/expand, ungroup, start node 연결
-- builder 전용 시뮬레이터 실행
+- builder 전용 시뮬레이터는 모달 왼쪽에 실행 slot 값을 실시간 표시하고 오른쪽에 통합 시뮬레이터를 배치
+- 모달을 다시 열면 미저장 캔버스 변경을 포함한 새 실행을 시작하며, 닫으면 시뮬레이터를 언마운트
+- 시뮬레이터 초기화 시 왼쪽 slot 값도 초기화
+- 모달은 왼쪽 패널 340px, 오른쪽 시뮬레이터 패널 440px로 시작하며, 초기화 옆 화살표로 기존 최대 너비까지 확장/축소 (실행 상태 유지)
+- 확장/축소 아이콘은 lucide-react의 Maximize2/Minimize2로 표시
+- 시뮬레이터 초기화 아이콘은 확장/축소와 동일한 작은 IconButton 스타일로 표시
+- 시뮬레이터 모달은 높이를 줄인 헤더와 패널 경계에 그림자를 적용하며, 좁은 화면에서는 slot 패널을 위쪽에 배치
 - 상단 `ReactFlow Panel` 에서 검색, undo/redo, 저장, 패널 토글, pan/select 전환 제공
 - 런타임 상태 패널(`SlotDisplay`) 표시/숨김
 - 패널형 메모 패드(`MemoPad`) 표시/숨김

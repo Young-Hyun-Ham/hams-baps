@@ -1,5 +1,5 @@
-import { BaseEdge, EdgeLabelRenderer } from 'reactflow';
-import { useBuilderStore } from '../../store/index';
+import { BaseEdge, EdgeLabelRenderer } from "reactflow";
+import { useBuilderStore } from "../../store/index";
 
 const MIN_SEGMENT_LENGTH = 24;
 
@@ -60,8 +60,8 @@ function getInitialBendPoints(
   sourcePosition,
   targetPosition,
 ) {
-  const isSourceBottom = sourcePosition === 'bottom';
-  const isTargetTop = targetPosition === 'top';
+  const isSourceBottom = sourcePosition === "bottom";
+  const isTargetTop = targetPosition === "top";
 
   if (isSourceBottom && isTargetTop) {
     const midY = (sourceY + targetY) / 2;
@@ -148,7 +148,7 @@ function buildPath(points) {
     .map((point, index) =>
       index === 0 ? `M ${point.x},${point.y}` : `L ${point.x},${point.y}`,
     )
-    .join(' ');
+    .join(" ");
 }
 
 function getSegments(points) {
@@ -344,12 +344,12 @@ function CustomOrthogonalEdge(props) {
     };
 
     const onMouseUp = () => {
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseup', onMouseUp);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
     };
 
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
   };
 
   return (
@@ -360,23 +360,23 @@ function CustomOrthogonalEdge(props) {
         <EdgeLabelRenderer>
           <div
             style={{
-              position: 'absolute',
+              position: "absolute",
               transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
               background:
-                displayLabel === 'Y'
-                  ? '#16a34a'
-                  : displayLabel === 'N'
-                    ? '#dc2626'
-                    : displayLabel === 'Default'
-                      ? '#ef4444'
-                      : '#2563eb',
-              color: '#ffffff',
-              padding: displayLabel === 'Default' ? '3px 9px' : '2px 8px',
-              borderRadius: '12px',
-              fontSize: '11px',
+                displayLabel === "Y"
+                  ? "#16a34a"
+                  : displayLabel === "N"
+                    ? "#dc2626"
+                    : displayLabel === "Default"
+                      ? "#ef4444"
+                      : "#2563eb",
+              color: "#ffffff",
+              padding: displayLabel === "Default" ? "3px 9px" : "2px 8px",
+              borderRadius: "12px",
+              fontSize: "11px",
               fontWeight: 700,
-              boxShadow: '0 2px 6px rgba(0,0,0,0.18)',
-              pointerEvents: 'all',
+              boxShadow: "0 2px 6px rgba(0,0,0,0.18)",
+              pointerEvents: "all",
               zIndex: 25,
             }}
           >
@@ -393,19 +393,19 @@ function CustomOrthogonalEdge(props) {
                 key={`${id}-segment-${segment.index}`}
                 onMouseDown={createMouseDownHandler(segment)}
                 title={
-                  segment.isHorizontal ? 'Move vertical' : 'Move horizontal'
+                  segment.isHorizontal ? "Move vertical" : "Move horizontal"
                 }
                 style={{
-                  position: 'absolute',
+                  position: "absolute",
                   transform: `translate(-50%, -50%) translate(${segment.centerX}px, ${segment.centerY}px)`,
                   width: 14,
                   height: 14,
                   borderRadius: 9999,
-                  background: '#2563eb',
-                  border: '2px solid #ffffff',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
-                  cursor: segment.isHorizontal ? 'ns-resize' : 'ew-resize',
-                  pointerEvents: 'all',
+                  background: "#2563eb",
+                  border: "2px solid #ffffff",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
+                  cursor: segment.isHorizontal ? "ns-resize" : "ew-resize",
+                  pointerEvents: "all",
                   zIndex: 30,
                 }}
               />

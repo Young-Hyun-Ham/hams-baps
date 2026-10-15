@@ -5,13 +5,13 @@ import {
   Scissors,
   StickyNote,
   Trash,
-} from 'lucide-react';
-import { RefObject } from 'react';
-import { useTranslation } from 'react-i18next';
+} from "lucide-react";
+import { RefObject } from "react";
+import { useTranslation } from "react-i18next";
 
-import styles from '../FlowCanvas.module.css';
+import styles from "../FlowCanvas.module.css";
 
-import type { ContextMenuState } from '../../types';
+import type { ContextMenuState } from "../../types";
 
 type FlowContextMenuProps = {
   contextMenu: ContextMenuState;
@@ -42,7 +42,7 @@ export default function FlowContextMenu({
 
   if (!contextMenu.open) return null;
 
-  if (contextMenu.target?.type === 'pane') {
+  if (contextMenu.target?.type === "pane") {
     return (
       <div
         className={styles.layerMenu}
@@ -51,13 +51,13 @@ export default function FlowContextMenu({
         <button
           type="button"
           className={`${styles.layerMenuItem} ${
-            !hasClipboard ? styles.layerMenuItemDisabled : ''
+            !hasClipboard ? styles.layerMenuItemDisabled : ""
           }`}
           onClick={() => onPaste(contextMenu.flowPosition ?? null)}
           disabled={!hasClipboard}
         >
           <Clipboard size={16} className={styles.layerMenuIcon} />
-          <span>{t('Paste')}</span>
+          <span>{t("Paste")}</span>
         </button>
 
         <div className={styles.layerMenuDivider} />
@@ -66,12 +66,12 @@ export default function FlowContextMenu({
           type="button"
           className={styles.layerMenuItem}
           onClick={() => {
-            onSetContextMenu({ open: false, x: 0, y: 0, target: 'pane' });
+            onSetContextMenu({ open: false, x: 0, y: 0, target: "pane" });
             onAddMemo?.(flowWrapperRef);
           }}
         >
           <StickyNote size={16} className={styles.layerMenuIcon} />
-          <span>{t('Add Memo')}</span>
+          <span>{t("Add Memo")}</span>
         </button>
 
         <div className={styles.layerMenuDivider} />
@@ -82,13 +82,13 @@ export default function FlowContextMenu({
           onClick={onClose}
         >
           <PackageX size={16} className={styles.layerMenuIcon} />
-          <span>{t('Close')}</span>
+          <span>{t("Close")}</span>
         </button>
       </div>
     );
   }
 
-  if (contextMenu.target?.type !== 'node') return null;
+  if (contextMenu.target?.type !== "node") return null;
 
   return (
     <div
@@ -101,7 +101,7 @@ export default function FlowContextMenu({
         onClick={() => onCopyNode(contextMenu.target.id)}
       >
         <Copy size={16} className={styles.layerMenuIcon} />
-        <span>{t('Copy Node')}</span>
+        <span>{t("Copy Node")}</span>
       </button>
 
       <button
@@ -110,19 +110,19 @@ export default function FlowContextMenu({
         onClick={() => onCutNode(contextMenu.target.id)}
       >
         <Scissors size={16} className={styles.layerMenuIcon} />
-        <span>{t('Cut Node')}</span>
+        <span>{t("Cut Node")}</span>
       </button>
 
       <button
         type="button"
         className={`${styles.layerMenuItem} ${
-          !hasClipboard ? styles.layerMenuItemDisabled : ''
+          !hasClipboard ? styles.layerMenuItemDisabled : ""
         }`}
         onClick={() => onPaste(contextMenu.flowPosition ?? null)}
         disabled={!hasClipboard}
       >
         <Clipboard size={16} className={styles.layerMenuIcon} />
-        <span>{t('Paste')}</span>
+        <span>{t("Paste")}</span>
       </button>
 
       <div className={styles.layerMenuDivider} />
@@ -133,7 +133,7 @@ export default function FlowContextMenu({
         onClick={() => onDeleteNode(contextMenu.target.id)}
       >
         <Trash size={16} className={styles.layerMenuIcon} />
-        <span>{t('Delete Node')}</span>
+        <span>{t("Delete Node")}</span>
       </button>
     </div>
   );

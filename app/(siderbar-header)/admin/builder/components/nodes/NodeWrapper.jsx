@@ -1,13 +1,13 @@
-import { useLayoutEffect } from 'react';
-import { Handle, Position, useUpdateNodeInternals } from 'reactflow';
+import { useLayoutEffect, useState } from "react";
+import { Handle, Position, useUpdateNodeInternals } from "reactflow";
 
-import styles from './ChatNodes.module.css';
-import { useBuilderStore } from '../../store/index';
-import { builderExecutionStore } from '../../store/builderExecutionStore';
-import { AnchorIcon, StartNodeIcon } from '../icons/Icons';
+import styles from "./ChatNodes.module.css";
+import { useBuilderStore } from "../../store/index";
+import { builderExecutionStore } from "../../store/builderExecutionStore";
+import { AnchorIcon, StartNodeIcon } from "../icons/Icons";
 
-import { Loader2, CheckCircle2 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { Loader2, CheckCircle2, ChevronUp, ChevronDown } from "lucide-react";
+import { useTranslation } from "react-i18next";
 /**
  * 모든 노드에서 공통으로 사용되는 래퍼 컴포넌트입니다.
  * 헤더, 버튼(시작, 앵커, 삭제), 공통 스타일, 기본 핸들을 관리합니다.
@@ -35,10 +35,11 @@ function NodeWrapper({
   headerButtons = null,
   nodeChrome = null,
   hideBody = false,
-  customClassName = '',
+  customClassName = "",
   style = {},
 }) {
   const { t } = useTranslation();
+  const [isBodyCollapsed, setIsBodyCollapsed] = useState(true);
   const deleteNode = useBuilderStore((state) => state.deleteNode);
   const anchorNodeId = useBuilderStore((state) => state.anchorNodeId);
   const setAnchorNodeId = useBuilderStore((state) => state.setAnchorNodeId);
@@ -69,28 +70,30 @@ function NodeWrapper({
   const isSelectionGroupChild = useBuilderStore((state) => {
     const node = state.nodes.find((item) => item.id === id);
     if (!node?.parentNode) return false;
-    return state.nodes.find((item) => item.id === node.parentNode)?.type ===
-      'selectionGroup';
+    return (
+      state.nodes.find((item) => item.id === node.parentNode)?.type ===
+      "selectionGroup"
+    );
   });
   const inputPos =
-    storeNodeData?.inputPosition === 'top' ? Position.Top : Position.Left;
+    storeNodeData?.inputPosition === "top" ? Position.Top : Position.Left;
   const outputPos =
-    (storeNodeData?.outputPositions?.['default'] ||
-      storeNodeData?.outputPosition) === 'bottom'
+    (storeNodeData?.outputPositions?.["default"] ||
+      storeNodeData?.outputPosition) === "bottom"
       ? Position.Bottom
       : Position.Right;
 
   useLayoutEffect(() => {
     updateNodeInternals(id);
-  }, [id, inputPos, outputPos, updateNodeInternals]);
+  }, [id, inputPos, outputPos, hideBody, isBodyCollapsed, updateNodeInternals]);
 
   return (
     <div
-      className={`${styles.nodeWrapper} ${isAnchored ? styles.anchored : ''} ${isStartNode ? styles.startNode : ''} ${customClassName}`}
+      className={`${styles.nodeWrapper} ${isAnchored ? styles.anchored : ""} ${isStartNode ? styles.startNode : ""} ${customClassName}`}
       style={{
         ...style,
         ...(isSelectionGroupChild
-          ? { width: '100%', boxSizing: 'border-box' }
+          ? { width: "100%", boxSizing: "border-box" }
           : {}),
       }}
     >
@@ -115,15 +118,15 @@ function NodeWrapper({
       <Handle
         type="target"
         position={inputPos}
-        id={inputPos === Position.Top ? 'input-top' : 'input-left'}
+        id={inputPos === Position.Top ? "input-top" : "input-left"}
         style={{
           ...(inputPos === Position.Top ? { top: -5 } : { left: -5 }),
           zIndex: 10,
           width: 10,
           height: 10,
-          background: '#64748b',
-          border: '2px solid #ffffff',
-          cursor: 'crosshair',
+          background: "#64748b",
+          border: "2px solid #ffffff",
+          cursor: "crosshair",
         }}
       />
 
@@ -146,6 +149,25 @@ function NodeWrapper({
             />
           )}
           <span className={styles.headerTextContent}>{typeLabel}</span>
+          {!hideBody && (
+            <button
+              type="button"
+              className={`nodrag nopan ${styles.bodyToggleButton}`}
+              title={isBodyCollapsed ? "본문 펼치기" : "본문 접기"}
+              aria-label={isBodyCollapsed ? "본문 펼치기" : "본문 접기"}
+              aria-expanded={!isBodyCollapsed}
+              onClick={(event) => {
+                event.stopPropagation();
+                setIsBodyCollapsed((collapsed) => !collapsed);
+              }}
+            >
+              {isBodyCollapsed ? (
+                <ChevronDown size={16} />
+              ) : (
+                <ChevronUp size={16} />
+              )}
+            </button>
+          )}
         </div>
         <div className={styles.headerButtons}>
           <button
@@ -153,8 +175,8 @@ function NodeWrapper({
               e.stopPropagation();
               setStartNodeId(id);
             }}
-            className={`${styles.startNodeButton} ${isStartNode ? styles.active : ''}`}
-            title={t('Set as Start Node')}
+            className={`${styles.startNodeButton} ${isStartNode ? styles.active : ""}`}
+            title={t("Set as Start Node")}
           >
             <StartNodeIcon />
           </button>
@@ -163,8 +185,8 @@ function NodeWrapper({
               e.stopPropagation();
               setAnchorNodeId(id);
             }}
-            className={`${styles.anchorButton} ${isAnchored ? styles.active : ''}`}
-            title={t('Set as anchor')}
+            className={`${styles.anchorButton} ${isAnchored ? styles.active : ""}`}
+            title={t("Set as anchor")}
           >
             <AnchorIcon />
           </button>
@@ -183,7 +205,14 @@ function NodeWrapper({
       </div>
 
       {/* 3. 노드별 본문 컨텐츠 */}
-      {!hideBody && <div className={styles.nodeBody}>{children}</div>}
+      {!hideBody && (
+        <div
+          className={styles.nodeBody}
+          style={isBodyCollapsed ? { display: "none" } : undefined}
+        >
+          {children}
+        </div>
+      )}
 
       {/* 4. (선택) 커스텀 핸들 또는 기본 출력 핸들 (Right 또는 Bottom 중 선택된 1개만 표시) */}
       {handles ? (
@@ -192,15 +221,15 @@ function NodeWrapper({
         <Handle
           type="source"
           position={outputPos}
-          id={outputPos === Position.Bottom ? 'output-bottom' : 'output-right'}
+          id={outputPos === Position.Bottom ? "output-bottom" : "output-right"}
           style={{
             ...(outputPos === Position.Bottom ? { bottom: -5 } : { right: -5 }),
             zIndex: 10,
             width: 10,
             height: 10,
-            background: '#64748b',
-            border: '2px solid #ffffff',
-            cursor: 'crosshair',
+            background: "#64748b",
+            border: "2px solid #ffffff",
+            cursor: "crosshair",
           }}
         />
       )}

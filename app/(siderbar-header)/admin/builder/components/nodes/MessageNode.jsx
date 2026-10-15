@@ -1,8 +1,8 @@
-import styles from './ChatNodes.module.css';
-import { useBuilderStore } from '../../store/index';
+import styles from "./ChatNodes.module.css";
+import { useBuilderStore } from "../../store/index";
 
-import NodeWrapper from './NodeWrapper';
-import { useTranslation } from 'react-i18next';
+import NodeWrapper from "./NodeWrapper";
+import { useTranslation } from "react-i18next";
 
 // (AnchorIcon, StartNodeIcon 임포트 제거)
 // (Handle, Position 임포트 제거 - Wrapper가 처리)
@@ -27,7 +27,7 @@ function MessageNode({ id, data }) {
     >
       {/* 4. 기존 nodeBody의 내용만 children으로 전달 */}
       <div className={styles.section}>
-        <span className={styles.sectionTitle}>{t('Content')}</span>
+        <span className={styles.sectionTitle}>{t("Content")}</span>
         <textarea
           className={styles.textInput}
           value={data.content}

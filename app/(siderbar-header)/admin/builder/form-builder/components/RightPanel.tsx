@@ -6,20 +6,20 @@ import {
   TextField,
   Stack,
   IconButton,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Settings as SettingsIcon,
   DeleteOutline as DeleteIcon,
-} from '@mui/icons-material';
-import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+} from "@mui/icons-material";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
-import ElementPropertyEditor from './ElementPropertyEditor';
-import { useFormEditorStore } from '../stores/useFormEditorStore';
-import { FORM_ELEMENT_REGISTRY } from '../stores/elementRegistry';
-import { useBuilderStore } from '../../store';
-import CustomElementPropertyEditor from './CustomElementPropertyEditor';
-import ElementDefaultProperty from './ElementDefaultProperty';
+import ElementPropertyEditor from "./ElementPropertyEditor";
+import { useFormEditorStore } from "../stores/useFormEditorStore";
+import { FORM_ELEMENT_REGISTRY } from "../stores/elementRegistry";
+import { useBuilderStore } from "../../store";
+import CustomElementPropertyEditor from "./CustomElementPropertyEditor";
+import ElementDefaultProperty from "./ElementDefaultProperty";
 
 function SectionHeader({
   color,
@@ -36,13 +36,13 @@ function SectionHeader({
   return (
     <Box
       sx={{
-        display: 'flex',
-        alignItems: 'center',
+        display: "flex",
+        alignItems: "center",
         gap: 1,
         mb: 2,
         pb: 1,
         borderBottom: 1,
-        borderColor: 'grey.100',
+        borderColor: "grey.100",
       }}
     >
       <Box sx={{ width: 6, height: 16, bgcolor: color, borderRadius: 4 }} />
@@ -58,12 +58,12 @@ function SectionHeader({
             onClick={resetForm}
             sx={{
               minHeight: 30,
-              textTransform: 'none',
-              borderColor: 'divider',
-              bgcolor: 'background.paper',
+              textTransform: "none",
+              borderColor: "divider",
+              bgcolor: "background.paper",
             }}
           >
-            {t('Reset')}
+            {t("Reset")}
           </Button>
         </>
       )}
@@ -76,12 +76,12 @@ function SectionHeader({
             onClick={resetElement}
             sx={{
               minHeight: 30,
-              textTransform: 'none',
-              borderColor: 'divider',
-              bgcolor: 'background.paper',
+              textTransform: "none",
+              borderColor: "divider",
+              bgcolor: "background.paper",
             }}
           >
-            {t('Reset')}
+            {t("Reset")}
           </Button>
         </>
       )}
@@ -152,7 +152,7 @@ function RightPanel({
   const resetElement = () => {
     if (selectedElementId) {
       const selectedElementType: keyof typeof FORM_ELEMENT_REGISTRY =
-        selectedElementId.split('-')[0] as keyof typeof FORM_ELEMENT_REGISTRY;
+        selectedElementId.split("-")[0] as keyof typeof FORM_ELEMENT_REGISTRY;
       const defaultElement =
         FORM_ELEMENT_REGISTRY[selectedElementType].create();
 
@@ -175,20 +175,20 @@ function RightPanel({
         <Box
           sx={{
             height: 56,
-            display: 'flex',
-            alignItems: 'center',
+            display: "flex",
+            alignItems: "center",
             px: 2,
             borderBottom: 1,
-            borderColor: 'divider',
-            bgcolor: 'grey.50',
+            borderColor: "divider",
+            bgcolor: "grey.50",
           }}
         >
           <SettingsIcon
             fontSize="small"
-            sx={{ color: 'text.secondary', mr: 1 }}
+            sx={{ color: "text.secondary", mr: 1 }}
           />
           <Typography variant="subtitle2" fontWeight={700}>
-            {t('Properties Settings')}
+            {t("Properties Settings")}
           </Typography>
           <Box sx={{ flex: 1 }} />
           <Button
@@ -197,23 +197,23 @@ function RightPanel({
             onClick={() => setIsJsonDialogOpen?.(true)}
             sx={{
               minHeight: 30,
-              textTransform: 'none',
-              borderColor: 'divider',
-              bgcolor: 'background.paper',
+              textTransform: "none",
+              borderColor: "divider",
+              bgcolor: "background.paper",
             }}
           >
-            {t('Form JSON')}
+            {t("Form JSON")}
           </Button>
         </Box>
       )}
 
-      <Box sx={{ flex: 1, overflow: 'auto' }}>
+      <Box sx={{ flex: 1, overflow: "auto" }}>
         {selectedElement ? (
           <Box
             sx={{
               p: 2.5,
-              display: 'flex',
-              flexDirection: 'column',
+              display: "flex",
+              flexDirection: "column",
               gap: 3,
             }}
           >
@@ -242,7 +242,7 @@ function RightPanel({
 
               <SectionHeader
                 color="primary.main"
-                title={`${t('Default Properties')} (Common)`}
+                title={`${t("Default Properties")} (Common)`}
                 resetElement={resetElement}
               />
 
@@ -256,7 +256,7 @@ function RightPanel({
             <Box>
               <SectionHeader
                 color="secondary.main"
-                title={`${t('Unique Properties')} (${selectedElement.type})`}
+                title={`${t("Unique Properties")} (${selectedElement.type})`}
               />
               <ElementPropertyEditor
                 element={selectedElement}
@@ -269,7 +269,7 @@ function RightPanel({
             <Box>
               <SectionHeader
                 color="text.secondary"
-                title={`${t('Custom Properties')} (${selectedElement.type})`}
+                title={`${t("Custom Properties")} (${selectedElement.type})`}
               />
               <CustomElementPropertyEditor
                 element={selectedElement}
@@ -284,19 +284,19 @@ function RightPanel({
           <Box sx={{ p: 2.5 }}>
             <SectionHeader
               color="primary.main"
-              title={t('Form Properties')}
+              title={t("Form Properties")}
               resetForm={handleResetForm}
             />
             <Stack spacing={2}>
               <TextField
-                label={t('ID')}
+                label={t("ID")}
                 size="small"
                 fullWidth
-                value={formId ?? ' '}
+                value={formId ?? " "}
                 disabled
               />
               <TextField
-                label={t('Form Title')}
+                label={t("Form Title")}
                 size="small"
                 fullWidth
                 value={title}

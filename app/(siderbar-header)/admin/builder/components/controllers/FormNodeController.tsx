@@ -1,22 +1,22 @@
-import { useEffect, useState } from 'react';
-import { createPortal } from 'react-dom';
-import CloseIcon from '@mui/icons-material/Close';
-import { useTranslation } from 'react-i18next';
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import CloseIcon from "@mui/icons-material/Close";
+import { useTranslation } from "react-i18next";
 
-import styles from '../NodeController.module.css';
-import SavedFormContentModal from '../../form-builder/components/modals/SavedFormContentModal';
-import RightPanel from '../../form-builder/components/RightPanel';
+import styles from "../NodeController.module.css";
+import SavedFormContentModal from "../../form-builder/components/modals/SavedFormContentModal";
+import RightPanel from "../../form-builder/components/RightPanel";
 import {
   ElementType,
   FormDataJson,
   FormElement,
-} from '../../form-builder/type';
-import { FORM_ELEMENT_TYPES } from '../../form-builder/stores/elementRegistry';
-import { useFormEditorStore } from '../../form-builder/stores/useFormEditorStore';
+} from "../../form-builder/type";
+import { FORM_ELEMENT_TYPES } from "../../form-builder/stores/elementRegistry";
+import { useFormEditorStore } from "../../form-builder/stores/useFormEditorStore";
 
-import type { DragEvent } from 'react';
+import type { DragEvent } from "react";
 
-import { useModal } from '@/providers/ModalProvider';
+import { useModal } from "@/providers/ModalProvider";
 
 function FormNodeController({ localNode, setLocalNode }: any) {
   const { t } = useTranslation();
@@ -41,7 +41,6 @@ function FormNodeController({ localNode, setLocalNode }: any) {
   const saveForm = useFormEditorStore((state) => state.saveForm);
 
   useEffect(() => {
-
     setIsMounted(true);
   }, []);
 
@@ -49,7 +48,7 @@ function FormNodeController({ localNode, setLocalNode }: any) {
     replaceForm({
       id: localNode.data.id,
       formId: localNode.data.formId ?? null,
-      title: localNode.data.title || '',
+      title: localNode.data.title || "",
       elements: localNode.data.elements || [],
     });
   }, [localNode.id, localNode.data.formId, replaceForm]);
@@ -81,10 +80,10 @@ function FormNodeController({ localNode, setLocalNode }: any) {
   const isFullFormData = (obj: Partial<FormDataJson>): obj is FormDataJson => {
     return (
       obj !== null &&
-      typeof obj === 'object' &&
-      'data' in obj &&
+      typeof obj === "object" &&
+      "data" in obj &&
       obj.data !== undefined &&
-      'id' in obj.data
+      "id" in obj.data
     );
   };
 
@@ -92,12 +91,12 @@ function FormNodeController({ localNode, setLocalNode }: any) {
     id: string,
     formElem: Partial<FormDataJson>,
   ) => {
-    if (!formElem || typeof formElem !== 'object' || !formElem.data) return;
+    if (!formElem || typeof formElem !== "object" || !formElem.data) return;
 
     replaceForm({
       id: formElem.data.id,
       formId: id,
-      title: formElem.data.title || '',
+      title: formElem.data.title || "",
       elements: Array.isArray(formElem.data.elements)
         ? formElem.data.elements
         : [],
@@ -155,9 +154,7 @@ function FormNodeController({ localNode, setLocalNode }: any) {
   };
 
   const handleSaveToTemplate = async () => {
-    const confirmed = await showConfirm(
-      t('Do you want to save the Form?'),
-    );
+    const confirmed = await showConfirm(t("Do you want to save the Form?"));
     if (!confirmed) return false;
 
     const formData: FormDataJson = {
@@ -166,11 +163,11 @@ function FormNodeController({ localNode, setLocalNode }: any) {
         id: localNode.data.id,
         title,
         elements,
-        dataSource: localNode.data.dataSource ?? '',
-        dataSourceType: localNode.data.dataSourceType ?? 'json',
+        dataSource: localNode.data.dataSource ?? "",
+        dataSourceType: localNode.data.dataSourceType ?? "json",
         enableExcelUpload: localNode.data.enableExcelUpload ?? false,
       },
-      type: 'form',
+      type: "form",
       width: 320,
       height: 597,
       dragging: false,
@@ -195,21 +192,21 @@ function FormNodeController({ localNode, setLocalNode }: any) {
 
       <div className={styles.templateActions}>
         <button onClick={() => setIsTemplateModalOpen(true)}>
-          {t('Templates')}
+          {t("Templates")}
         </button>
       </div>
       <div className={styles.separator} />
 
       <div className={styles.formGroup}>
-        <label htmlFor="form-node-id">{t('Form ID')}</label>
-        <input id="form-node-id" type="text" value={formId ?? ' '} disabled />
+        <label htmlFor="form-node-id">{t("Form ID")}</label>
+        <input id="form-node-id" type="text" value={formId ?? " "} disabled />
         <button
           className={styles.saveToTemplateButton}
           onClick={handleSaveToTemplate}
         >
-          {t('Save to template')}
+          {t("Save to template")}
         </button>
-        <label htmlFor="form-node-title">{t('Form Title')}</label>
+        <label htmlFor="form-node-title">{t("Form Title")}</label>
         <input
           id="form-node-title"
           type="text"
@@ -221,22 +218,22 @@ function FormNodeController({ localNode, setLocalNode }: any) {
       <div className={styles.formGroup}>
         <div
           style={{
-            fontSize: '0.8rem',
-            fontWeight: 'bold',
-            color: '#555',
+            fontSize: "0.8rem",
+            fontWeight: "bold",
+            color: "#555",
           }}
         >
-          {t('Add Element')}
+          {t("Add Element")}
         </div>
         <div className={styles.elementTabs}>
-          {FORM_ELEMENT_TYPES.map((type: ElementType) => (
+          {FORM_ELEMENT_TYPES.map((type: ElementType) =>
             // search type is not supported in the current implementation
-            type !== 'search' ? ( 
+            type !== "search" ? (
               <button key={type} onClick={() => addElement(type)}>
                 {type}
               </button>
-            ) : null
-          ))}
+            ) : null,
+          )}
         </div>
       </div>
       <div className={styles.separator} />
@@ -244,12 +241,12 @@ function FormNodeController({ localNode, setLocalNode }: any) {
       <div className={styles.formGroup}>
         <div
           style={{
-            fontSize: '0.8rem',
-            fontWeight: 'bold',
-            color: '#555',
+            fontSize: "0.8rem",
+            fontWeight: "bold",
+            color: "#555",
           }}
         >
-          {t('Elements List')}
+          {t("Elements List")}
         </div>
         <div className={styles.elementsContainer}>
           {elements.length > 0 ? (
@@ -257,13 +254,13 @@ function FormNodeController({ localNode, setLocalNode }: any) {
               <div
                 key={element.id}
                 className={`${styles.elementItem} ${
-                  element.id === selectedElementId ? styles.selected : ''
+                  element.id === selectedElementId ? styles.selected : ""
                 }`}
                 role="button"
                 tabIndex={0}
                 onClick={() => selectElement(element.id)}
                 onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') {
+                  if (event.key === "Enter" || event.key === " ") {
                     event.preventDefault();
                     selectElement(element.id);
                   }
@@ -290,7 +287,7 @@ function FormNodeController({ localNode, setLocalNode }: any) {
               </div>
             ))
           ) : (
-            <p className={styles.placeholder}>{t('No elements added yet')}.</p>
+            <p className={styles.placeholder}>{t("No elements added yet")}.</p>
           )}
         </div>
       </div>

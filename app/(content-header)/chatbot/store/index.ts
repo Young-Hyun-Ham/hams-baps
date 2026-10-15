@@ -3,9 +3,21 @@
 
 import { create } from "zustand";
 import { api } from "@/lib/axios";
-import type { ChatMessage, ChatSession, ScenarioRunState, ChatbotUserDoc } from "../types";
-import { subscribeMessages, subscribeSessions, subscribeUserDoc } from "../services/chatbotFirebaseService";
-import type { ShortcutMenu, ShortcutMenuSearchParams } from "../types/shortcutMenu";
+import type {
+  ChatMessage,
+  ChatSession,
+  ScenarioRunState,
+  ChatbotUserDoc,
+} from "../types";
+import {
+  subscribeMessages,
+  subscribeSessions,
+  subscribeUserDoc,
+} from "../services/chatbotFirebaseService";
+import type {
+  ShortcutMenu,
+  ShortcutMenuSearchParams,
+} from "../types/shortcutMenu";
 
 export const DEFAULT_SYSTEM_PROMPT =
   process.env.NEXT_PUBLIC_SYSTEM_PROMPT_KO ??
@@ -15,43 +27,87 @@ const BACKEND = (process.env.NEXT_PUBLIC_BACKEND ?? "firebase").toLowerCase();
 
 // -------- API helpers (firebase/postgres 스위치 유지) --------
 async function apiPatchUser(userKey: string, patch: Partial<ChatbotUserDoc>) {
-  const { data } = await api.patch(`/api/chatbot/${BACKEND}/user`, { userKey, patch });
-  if (data?.ok === false) throw new Error(data?.message || "patch user failed");
-}
-
-async function apiCreateSession(userKey: string, payload: { title: string; createdAt: string }) {
-  const { data } = await api.post(`/api/chatbot/${BACKEND}/sessions`, { userKey, ...payload });
-  if (data?.ok === false) throw new Error(data?.message || "create session failed");
-  return String(data?.sessionId);
-}
-
-async function apiPatchSession(userKey: string, sessionId: string, patch: Partial<ChatSession>) {
-  const { data } = await api.patch(`/api/chatbot/${BACKEND}/sessions/${sessionId}`, { userKey, patch });
-  if (data?.ok === false) throw new Error(data?.message || "patch session failed");
-}
-
-async function apiDeleteSession(userKey: string, sessionId: string) {
-  const { data } = await api.delete(`/api/chatbot/${BACKEND}/sessions/${sessionId}`, { data: { userKey } });
-  if (data?.ok === false) throw new Error(data?.message || "delete session failed");
-}
-
-async function apiCreateMessage(userKey: string, sessionId: string, msg: ChatMessage) {
-  const { data } = await api.post(`/api/chatbot/${BACKEND}/sessions/${sessionId}/messages`, { userKey, message: msg });
-  if (data?.ok === false) throw new Error(data?.message || "create message failed");
-  return String(data?.messageId ?? msg.id);
-}
-
-async function apiPatchMessage(userKey: string, sessionId: string, messageId: string, patch: Partial<ChatMessage>) {
-  const { data } = await api.patch(`/api/chatbot/${BACKEND}/sessions/${sessionId}/messages/${messageId}`, {
+  const { data } = await api.patch(`/api/chatbot/${BACKEND}/user`, {
     userKey,
     patch,
   });
-  if (data?.ok === false) throw new Error(data?.message || "patch message failed");
+  if (data?.ok === false) throw new Error(data?.message || "patch user failed");
 }
 
-export async function fetchShortcutMenuList(params: ShortcutMenuSearchParams = {}): Promise<ShortcutMenu[]> {
-  const { data } = await api.get(`/api/chatbot/${BACKEND}/shortcut-menus`, { params });
-  if (data?.ok === false) throw new Error(data?.message || "load shortcut menu failed");
+async function apiCreateSession(
+  userKey: string,
+  payload: { title: string; createdAt: string },
+) {
+  const { data } = await api.post(`/api/chatbot/${BACKEND}/sessions`, {
+    userKey,
+    ...payload,
+  });
+  if (data?.ok === false)
+    throw new Error(data?.message || "create session failed");
+  return String(data?.sessionId);
+}
+
+async function apiPatchSession(
+  userKey: string,
+  sessionId: string,
+  patch: Partial<ChatSession>,
+) {
+  const { data } = await api.patch(
+    `/api/chatbot/${BACKEND}/sessions/${sessionId}`,
+    { userKey, patch },
+  );
+  if (data?.ok === false)
+    throw new Error(data?.message || "patch session failed");
+}
+
+async function apiDeleteSession(userKey: string, sessionId: string) {
+  const { data } = await api.delete(
+    `/api/chatbot/${BACKEND}/sessions/${sessionId}`,
+    { data: { userKey } },
+  );
+  if (data?.ok === false)
+    throw new Error(data?.message || "delete session failed");
+}
+
+async function apiCreateMessage(
+  userKey: string,
+  sessionId: string,
+  msg: ChatMessage,
+) {
+  const { data } = await api.post(
+    `/api/chatbot/${BACKEND}/sessions/${sessionId}/messages`,
+    { userKey, message: msg },
+  );
+  if (data?.ok === false)
+    throw new Error(data?.message || "create message failed");
+  return String(data?.messageId ?? msg.id);
+}
+
+async function apiPatchMessage(
+  userKey: string,
+  sessionId: string,
+  messageId: string,
+  patch: Partial<ChatMessage>,
+) {
+  const { data } = await api.patch(
+    `/api/chatbot/${BACKEND}/sessions/${sessionId}/messages/${messageId}`,
+    {
+      userKey,
+      patch,
+    },
+  );
+  if (data?.ok === false)
+    throw new Error(data?.message || "patch message failed");
+}
+
+export async function fetchShortcutMenuList(
+  params: ShortcutMenuSearchParams = {},
+): Promise<ShortcutMenu[]> {
+  const { data } = await api.get(`/api/chatbot/${BACKEND}/shortcut-menus`, {
+    params,
+  });
+  if (data?.ok === false)
+    throw new Error(data?.message || "load shortcut menu failed");
   return (data?.items ?? []) as ShortcutMenu[];
 }
 
@@ -72,7 +128,11 @@ type ChatbotState = {
   setActiveSession: (id: string) => void;
 
   addMessageToActive: (message: ChatMessage) => void;
-  patchMessage: (sessionId: string, messageId: string, patch: Partial<ChatMessage> | ((prev: ChatMessage) => ChatMessage)) => void;
+  patchMessage: (
+    sessionId: string,
+    messageId: string,
+    patch: Partial<ChatMessage> | ((prev: ChatMessage) => ChatMessage),
+  ) => void;
 
   updateSessionTitle: (id: string, title: string) => void;
   deleteSession: (id: string) => void;
@@ -109,7 +169,9 @@ const useChatbotStore = create<ChatbotState>((set, get) => ({
         currentNodeId: null,
         finished: false,
       };
-      return { scenarioRuns: { ...state.scenarioRuns, [runId]: { ...prev, ...patch } } };
+      return {
+        scenarioRuns: { ...state.scenarioRuns, [runId]: { ...prev, ...patch } },
+      };
     }),
   clearScenarioRun: (runId) =>
     set((state) => {
@@ -120,31 +182,40 @@ const useChatbotStore = create<ChatbotState>((set, get) => ({
 
   initBackendSync: (userKey: string) => {
     // cleanup
-    unsubUser?.(); unsubUser = null;
-    unsubSessions?.(); unsubSessions = null;
-    unsubMessages?.(); unsubMessages = null;
+    unsubUser?.();
+    unsubUser = null;
+    unsubSessions?.();
+    unsubSessions = null;
+    unsubMessages?.();
+    unsubMessages = null;
 
     set({ userKey });
 
     // 1) user doc
     unsubUser = subscribeUserDoc(userKey, (u) => {
-      const sp = u?.systemPrompt?.trim() ? u.systemPrompt : DEFAULT_SYSTEM_PROMPT;
+      const sp = u?.systemPrompt?.trim()
+        ? u.systemPrompt
+        : DEFAULT_SYSTEM_PROMPT;
       set({
         syncReady: true,
         systemPrompt: sp,
         activeSessionId: u?.activeSessionId ?? null,
       });
 
-      if (typeof window !== "undefined") window.localStorage.setItem("systemPrompt", sp);
+      if (typeof window !== "undefined")
+        window.localStorage.setItem("systemPrompt", sp);
 
       // activeSession 바뀌면 messages 구독 갈아타기
       const sid = u?.activeSessionId ?? null;
-      unsubMessages?.(); unsubMessages = null;
+      unsubMessages?.();
+      unsubMessages = null;
 
       if (sid) {
         unsubMessages = subscribeMessages(userKey, sid, (msgs) => {
           set((state) => ({
-            sessions: state.sessions.map((s) => (s.id === sid ? { ...s, messages: msgs } : s)),
+            sessions: state.sessions.map((s) =>
+              s.id === sid ? { ...s, messages: msgs } : s,
+            ),
           }));
         });
       }
@@ -156,9 +227,10 @@ const useChatbotStore = create<ChatbotState>((set, get) => ({
         const activeId = state.activeSessionId ?? items[0]?.id ?? null;
 
         // active 세션은 기존 messages 유지(구독이 나중에 채워줌)
-        const prevActive = state.sessions.find((s) => s.id === activeId)?.messages ?? [];
+        const prevActive =
+          state.sessions.find((s) => s.id === activeId)?.messages ?? [];
         const merged = items.map((s) =>
-          s.id === activeId ? { ...s, messages: prevActive } : s
+          s.id === activeId ? { ...s, messages: prevActive } : s,
         );
 
         return { sessions: merged, activeSessionId: activeId };
@@ -167,19 +239,30 @@ const useChatbotStore = create<ChatbotState>((set, get) => ({
   },
 
   stopBackendSync: () => {
-    unsubUser?.(); unsubUser = null;
-    unsubSessions?.(); unsubSessions = null;
-    unsubMessages?.(); unsubMessages = null;
-    set({ userKey: null, sessions: [], activeSessionId: null, systemPrompt: DEFAULT_SYSTEM_PROMPT, syncReady: false });
+    unsubUser?.();
+    unsubUser = null;
+    unsubSessions?.();
+    unsubSessions = null;
+    unsubMessages?.();
+    unsubMessages = null;
+    set({
+      userKey: null,
+      sessions: [],
+      activeSessionId: null,
+      systemPrompt: DEFAULT_SYSTEM_PROMPT,
+      syncReady: false,
+    });
   },
 
   setSystemPrompt: (prompt: string) => {
     const value = prompt.trim() || DEFAULT_SYSTEM_PROMPT;
     set({ systemPrompt: value });
-    if (typeof window !== "undefined") window.localStorage.setItem("systemPrompt", value);
+    if (typeof window !== "undefined")
+      window.localStorage.setItem("systemPrompt", value);
 
     const { userKey } = get();
-    if (userKey) apiPatchUser(userKey, { systemPrompt: value }).catch(console.error);
+    if (userKey)
+      apiPatchUser(userKey, { systemPrompt: value }).catch(console.error);
   },
 
   createSession: (title: string, messages: ChatMessage[] = []) => {
@@ -209,16 +292,20 @@ const useChatbotStore = create<ChatbotState>((set, get) => ({
 
     (async () => {
       // ✅ 서버가 최종 id를 결정
-      const serverId = await apiCreateSession(userKey, { title, createdAt: now });
+      const serverId = await apiCreateSession(userKey, {
+        title,
+        createdAt: now,
+      });
       const finalId = serverId || tempId;
 
       // ✅ 서버 id가 tempId와 다르면: 로컬 state에서 id 교체
       if (finalId !== tempId) {
         set((state) => ({
           sessions: state.sessions.map((s) =>
-            s.id === tempId ? { ...s, id: finalId } : s
+            s.id === tempId ? { ...s, id: finalId } : s,
           ),
-          activeSessionId: state.activeSessionId === tempId ? finalId : state.activeSessionId,
+          activeSessionId:
+            state.activeSessionId === tempId ? finalId : state.activeSessionId,
         }));
       }
 
@@ -237,7 +324,8 @@ const useChatbotStore = create<ChatbotState>((set, get) => ({
   setActiveSession: (id: string) => {
     set({ activeSessionId: id });
     const { userKey } = get();
-    if (userKey) apiPatchUser(userKey, { activeSessionId: id }).catch(console.error);
+    if (userKey)
+      apiPatchUser(userKey, { activeSessionId: id }).catch(console.error);
   },
 
   addMessageToActive: (message: ChatMessage) => {
@@ -247,7 +335,9 @@ const useChatbotStore = create<ChatbotState>((set, get) => ({
     // optimistic UI (활성 세션만 messages를 들고 있음)
     set((state) => ({
       sessions: state.sessions.map((s) =>
-        s.id === activeSessionId ? { ...s, messages: [...s.messages, message] } : s
+        s.id === activeSessionId
+          ? { ...s, messages: [...s.messages, message] }
+          : s,
       ),
     }));
 
@@ -278,9 +368,7 @@ const useChatbotStore = create<ChatbotState>((set, get) => ({
 
     // server patch (message 1건)
     const computed =
-      typeof patch === "function"
-        ? null
-        : (patch as Partial<ChatMessage>);
+      typeof patch === "function" ? null : (patch as Partial<ChatMessage>);
 
     // 함수형 patch는 서버에 그대로 못 보내니, 현재 state에서 재계산해서 보내자(최소 구현)
     const msg =
@@ -290,7 +378,9 @@ const useChatbotStore = create<ChatbotState>((set, get) => ({
 
     if (!msg) return;
 
-    apiPatchMessage(userKey, sessionId, messageId, computed ?? msg).catch(console.error);
+    apiPatchMessage(userKey, sessionId, messageId, computed ?? msg).catch(
+      console.error,
+    );
   },
 
   updateSessionTitle: (id: string, title: string) => {
@@ -308,7 +398,8 @@ const useChatbotStore = create<ChatbotState>((set, get) => ({
 
     set((state) => {
       const next = state.sessions.filter((s) => s.id !== id);
-      const nextActive = activeSessionId === id ? next[0]?.id ?? null : activeSessionId;
+      const nextActive =
+        activeSessionId === id ? (next[0]?.id ?? null) : activeSessionId;
       return { sessions: next, activeSessionId: nextActive };
     });
 

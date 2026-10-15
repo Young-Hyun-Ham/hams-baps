@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import styles from './ApiTemplateModal.module.css';
-import { useTranslation } from 'react-i18next';
+import { useState } from "react";
+import styles from "./ApiTemplateModal.module.css";
+import { useTranslation } from "react-i18next";
 
 function ApiTemplateModal({
   isOpen,
@@ -13,8 +13,8 @@ function ApiTemplateModal({
   selectedApiCallName,
 }) {
   const { t } = useTranslation();
-  const [templateName, setTemplateName] = useState('');
-  const [error, setError] = useState('');
+  const [templateName, setTemplateName] = useState("");
+  const [error, setError] = useState("");
 
   if (!isOpen) {
     return null;
@@ -22,16 +22,16 @@ function ApiTemplateModal({
 
   const handleSave = () => {
     if (!templateName.trim()) {
-      setError('Please enter a template name.');
+      setError("Please enter a template name.");
       return;
     }
     if (templates.some((t) => t.name === templateName.trim())) {
-      setError('A template with this name already exists.');
+      setError("A template with this name already exists.");
       return;
     }
     onSave(templateName.trim());
-    setTemplateName('');
-    setError('');
+    setTemplateName("");
+    setError("");
   };
 
   const handleSelect = (template) => {
@@ -47,14 +47,14 @@ function ApiTemplateModal({
   const saveInstruction = isMulti
     ? selectedApiCallName
       ? `Save '${selectedApiCallName}' as a new template.`
-      : 'Select an API call from the list to save it.'
-    : 'Save the current API configuration as a new template.';
+      : "Select an API call from the list to save it."
+    : "Save the current API configuration as a new template.";
 
   const loadInstruction = isMulti
     ? selectedApiCallName
       ? `Load a template into '${selectedApiCallName}'.`
-      : 'Select an API call from the list to load a template into it.'
-    : 'Load a template into the current API configuration.';
+      : "Select an API call from the list to load a template into it."
+    : "Load a template into the current API configuration.";
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
@@ -62,10 +62,10 @@ function ApiTemplateModal({
         <button className={styles.closeButton} onClick={onClose}>
           &times;
         </button>
-        <h2>{t('API Templates')}</h2>
+        <h2>{t("API Templates")}</h2>
 
         <div className={styles.saveSection}>
-          <h3>{t('Save as Template')}</h3>
+          <h3>{t("Save as Template")}</h3>
           <p className={styles.instructionText}>{saveInstruction}</p>
           <div className={styles.inputGroup}>
             <input
@@ -73,23 +73,23 @@ function ApiTemplateModal({
               value={templateName}
               onChange={(e) => {
                 setTemplateName(e.target.value);
-                setError('');
+                setError("");
               }}
-              placeholder={t('Enter new template name')}
+              placeholder={t("Enter new template name")}
               disabled={isMulti && !selectedApiCallName}
             />
             <button
               onClick={handleSave}
               disabled={isMulti && !selectedApiCallName}
             >
-              {t('Save')}
+              {t("Save")}
             </button>
           </div>
           {error && <p className={styles.errorMessage}>{error}</p>}
         </div>
 
         <div className={styles.loadSection}>
-          <h3>{t('Load from Template')}</h3>
+          <h3>{t("Load from Template")}</h3>
           <p className={styles.instructionText}>{loadInstruction}</p>
           <div className={styles.templateList}>
             {templates.length > 0 ? (
@@ -101,21 +101,21 @@ function ApiTemplateModal({
                       onClick={() => handleSelect(template)}
                       className={styles.loadButton}
                     >
-                      {t('Load')}
+                      {t("Load")}
                     </button>
                     {/* --- 💡 수정된 부분 시작 --- */}
                     <button
                       onClick={(e) => handleDelete(e, template.id)}
                       className={styles.deleteButton}
                     >
-                      {t('Delete')}
+                      {t("Delete")}
                     </button>
                     {/* --- 💡 수정된 부분 끝 --- */}
                   </div>
                 </div>
               ))
             ) : (
-              <p className={styles.placeholder}>{t('No saved templates')}.</p>
+              <p className={styles.placeholder}>{t("No saved templates")}.</p>
             )}
           </div>
         </div>

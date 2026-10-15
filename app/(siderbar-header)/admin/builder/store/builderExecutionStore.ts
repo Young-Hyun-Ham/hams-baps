@@ -1,13 +1,7 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
 export type ExecutionPhase =
-  | 'start'
-  | 'enter'
-  | 'complete'
-  | 'wait'
-  | 'error'
-  | 'finish'
-  | 'cancel';
+  "start" | "enter" | "complete" | "wait" | "error" | "finish" | "cancel";
 
 export type ExecutionLog = {
   at: string;
@@ -110,8 +104,8 @@ export const builderExecutionStore = create<BuilderExecutionStore>((set) => ({
       executionLogs: [
         {
           at: now(),
-          phase: 'start',
-          message: 'Builder execution started',
+          phase: "start",
+          message: "Builder execution started",
           payload: meta ?? {},
         },
       ],
@@ -152,8 +146,8 @@ export const builderExecutionStore = create<BuilderExecutionStore>((set) => ({
         ...state.executionLogs,
         {
           at: now(),
-          phase: 'finish',
-          message: message ?? 'Builder execution finished',
+          phase: "finish",
+          message: message ?? "Builder execution finished",
         },
       ],
     })),
@@ -168,7 +162,7 @@ export const builderExecutionStore = create<BuilderExecutionStore>((set) => ({
         ...state.executionLogs,
         {
           at: now(),
-          phase: 'error',
+          phase: "error",
           message,
           ...extra,
         },
@@ -184,8 +178,8 @@ export const builderExecutionStore = create<BuilderExecutionStore>((set) => ({
         ...state.executionLogs,
         {
           at: now(),
-          phase: 'cancel',
-          message: message ?? 'Builder execution canceled',
+          phase: "cancel",
+          message: message ?? "Builder execution canceled",
         },
       ],
     })),

@@ -37,7 +37,10 @@ const PANEL_LABELS: Record<PanelId, string> = {
   execution: "Execution",
 };
 
-export default function ScenarioMenuPanel({ isPanelOpen, onSelectPreset }: Props) {
+export default function ScenarioMenuPanel({
+  isPanelOpen,
+  onSelectPreset,
+}: Props) {
   const { fetchShortcutMenuList } = useChatbotStore();
 
   // 어떤 패널이 선택됐는지
@@ -128,14 +131,16 @@ export default function ScenarioMenuPanel({ isPanelOpen, onSelectPreset }: Props
         });
 
         // items가 있는 패널만 남김
-        const nextConfigs: PanelConfig[] = (["process", "search", "execution"] as PanelId[])
+        const nextConfigs: PanelConfig[] = (
+          ["process", "search", "execution"] as PanelId[]
+        )
           .map((id) => ({
             id,
             label: PANEL_LABELS[id],
             items: grouped[id],
           }))
           .filter((p) => p.items.length > 0);
-          
+
         setPanelConfigs(nextConfigs);
 
         // activePanelId가 사라졌으면 첫 패널로 보정
@@ -152,7 +157,6 @@ export default function ScenarioMenuPanel({ isPanelOpen, onSelectPreset }: Props
 
     load();
   }, [fetchShortcutMenuList]);
-
 
   const activePanel = panelConfigs.find((p) => p.id === activePanelId);
   const categories = activePanel
@@ -242,13 +246,11 @@ export default function ScenarioMenuPanel({ isPanelOpen, onSelectPreset }: Props
                   "inline-flex items-center gap-1 rounded-full px-4 py-1.5 text-sm font-medium shadow-sm border transition",
                   isActive
                     ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                    : "bg-white/80 text-slate-800 border-slate-200 hover:bg-slate-50"
+                    : "bg-white/80 text-slate-800 border-slate-200 hover:bg-slate-50",
                 )}
               >
                 <span>{panel.label}</span>
-                <span className="text-xs">
-                  {isActive && open ? "▲" : "▼"}
-                </span>
+                <span className="text-xs">{isActive && open ? "▲" : "▼"}</span>
               </button>
             );
           })}

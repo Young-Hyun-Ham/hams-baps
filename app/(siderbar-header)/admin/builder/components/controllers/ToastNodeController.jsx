@@ -1,7 +1,7 @@
-import styles from '../NodeController.module.css';
-import { useNodeController } from './hooks/useNodeController';
-import ChainNextCheckbox from './common/ChainNextCheckbox';
-import { useTranslation } from 'react-i18next';
+import styles from "../NodeController.module.css";
+import { useNodeController } from "./hooks/useNodeController";
+import ChainNextCheckbox from "./common/ChainNextCheckbox";
+import { useTranslation } from "react-i18next";
 
 function ToastNodeController({ localNode, setLocalNode }) {
   const { t } = useTranslation();
@@ -12,18 +12,18 @@ function ToastNodeController({ localNode, setLocalNode }) {
   return (
     <>
       <div className={styles.formGroup}>
-        <label>{t('Toast Message')}</label>
+        <label>{t("Toast Message")}</label>
         <textarea
-          value={data.message || ''}
-          onChange={(e) => handleLocalDataChange('message', e.target.value)}
+          value={data.message || ""}
+          onChange={(e) => handleLocalDataChange("message", e.target.value)}
           rows={4}
         />
       </div>
       <div className={styles.formGroup}>
-        <label>{t('Toast Type')}</label>
+        <label>{t("Toast Type")}</label>
         <select
-          value={data.toastType || 'info'}
-          onChange={(e) => handleLocalDataChange('toastType', e.target.value)}
+          value={data.toastType || "info"}
+          onChange={(e) => handleLocalDataChange("toastType", e.target.value)}
         >
           <option value="info">Info</option>
           <option value="success">Success</option>
@@ -33,7 +33,7 @@ function ToastNodeController({ localNode, setLocalNode }) {
       {/* 4. 기존 UI를 공통 컴포넌트로 대체 */}
       <ChainNextCheckbox
         checked={data.chainNext}
-        onChange={(value) => handleLocalDataChange('chainNext', value)}
+        onChange={(value) => handleLocalDataChange("chainNext", value)}
       />
     </>
   );

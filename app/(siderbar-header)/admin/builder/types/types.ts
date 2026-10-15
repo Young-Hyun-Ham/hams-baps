@@ -1,6 +1,5 @@
-import { Timestamp } from 'next/dist/server/lib/cache-handlers/types';
-import { Node } from 'reactflow';
-
+import { Timestamp } from "next/dist/server/lib/cache-handlers/types";
+import { Node } from "reactflow";
 
 type Scenario = {
   id?: string;
@@ -16,7 +15,6 @@ type Scenario = {
   depn_ver_id?: any;
   [key: string]: any;
 };
-
 
 type TreeItem = {
   id: string;
@@ -37,7 +35,7 @@ type VersionTreeItem = {
   children: VersionTreeItem[];
 };
 
-type DB_TYPE = 'fastapi' | 'firebase';
+type DB_TYPE = "fastapi" | "firebase";
 
 type InsertTarget = {
   sourceId?: string | null;
@@ -84,8 +82,8 @@ export const LOCALE_LIST = [
   { value: "jp", label: "Japan" },
 ] as const;
 
-export type LOCALE_TIME = typeof LOCALE_LIST[number]["value"];
+export type LOCALE_TIME = (typeof LOCALE_LIST)[number]["value"];
 export type LOCALE_TIME_TYPE = {
   date: Timestamp;
   locale: LOCALE_TIME;
-}
+};

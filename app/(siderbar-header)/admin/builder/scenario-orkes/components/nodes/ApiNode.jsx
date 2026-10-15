@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import { Handle, Position } from 'reactflow';
-import { useModal } from '@/providers/ModalProvider';
-import styles from './ChatNodes.module.css';
-import { useBuilderStore } from '../../../store';
+import React, { useState } from "react";
+import { Handle, Position } from "reactflow";
+import { useModal } from "@/providers/ModalProvider";
+import styles from "./ChatNodes.module.css";
+import { useBuilderStore } from "../../../store";
 // (AnchorIcon, StartNodeIcon 임포트 제거)
-import { PlayIcon } from '../icons/Icons';
-import * as backendService from '../../../services/backendService';
-import NodeWrapper from './NodeWrapper';
+import { PlayIcon } from "../icons/Icons";
+import * as backendService from "../../../services/backendService";
+import NodeWrapper from "./NodeWrapper";
 
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
 
 function ApiNode({ id, data }) {
   const { t } = useTranslation();
@@ -24,18 +24,18 @@ function ApiNode({ id, data }) {
   // 모달 Alert 추가
   const openApiResultModal = async ({ title, payload, isError = false }) => {
     const formatted =
-      typeof payload === 'string' ? payload : JSON.stringify(payload, null, 2);
+      typeof payload === "string" ? payload : JSON.stringify(payload, null, 2);
 
     await showAlert({
       title,
-      okText: 'Close',
-      className: 'max-w-5xl',
+      okText: "Close",
+      className: "max-w-5xl",
       message: (
         <div className="mt-2">
           <div
-            className={`mb-3 text-sm font-semibold ${isError ? 'text-red-400' : 'text-emerald-400'}`}
+            className={`mb-3 text-sm font-semibold ${isError ? "text-red-400" : "text-emerald-400"}`}
           >
-            {isError ? 'Request failed' : 'Request succeeded'}
+            {isError ? "Request failed" : "Request succeeded"}
           </div>
 
           <pre
@@ -70,7 +70,7 @@ function ApiNode({ id, data }) {
     setIsTesting(true);
 
     if (!data.url) {
-      await showAlert('error', 'Error', `API Test Failed:\nNo URL provided`);
+      await showAlert("error", "Error", `API Test Failed:\nNo URL provided`);
       setIsTesting(false);
       return;
     }
@@ -78,8 +78,8 @@ function ApiNode({ id, data }) {
     try {
       const result = await backendService.testApiCall(data);
       await showAlert(
-        'info',
-        'Success',
+        "info",
+        "Success",
         `API Test Success!\n\nResponse:\n${JSON.stringify(result, null, 2)}`,
       );
       // await openApiResultModal({
@@ -88,7 +88,7 @@ function ApiNode({ id, data }) {
       // });
     } catch (error) {
       // console.error('API Test Error:', error);
-      await showAlert('error', 'Error', `API Test Failed:\n${error.message}`);
+      await showAlert("error", "Error", `API Test Failed:\n${error.message}`);
       // await openApiResultModal({
       //   title: 'API Test Failed',
       //   payload: error?.message || 'Unknown error',
@@ -104,7 +104,7 @@ function ApiNode({ id, data }) {
     <button
       onClick={handleApiTest}
       className={styles.playButton}
-      title={t('Test API')}
+      title={t("Test API")}
       disabled={isTesting}
       // style={{ color: textColor }}
     >
@@ -119,39 +119,39 @@ function ApiNode({ id, data }) {
         type="source"
         position={Position.Bottom}
         id="onSuccess"
-        style={{ left: '35%', background: '#2ecc71' }}
+        style={{ left: "35%", background: "#2ecc71" }}
       />
       <span
         style={{
-          position: 'absolute',
-          left: '35%',
-          bottom: '-22px',
-          transform: 'translateX(-50%)',
-          fontSize: '0.7rem',
-          color: '#2ecc71',
-          whiteSpace: 'nowrap',
+          position: "absolute",
+          left: "35%",
+          bottom: "-22px",
+          transform: "translateX(-50%)",
+          fontSize: "0.7rem",
+          color: "#2ecc71",
+          whiteSpace: "nowrap",
         }}
       >
-        {t('On Success')}
+        {t("On Success")}
       </span>
       <Handle
         type="source"
         position={Position.Bottom}
         id="onError"
-        style={{ left: '65%', background: '#e74c3c' }}
+        style={{ left: "65%", background: "#e74c3c" }}
       />
       <span
         style={{
-          position: 'absolute',
-          left: '65%',
-          bottom: '-22px',
-          transform: 'translateX(-50%)',
-          fontSize: '0.7rem',
-          color: '#e74c3c',
-          whiteSpace: 'nowrap',
+          position: "absolute",
+          left: "65%",
+          bottom: "-22px",
+          transform: "translateX(-50%)",
+          fontSize: "0.7rem",
+          color: "#e74c3c",
+          whiteSpace: "nowrap",
         }}
       >
-        {t('On Error')}
+        {t("On Error")}
       </span>
     </>
   );
@@ -160,7 +160,7 @@ function ApiNode({ id, data }) {
     // 6. NodeWrapper로 감싸기
     <NodeWrapper
       id={id}
-      typeLabel={isMulti ? `API (${apiCount} calls)` : 'API'}
+      typeLabel={isMulti ? `API (${apiCount} calls)` : "API"}
       icon={null} // (ApiNode는 아이콘이 없었음)
       nodeColor={nodeColor}
       textColor={textColor}
@@ -172,27 +172,27 @@ function ApiNode({ id, data }) {
         <div className={styles.section}>
           {data.apis?.map((api) => (
             <div key={api.id} className={styles.previewBox}>
-              {api.name || t('API Call')}
+              {api.name || t("API Call")}
             </div>
           ))}
           {(!data.apis || data.apis.length === 0) && (
             <div className={styles.formElementsPlaceholder}>
-              {t('No API calls configured')}.
+              {t("No API calls configured")}.
             </div>
           )}
         </div>
       ) : (
         <>
           <div className={styles.section}>
-            <span className={styles.sectionTitle}>{t('Method')}</span>
+            <span className={styles.sectionTitle}>{t("Method")}</span>
             <input
               className={styles.textInput}
-              value={data.method || 'GET'}
+              value={data.method || "GET"}
               readOnly
             />
           </div>
           <div className={styles.section}>
-            <span className={styles.sectionTitle}>{t('URL')}</span>
+            <span className={styles.sectionTitle}>{t("URL")}</span>
             <textarea
               className={styles.textInput}
               value={data.url}

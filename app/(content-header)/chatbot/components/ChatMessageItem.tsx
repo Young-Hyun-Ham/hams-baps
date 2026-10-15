@@ -25,13 +25,13 @@ type Props = {
   onScenarioClick?: (
     scenarioKey: string,
     scenarioTitle?: string,
-    messageId?: string
+    messageId?: string,
   ) => void;
 
   onScenarioAccept?: (
     messageId: string,
     scenarioKey: string,
-    scenarioTitle?: string
+    scenarioTitle?: string,
   ) => void;
   onScenarioReject?: (messageId: string) => void;
 };
@@ -44,7 +44,7 @@ export default function ChatMessageItem({
 }: Props) {
   const [open, setOpen] = useState(false);
   const isAssistant = message.role === "assistant";
-  
+
   const run = useChatbotStore((s) => s.scenarioRuns[message.id]);
   const slotSnapshot = run?.slotValues ?? {};
 
@@ -65,30 +65,32 @@ export default function ChatMessageItem({
       status === "linked_suggest"
         ? "실행제안"
         : status === "linked_done"
-        ? "완료"
-        : status === "linked_canceled"
-        ? "취소"
-        : status === "done"
-        ? "완료"
-        : "진행중";
+          ? "완료"
+          : status === "linked_canceled"
+            ? "취소"
+            : status === "done"
+              ? "완료"
+              : "진행중";
 
     const statusClass =
       status === "linked_suggest"
         ? "border-sky-300 bg-sky-50 text-sky-700"
         : status === "linked_done"
-        ? "border-emerald-300 bg-emerald-50 text-emerald-700"
-        : status === "linked_canceled"
-        ? "border-gray-300 bg-gray-50 text-gray-600"
-        : status === "done"
-        ? "border-emerald-300 bg-emerald-50 text-emerald-700"
-        : "border-amber-300 bg-amber-50 text-amber-700";
+          ? "border-emerald-300 bg-emerald-50 text-emerald-700"
+          : status === "linked_canceled"
+            ? "border-gray-300 bg-gray-50 text-gray-600"
+            : status === "done"
+              ? "border-emerald-300 bg-emerald-50 text-emerald-700"
+              : "border-amber-300 bg-amber-50 text-amber-700";
 
     const detailText =
       steps.length > 0
         ? steps
             .map((s) => {
               const rendered = resolveTemplate(s.text, slotSnapshot);
-              return s.role === "bot" ? `봇: ${rendered}` : `사용자: ${rendered}`;
+              return s.role === "bot"
+                ? `봇: ${rendered}`
+                : `사용자: ${rendered}`;
             })
             .join("\n")
         : message.content;
@@ -118,7 +120,7 @@ export default function ChatMessageItem({
                     onScenarioClick?.(
                       message.scenarioKey!,
                       message.scenarioTitle,
-                      message.id
+                      message.id,
                     )
                   }
                 >
@@ -162,7 +164,7 @@ export default function ChatMessageItem({
                     onScenarioAccept?.(
                       message.id,
                       message.scenarioKey!,
-                      message.scenarioTitle
+                      message.scenarioTitle,
                     )
                   }
                 >
@@ -190,7 +192,11 @@ export default function ChatMessageItem({
   }
 
   return (
-    <div className={isAssistant ? "flex justify-start mb-2" : "flex justify-end mb-2"}>
+    <div
+      className={
+        isAssistant ? "flex justify-start mb-2" : "flex justify-end mb-2"
+      }
+    >
       <div
         className={
           isAssistant

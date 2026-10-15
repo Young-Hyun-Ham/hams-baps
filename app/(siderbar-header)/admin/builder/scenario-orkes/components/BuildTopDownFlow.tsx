@@ -1,6 +1,6 @@
-import { MarkerType, type Node } from 'reactflow';
+import { MarkerType, type Node } from "reactflow";
 
-import { FLOW_NODE_SIZES } from '../constants/nodeSizes';
+import { FLOW_NODE_SIZES } from "../constants/nodeSizes";
 
 import type {
   AddNodeData,
@@ -8,13 +8,13 @@ import type {
   BuilderNode,
   InsertTarget,
   NodeSize,
-} from '../types';
+} from "../types";
 
-export const START_NODE_ID = '__flow_uipath_start__';
-export const START_ADD_NODE_ID = '__flow_uipath_start_add__';
-export const END_NODE_ID = '__flow_uipath_end__';
-export const panelBorder = '#d6dde5';
-export const lineColor = '#8f9daa';
+export const START_NODE_ID = "__flow_uipath_start__";
+export const START_ADD_NODE_ID = "__flow_uipath_start_add__";
+export const END_NODE_ID = "__flow_uipath_end__";
+export const panelBorder = "#d6dde5";
+export const lineColor = "#8f9daa";
 
 const nodeWidth: number = FLOW_NODE_SIZES.defaultWidth;
 const defaultNodeHeight: number = FLOW_NODE_SIZES.defaultHeight;
@@ -42,8 +42,8 @@ const estimatedGroupBottomPadding = 56;
 const collapsedGroupHeight = 28;
 
 const getBranchTextLineCount = (node: BuilderNode) => {
-  const data = node.data as BuilderNode['data'] & { content?: string };
-  const content = String(data?.content || 'No branch text added.');
+  const data = node.data as BuilderNode["data"] & { content?: string };
+  const content = String(data?.content || "No branch text added.");
   const explicitLines = content.split(/\r\n|\r|\n/).length;
   const wrappedLines = Math.ceil(content.length / 80);
 
@@ -66,7 +66,7 @@ const getBranchCaseTop = (node: BuilderNode) =>
 const getBranchFirstChildY = (node: BuilderNode) => getBranchCaseTop(node) + 56;
 
 export const defaultEdgeOptions = {
-  type: 'default',
+  type: "default",
   markerEnd: { type: MarkerType.ArrowClosed, color: lineColor },
   style: { stroke: lineColor, strokeWidth: 1.35 },
 };
@@ -107,8 +107,8 @@ const getOutgoingEdges = (nodeId: string, edges: BuilderEdge[]) =>
         onSuccess: 1,
         onError: 2,
       };
-      const aHandle = String(a.sourceHandle || 'default');
-      const bHandle = String(b.sourceHandle || 'default');
+      const aHandle = String(a.sourceHandle || "default");
+      const bHandle = String(b.sourceHandle || "default");
       const aOrder = handleOrder[aHandle] ?? 100;
       const bOrder = handleOrder[bHandle] ?? 100;
 
@@ -118,7 +118,7 @@ const getOutgoingEdges = (nodeId: string, edges: BuilderEdge[]) =>
     });
 
 const normalizeSourceHandle = (sourceHandle?: string | null) =>
-  !sourceHandle || sourceHandle === 'default' ? null : sourceHandle;
+  !sourceHandle || sourceHandle === "default" ? null : sourceHandle;
 
 let displayEdgeCounter = 0;
 
@@ -131,7 +131,7 @@ export const createWorkflowEdge = ({
   target: string;
   sourceHandle?: string | null;
 }): BuilderEdge => ({
-  id: `reactflow__edge-${source}${sourceHandle || ''}-${target}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+  id: `reactflow__edge-${source}${sourceHandle || ""}-${target}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
   source,
   target,
   sourceHandle: normalizeSourceHandle(sourceHandle),
@@ -146,7 +146,7 @@ const createDisplayEdge = (
 ): BuilderEdge => {
   displayEdgeCounter += 1;
   return {
-    id: `flow-uipath-${source}${sourceHandle || ''}-${target}-${displayEdgeCounter}`,
+    id: `flow-uipath-${source}${sourceHandle || ""}-${target}-${displayEdgeCounter}`,
     source,
     target,
     sourceHandle: normalizeSourceHandle(sourceHandle),
@@ -164,7 +164,7 @@ const createEndDisplayEdge = (
 
   return {
     ...edge,
-    type: 'endMerge',
+    type: "endMerge",
     markerEnd: undefined,
   };
 };
@@ -178,24 +178,24 @@ const createFanoutDisplayEdge = (
 
   return {
     ...edge,
-    type: 'fanoutCurve',
+    type: "fanoutCurve",
   };
 };
 
 const getBranchHandles = (node: BuilderNode) => {
   const data = node.data || {};
 
-  if (node.type === 'api') return ['onSuccess', 'onError'];
+  if (node.type === "api") return ["onSuccess", "onError"];
 
-  if (node.type !== 'branch') return ['default'];
+  if (node.type !== "branch") return ["default"];
 
-  if (data.evaluationType === 'CONDITION' && data.conditions?.length) {
+  if (data.evaluationType === "CONDITION" && data.conditions?.length) {
     return [
       ...data.conditions.map(
         (condition, index) =>
           data.replies?.[index]?.value || condition.id || `condition-${index}`,
       ),
-      'default',
+      "default",
     ];
   }
 
@@ -203,12 +203,12 @@ const getBranchHandles = (node: BuilderNode) => {
     return data.replies.map((reply, index) => reply.value || `reply-${index}`);
   }
 
-  return ['default'];
+  return ["default"];
 };
 
 const getApiHandleRatio = (handleId: string) => {
-  if (handleId === 'onSuccess') return 0.35;
-  if (handleId === 'onError') return 0.65;
+  if (handleId === "onSuccess") return 0.35;
+  if (handleId === "onError") return 0.65;
 
   return 0.5;
 };
@@ -261,26 +261,26 @@ export const buildTopDownFlow = ({
 
     return {
       width:
-        (node?.type === 'scenario' ? scenarioWidthById.get(nodeId) : null) ||
-        (node?.type === 'branch' ? branchWidthById.get(nodeId) : null) ||
+        (node?.type === "scenario" ? scenarioWidthById.get(nodeId) : null) ||
+        (node?.type === "branch" ? branchWidthById.get(nodeId) : null) ||
         nodeSizes[nodeId]?.width ||
         Number(nodeData.flowScenarioWidth || nodeStyle.width) ||
         nodeWidth,
       height:
-        (node?.type === 'scenario' ? scenarioHeightById.get(nodeId) : null) ||
-        (node?.type === 'branch' ? branchHeightById.get(nodeId) : null) ||
+        (node?.type === "scenario" ? scenarioHeightById.get(nodeId) : null) ||
+        (node?.type === "branch" ? branchHeightById.get(nodeId) : null) ||
         nodeSizes[nodeId]?.height ||
         Number(nodeData.flowScenarioHeight || nodeStyle.height) ||
         defaultNodeHeight,
     };
   };
   const isCollapsedContainer = (node?: BuilderNode) =>
-    (node?.type === 'selectionGroup' && node.data?.flowCollapsed === true) ||
-    node?.type === 'scenario';
+    (node?.type === "selectionGroup" && node.data?.flowCollapsed === true) ||
+    node?.type === "scenario";
   const isCollapsedGroup = (node?: BuilderNode) =>
-    (node?.type === 'selectionGroup' ||
-      node?.type === 'group' ||
-      node?.type === 'groupNode') &&
+    (node?.type === "selectionGroup" ||
+      node?.type === "group" ||
+      node?.type === "groupNode") &&
     node.data?.flowCollapsed === true;
   const isScenarioDescendant = (node?: BuilderNode) => {
     let parentId = node?.parentNode;
@@ -289,10 +289,10 @@ export const buildTopDownFlow = ({
       const parentNode = allNodesById.get(parentId);
       if (!parentNode) return false;
       if (
-        parentNode.type === 'scenario' ||
-        parentNode.type === 'group' ||
-        parentNode.type === 'groupNode' ||
-        parentNode.type === 'selectionGroup'
+        parentNode.type === "scenario" ||
+        parentNode.type === "group" ||
+        parentNode.type === "groupNode" ||
+        parentNode.type === "selectionGroup"
       )
         return true;
       parentId = parentNode.parentNode;
@@ -303,10 +303,10 @@ export const buildTopDownFlow = ({
   const getAncestorContainer = (
     node?: { parentNode?: string | null },
     containerTypes: string[] = [
-      'selectionGroup',
-      'scenario',
-      'group',
-      'groupNode',
+      "selectionGroup",
+      "scenario",
+      "group",
+      "groupNode",
     ],
   ) => {
     let parentId = node?.parentNode;
@@ -476,15 +476,15 @@ export const buildTopDownFlow = ({
     const childById = new Map(children.map((child) => [child.id, child]));
     const measureCache = new Map<string, number>();
     const getScenarioChildSize = (node: BuilderNode): NodeSize => {
-      if (node.type === 'scenario') {
+      if (node.type === "scenario") {
         layoutScenarioChildren(node);
         return getNodeSize(node.id);
       }
 
       if (
-        node.type === 'selectionGroup' ||
-        node.type === 'group' ||
-        node.type === 'groupNode'
+        node.type === "selectionGroup" ||
+        node.type === "group" ||
+        node.type === "groupNode"
       ) {
         return estimateGroupDisplaySize(node);
       }
@@ -524,7 +524,7 @@ export const buildTopDownFlow = ({
           ? measureScenarioSubtree(edge.target, nextVisited)
           : nodeWidth;
       });
-      if (node.type === 'branch') {
+      if (node.type === "branch") {
         const lanesWidth =
           childWidths.reduce((sum, width) => sum + width, 0) +
           branchLaneGapX * Math.max(0, childWidths.length - 1);
@@ -556,7 +556,7 @@ export const buildTopDownFlow = ({
         branchHeightById.set(node.id, branchMinHeight);
       }
       const subtreeWidth = Math.max(
-        node.type === 'branch'
+        node.type === "branch"
           ? branchWidthById.get(node.id) || size.width
           : size.width,
         childWidths.reduce((sum, width) => sum + width, 0) +
@@ -612,7 +612,7 @@ export const buildTopDownFlow = ({
         const edge = getChildEdgeForHandle(nodeId, handleId);
         const laneWidth = childWidths[index];
         const childCenterX =
-          node.type === 'branch'
+          node.type === "branch"
             ? position.x +
               (branchCaseLeftsById.get(node.id)?.[index] || 0) +
               (branchCaseWidthsById.get(node.id)?.[index] || laneWidth) / 2
@@ -751,16 +751,16 @@ export const buildTopDownFlow = ({
     ): NodeSize => {
       if (visitedChild.has(childNode.id)) return getNodeSize(childNode.id);
 
-      if (childNode.type === 'branch') {
+      if (childNode.type === "branch") {
         layoutBranch(childNode, visitedChild);
         return getBranchDisplaySize(childNode.id);
       }
 
-      if (childNode.type === 'selectionGroup') {
+      if (childNode.type === "selectionGroup") {
         return estimateGroupDisplaySize(childNode, nextVisitedGroup);
       }
 
-      if (childNode.type === 'scenario') {
+      if (childNode.type === "scenario") {
         layoutScenarioChildren(childNode);
         return getNodeSize(childNode.id);
       }
@@ -805,7 +805,7 @@ export const buildTopDownFlow = ({
 
   nodes
     .filter(
-      (node) => node.type === 'scenario' && !isHiddenByCollapsedAncestor(node),
+      (node) => node.type === "scenario" && !isHiddenByCollapsedAncestor(node),
     )
     .forEach((scenarioNode) => layoutScenarioChildren(scenarioNode));
 
@@ -818,16 +818,16 @@ export const buildTopDownFlow = ({
     const node = allNodesById.get(nodeId);
     if (!node) return nodeWidth;
 
-    if (node.type === 'branch') {
+    if (node.type === "branch") {
       layoutBranch(node, visitedSubtree);
       return getBranchDisplaySize(node.id).width;
     }
 
-    if (node.type === 'selectionGroup') {
+    if (node.type === "selectionGroup") {
       return getBranchEmbeddedGroupSize(node).width;
     }
 
-    if (node.type === 'scenario') {
+    if (node.type === "scenario") {
       layoutScenarioChildren(node);
       return getNodeSize(node.id).width;
     }
@@ -914,16 +914,16 @@ export const buildTopDownFlow = ({
     ): number => {
       if (visitedSubtree.has(childNode.id)) return y;
 
-      if (childNode.type === 'branch') {
+      if (childNode.type === "branch") {
         layoutBranch(childNode, visitedSubtree);
       }
 
       const childSize =
-        childNode.type === 'branch'
+        childNode.type === "branch"
           ? getBranchDisplaySize(childNode.id)
-          : childNode.type === 'selectionGroup'
+          : childNode.type === "selectionGroup"
             ? getBranchEmbeddedGroupSize(childNode)
-            : childNode.type === 'scenario'
+            : childNode.type === "scenario"
               ? (() => {
                   layoutScenarioChildren(childNode);
                   return getNodeSize(childNode.id);
@@ -944,7 +944,7 @@ export const buildTopDownFlow = ({
           : createDisplayEdge(incomingAddNodeId, childNode.id),
       );
 
-      if (childNode.type === 'branch') {
+      if (childNode.type === "branch") {
         return y + childSize.height;
       }
 
@@ -974,9 +974,9 @@ export const buildTopDownFlow = ({
 
         branchAddNodes.push({
           id: addNodeId,
-          type: 'add',
+          type: "add",
           parentNode: branchNode.id,
-          extent: 'parent',
+          extent: "parent",
           position: {
             x: childLaneCenterX - addNodeSize / 2,
             y: addY,
@@ -994,7 +994,7 @@ export const buildTopDownFlow = ({
           },
         });
         branchDisplayEdges.push(
-          childNode.type === 'api'
+          childNode.type === "api"
             ? createFanoutDisplayEdge(childNode.id, addNodeId, sourceHandle)
             : createDisplayEdge(childNode.id, addNodeId, sourceHandle),
         );
@@ -1010,7 +1010,7 @@ export const buildTopDownFlow = ({
                 y + childSize.height + verticalGap,
                 addNodeId,
                 nextVisitedSubtree,
-                childNode.type === 'api',
+                childNode.type === "api",
               ),
             );
           }
@@ -1031,9 +1031,9 @@ export const buildTopDownFlow = ({
 
       branchAddNodes.push({
         id: addNodeId,
-        type: 'add',
+        type: "add",
         parentNode: branchNode.id,
-        extent: 'parent',
+        extent: "parent",
         position: {
           x: laneCenterX - addNodeSize / 2,
           y: branchAddY,
@@ -1087,7 +1087,7 @@ export const buildTopDownFlow = ({
   nodes
     .filter(
       (node) =>
-        node.type === 'branch' &&
+        node.type === "branch" &&
         !isScenarioDescendant(node) &&
         !isHiddenByCollapsedAncestor(node),
     )
@@ -1108,7 +1108,7 @@ export const buildTopDownFlow = ({
     const node = allNodesById.get(nodeId);
     if (!node) return nodeWidth;
 
-    if (node.type === 'branch') {
+    if (node.type === "branch") {
       layoutBranch(node, visited);
       const width = Math.max(
         branchWidthById.get(node.id) || nodeWidth,
@@ -1118,7 +1118,7 @@ export const buildTopDownFlow = ({
       return width;
     }
 
-    if (node.type === 'selectionGroup') {
+    if (node.type === "selectionGroup") {
       const estimated = estimateGroupDisplaySize(node);
       const width = Math.max(estimated.width, getNodeSize(node.id).width);
 
@@ -1182,9 +1182,9 @@ export const buildTopDownFlow = ({
     if (!node) return;
 
     const size =
-      node.type === 'branch'
+      node.type === "branch"
         ? getBranchDisplaySize(nodeId)
-        : node.type === 'selectionGroup'
+        : node.type === "selectionGroup"
           ? {
               width: Math.max(
                 estimateGroupDisplaySize(node).width,
@@ -1209,7 +1209,7 @@ export const buildTopDownFlow = ({
 
     const nextVisited = new Set(visited);
     nextVisited.add(nodeId);
-    if (allNodesById.get(nodeId)?.type === 'branch') return;
+    if (allNodesById.get(nodeId)?.type === "branch") return;
 
     const outgoingEdges = getOutgoingEdges(nodeId, edges);
     const handles = getBranchHandles(node);
@@ -1243,7 +1243,7 @@ export const buildTopDownFlow = ({
     let nextX = centerX - totalWidth / 2;
     const hasVisibleChild = laneTargetIds.some(Boolean);
 
-    if (node.type === 'api' && hasVisibleChild) {
+    if (node.type === "api" && hasVisibleChild) {
       minGapToNextDepth.set(
         depth,
         Math.max(
@@ -1305,9 +1305,9 @@ export const buildTopDownFlow = ({
 
   const getDisplayNodeSize = (node: BuilderNode): NodeSize => {
     if (
-      node.type === 'selectionGroup' ||
-      node.type === 'group' ||
-      node.type === 'groupNode'
+      node.type === "selectionGroup" ||
+      node.type === "group" ||
+      node.type === "groupNode"
     ) {
       layoutGroup(node);
       return {
@@ -1316,12 +1316,12 @@ export const buildTopDownFlow = ({
       };
     }
 
-    if (node.type === 'branch') {
+    if (node.type === "branch") {
       layoutBranch(node);
       return getBranchDisplaySize(node.id);
     }
 
-    if (node.type === 'scenario') {
+    if (node.type === "scenario") {
       layoutScenarioChildren(node);
       return getNodeSize(node.id);
     }
@@ -1373,9 +1373,9 @@ export const buildTopDownFlow = ({
     groupChildren
       .filter(
         (childNode) =>
-          childNode.type === 'selectionGroup' ||
-          childNode.type === 'group' ||
-          childNode.type === 'groupNode',
+          childNode.type === "selectionGroup" ||
+          childNode.type === "group" ||
+          childNode.type === "groupNode",
       )
       .forEach((childGroup) => layoutGroup(childGroup, nextVisited));
 
@@ -1405,7 +1405,7 @@ export const buildTopDownFlow = ({
       const node = allNodesById.get(nodeId);
       if (!node) return nodeWidth;
 
-      if (node.type === 'branch') {
+      if (node.type === "branch") {
         const width = getDisplayNodeSize(node).width;
         groupMeasureCache.set(nodeId, width);
         return width;
@@ -1450,9 +1450,9 @@ export const buildTopDownFlow = ({
 
     groupChildAddNodes.push({
       id: firstAddNodeId,
-      type: 'add',
+      type: "add",
       parentNode: groupNode.id,
-      extent: 'parent',
+      extent: "parent",
       position: {
         x: groupWidth / 2 - addNodeSize / 2,
         y: groupFirstAddY,
@@ -1491,7 +1491,7 @@ export const buildTopDownFlow = ({
           : createDisplayEdge(incomingAddNodeId, childNode.id),
       );
 
-      if (childNode.type === 'branch') {
+      if (childNode.type === "branch") {
         return;
       }
 
@@ -1529,9 +1529,9 @@ export const buildTopDownFlow = ({
 
         groupChildAddNodes.push({
           id: addNodeId,
-          type: 'add',
+          type: "add",
           parentNode: groupNode.id,
-          extent: 'parent',
+          extent: "parent",
           position: {
             x: laneCenterX - addNodeSize / 2,
             y: childBottom + edgeSegmentLength,
@@ -1549,7 +1549,7 @@ export const buildTopDownFlow = ({
         });
 
         groupChildEdges.push(
-          childNode.type === 'api'
+          childNode.type === "api"
             ? createFanoutDisplayEdge(childNode.id, addNodeId, sourceHandle)
             : createDisplayEdge(childNode.id, addNodeId, sourceHandle),
         );
@@ -1563,7 +1563,7 @@ export const buildTopDownFlow = ({
               childBottom + verticalGap,
               addNodeId,
               nextVisitedSubtree,
-              childNode.type === 'api',
+              childNode.type === "api",
             );
           }
         } else {
@@ -1615,7 +1615,7 @@ export const buildTopDownFlow = ({
   nodes
     .filter(
       (node) =>
-        node.type === 'selectionGroup' && !isHiddenByCollapsedAncestor(node),
+        node.type === "selectionGroup" && !isHiddenByCollapsedAncestor(node),
     )
     .forEach((groupNode) => layoutGroup(groupNode));
 
@@ -1632,7 +1632,7 @@ export const buildTopDownFlow = ({
         return false;
       }
 
-      return allNodesById.get(sourceNode.parentNode)?.type === 'scenario';
+      return allNodesById.get(sourceNode.parentNode)?.type === "scenario";
     })
     .map((edge) => ({
       ...createDisplayEdge(edge.source, edge.target, edge.sourceHandle),
@@ -1645,7 +1645,7 @@ export const buildTopDownFlow = ({
       ? allNodesById.get(target.sourceId)
       : null;
 
-    if (sourceNode?.type !== 'selectionGroup') return;
+    if (sourceNode?.type !== "selectionGroup") return;
     if (!addNode.parentNode || sourceNode.parentNode === addNode.parentNode) {
       return;
     }
@@ -1717,7 +1717,7 @@ export const buildTopDownFlow = ({
   const displayNodes: Node[] = [
     {
       id: START_NODE_ID,
-      type: 'start',
+      type: "start",
       position: { x: rootWidth / 2 - 27, y: 32 },
       draggable: false,
       selectable: false,
@@ -1725,7 +1725,7 @@ export const buildTopDownFlow = ({
     },
     {
       id: START_ADD_NODE_ID,
-      type: 'add',
+      type: "add",
       position: {
         x: rootWidth / 2 - addNodeSize / 2,
         y: 32 + startSize.height + edgeSegmentLength,
@@ -1742,7 +1742,7 @@ export const buildTopDownFlow = ({
       .map((node) => ({
         ...node,
         data:
-          node.type === 'selectionGroup'
+          node.type === "selectionGroup"
             ? {
                 ...node.data,
                 onAddGroupNode: (groupId: string) =>
@@ -1754,7 +1754,7 @@ export const buildTopDownFlow = ({
                   groupWidthById.get(node.id) ||
                   branchEmbeddedGroupWidthById.get(node.id),
               }
-            : node.type === 'scenario'
+            : node.type === "scenario"
               ? (() => {
                   const scenarioData = (node.data || {}) as Record<
                     string,
@@ -1777,7 +1777,7 @@ export const buildTopDownFlow = ({
                       scenarioStyle.width,
                   };
                 })()
-              : node.type === 'branch'
+              : node.type === "branch"
                 ? {
                     ...node.data,
                     flowBranchHeight: branchHeightById.get(node.id),
@@ -1799,7 +1799,7 @@ export const buildTopDownFlow = ({
         extent:
           canUseDisplayParent(node.id, node.parentNode) ||
           canUseDisplayParent(node.id, branchChildParentById.get(node.id))
-            ? ('parent' as const)
+            ? ("parent" as const)
             : undefined,
         position: getBranchChildDisplayPosition(node) ||
           scenarioChildPositioned.get(node.id) ||
@@ -1828,7 +1828,7 @@ export const buildTopDownFlow = ({
     if (
       branchEmbeddedNodeIds.has(node.id) ||
       isHiddenByCollapsedAncestor(node) ||
-      node.type === 'branch'
+      node.type === "branch"
     ) {
       return;
     }
@@ -1836,7 +1836,7 @@ export const buildTopDownFlow = ({
     const handles = getBranchHandles(node);
     const existingEdges = getOutgoingEdges(node.id, edges);
     const nodeSize =
-      node.type === 'selectionGroup'
+      node.type === "selectionGroup"
         ? getDisplayNodeSize(node)
         : getNodeSize(node.id);
 
@@ -1848,16 +1848,16 @@ export const buildTopDownFlow = ({
       const nodePosition = positioned.get(node.id) || node.position;
       const addNodeId = `__flow_uipath_add__${node.id}__${handleId}`;
       const offset =
-        node.type === 'api'
+        node.type === "api"
           ? getApiHandleRatio(handleId) * nodeSize.width - nodeSize.width / 2
-          : node.type === 'branch'
+          : node.type === "branch"
             ? ((index + 1) / (handles.length + 1)) * nodeSize.width -
               nodeSize.width / 2
             : 0;
 
       displayNodes.push({
         id: addNodeId,
-        type: 'add',
+        type: "add",
         position: {
           x:
             (nodePosition?.x || 0) +
@@ -1881,7 +1881,7 @@ export const buildTopDownFlow = ({
       displayEdges.push(createDisplayEdge(node.id, addNodeId, sourceHandle));
       if (existingEdge?.target) {
         displayEdges.push(
-          node.type === 'api'
+          node.type === "api"
             ? createFanoutDisplayEdge(addNodeId, existingEdge.target)
             : createDisplayEdge(addNodeId, existingEdge.target),
         );
@@ -1891,7 +1891,7 @@ export const buildTopDownFlow = ({
 
   const terminalAddNodes = displayNodes.filter(
     (node): node is Node<AddNodeData> => {
-      if (node.type !== 'add') return false;
+      if (node.type !== "add") return false;
       if (displayEdges.some((edge) => edge.source === node.id)) return false;
       if (!startNode && node.id === START_ADD_NODE_ID) return true;
 
@@ -1922,13 +1922,13 @@ export const buildTopDownFlow = ({
       flowGroupHeight?: number;
     };
 
-    if (typeof node.height === 'number') return node.height;
-    if (typeof node.style?.height === 'number') return node.style.height;
-    if (node.type === 'add') return addNodeSize;
-    if (node.type === 'start') return 54;
-    if (node.type === 'branch')
+    if (typeof node.height === "number") return node.height;
+    if (typeof node.style?.height === "number") return node.style.height;
+    if (node.type === "add") return addNodeSize;
+    if (node.type === "start") return 54;
+    if (node.type === "branch")
       return data?.flowBranchHeight || defaultNodeHeight;
-    if (node.type === 'selectionGroup') {
+    if (node.type === "selectionGroup") {
       return data?.flowGroupHeight || defaultNodeHeight;
     }
 
@@ -1979,7 +1979,7 @@ export const buildTopDownFlow = ({
 
   displayNodes.push({
     id: END_NODE_ID,
-    type: 'end',
+    type: "end",
     position: { x: terminalCenterX - 27, y: endY },
     draggable: false,
     selectable: false,

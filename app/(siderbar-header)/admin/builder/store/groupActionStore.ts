@@ -1,8 +1,8 @@
-import useBuilderHistoryStore from './historyStore';
+import useBuilderHistoryStore from "./historyStore";
 
-import { makeSnapshot, type StoreState } from './index';
+import { makeSnapshot, type StoreState } from "./index";
 
-import type { Edge, Node } from 'reactflow';
+import type { Edge, Node } from "reactflow";
 
 type SetState = (
   partial:
@@ -12,14 +12,14 @@ type SetState = (
 
 type GetState = () => StoreState;
 
-type GroupActions = Pick<StoreState, 'groupSelectedNodes' | 'ungroupNode'>;
+type GroupActions = Pick<StoreState, "groupSelectedNodes" | "ungroupNode">;
 
 export function createGroupActionStore(
   set: SetState,
   get: GetState,
 ): GroupActions {
   return {
-    groupSelectedNodes: (groupLabel = 'Selected Group') => {
+    groupSelectedNodes: (groupLabel = "Selected Group") => {
       useBuilderHistoryStore.getState().push(makeSnapshot(get()));
 
       const { nodes: curNodes, edges: curEdges } = get();
@@ -28,12 +28,12 @@ export function createGroupActionStore(
         (node) =>
           node.selected &&
           !node.parentNode &&
-          node.type !== 'scenario' &&
-          node.type !== 'selectionGroup',
+          node.type !== "scenario" &&
+          node.type !== "selectionGroup",
       );
 
       if (selectedNodes.length < 2) {
-        alert('그룹화하려면 2개 이상의 최상위 노드를 선택해야 합니다.');
+        alert("그룹화하려면 2개 이상의 최상위 노드를 선택해야 합니다.");
         return;
       }
 
@@ -49,7 +49,7 @@ export function createGroupActionStore(
 
       if (startCandidates.length > 1) {
         alert(
-          '그룹 내 시작 노드가 2개 이상입니다. 연결을 정리한 뒤 다시 시도하세요.',
+          "그룹 내 시작 노드가 2개 이상입니다. 연결을 정리한 뒤 다시 시도하세요.",
         );
         return;
       }
@@ -90,7 +90,7 @@ export function createGroupActionStore(
       const groupId = `group-selected-${Date.now()}`;
       const groupNode: Node<any> = {
         id: groupId,
-        type: 'selectionGroup',
+        type: "selectionGroup",
         position: { x: minX - PADDING_X, y: minY - PADDING_Y },
         data: {
           label: groupLabel,
@@ -119,7 +119,7 @@ export function createGroupActionStore(
         return {
           ...node,
           parentNode: groupId,
-          extent: 'parent',
+          extent: "parent",
           position: {
             x: node.position.x - (minX - PADDING_X),
             y: node.position.y - (minY - PADDING_Y),

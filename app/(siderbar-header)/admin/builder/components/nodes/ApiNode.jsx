@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import { Handle, Position } from 'reactflow';
-import { useModal } from '@/providers/ModalProvider';
-import styles from './ChatNodes.module.css';
-import { useBuilderStore } from '../../store/index';
+import React, { useState } from "react";
+import { Handle, Position } from "reactflow";
+import { useModal } from "@/providers/ModalProvider";
+import styles from "./ChatNodes.module.css";
+import { useBuilderStore } from "../../store/index";
 // (AnchorIcon, StartNodeIcon 임포트 제거)
-import { PlayIcon } from '../icons/Icons';
-import * as backendService from '../../services/backendService';
-import NodeWrapper from './NodeWrapper';
+import { PlayIcon } from "../icons/Icons";
+import * as backendService from "../../services/backendService";
+import NodeWrapper from "./NodeWrapper";
 
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
 
 function ApiNode({ id, data }) {
   const { t } = useTranslation();
@@ -52,29 +52,29 @@ function ApiNode({ id, data }) {
     <button
       onClick={handleApiTest}
       className={styles.playButton}
-      title={t('Test API')}
+      title={t("Test API")}
       disabled={isTesting}
     >
       {isTesting ? <span className={styles.buttonSpinner} /> : <PlayIcon />}
     </button>
   ) : null;
 
-  const posSuccess = data?.outputPositions?.['onSuccess'] || 'right';
-  const posError = data?.outputPositions?.['onError'] || 'bottom';
+  const posSuccess = data?.outputPositions?.["onSuccess"] || "right";
+  const posError = data?.outputPositions?.["onError"] || "bottom";
 
-  const isSuccessBottom = posSuccess === 'bottom';
-  const isErrorBottom = posError === 'bottom';
+  const isSuccessBottom = posSuccess === "bottom";
+  const isErrorBottom = posError === "bottom";
 
   const bothRight = !isSuccessBottom && !isErrorBottom;
   const bothBottom = isSuccessBottom && isErrorBottom;
 
   const successHandleStyle = isSuccessBottom
-    ? { left: bothBottom ? '35%' : '50%', background: '#2ecc71' }
-    : { top: bothRight ? '35%' : '50%', background: '#2ecc71' };
+    ? { left: bothBottom ? "35%" : "50%", background: "#2ecc71" }
+    : { top: bothRight ? "35%" : "50%", background: "#2ecc71" };
 
   const errorHandleStyle = isErrorBottom
-    ? { left: bothBottom ? '65%' : '50%', background: '#e74c3c' }
-    : { top: bothRight ? '65%' : '50%', background: '#e74c3c' };
+    ? { left: bothBottom ? "65%" : "50%", background: "#e74c3c" }
+    : { top: bothRight ? "65%" : "50%", background: "#e74c3c" };
 
   const customHandles = (
     <>
@@ -88,25 +88,25 @@ function ApiNode({ id, data }) {
         style={
           isSuccessBottom
             ? {
-                position: 'absolute',
-                left: bothBottom ? '35%' : '50%',
-                bottom: '-20px',
-                transform: 'translateX(-50%)',
-                fontSize: '0.7rem',
-                color: '#2ecc71',
-                whiteSpace: 'nowrap',
+                position: "absolute",
+                left: bothBottom ? "35%" : "50%",
+                bottom: "-20px",
+                transform: "translateX(-50%)",
+                fontSize: "0.7rem",
+                color: "#2ecc71",
+                whiteSpace: "nowrap",
               }
             : {
-                position: 'absolute',
-                right: '-70px',
-                top: bothRight ? '35%' : '50%',
-                transform: 'translateY(-50%)',
-                fontSize: '0.7rem',
-                color: '#2ecc71',
+                position: "absolute",
+                right: "-70px",
+                top: bothRight ? "35%" : "50%",
+                transform: "translateY(-50%)",
+                fontSize: "0.7rem",
+                color: "#2ecc71",
               }
         }
       >
-        {t('On Success')}
+        {t("On Success")}
       </span>
 
       <Handle
@@ -119,25 +119,25 @@ function ApiNode({ id, data }) {
         style={
           isErrorBottom
             ? {
-                position: 'absolute',
-                left: bothBottom ? '65%' : '50%',
-                bottom: '-20px',
-                transform: 'translateX(-50%)',
-                fontSize: '0.7rem',
-                color: '#e74c3c',
-                whiteSpace: 'nowrap',
+                position: "absolute",
+                left: bothBottom ? "65%" : "50%",
+                bottom: "-20px",
+                transform: "translateX(-50%)",
+                fontSize: "0.7rem",
+                color: "#e74c3c",
+                whiteSpace: "nowrap",
               }
             : {
-                position: 'absolute',
-                right: '-60px',
-                top: bothRight ? '65%' : '50%',
-                transform: 'translateY(-50%)',
-                fontSize: '0.7rem',
-                color: '#e74c3c',
+                position: "absolute",
+                right: "-60px",
+                top: bothRight ? "65%" : "50%",
+                transform: "translateY(-50%)",
+                fontSize: "0.7rem",
+                color: "#e74c3c",
               }
         }
       >
-        {t('On Error')}
+        {t("On Error")}
       </span>
     </>
   );
@@ -146,7 +146,7 @@ function ApiNode({ id, data }) {
     // 6. NodeWrapper로 감싸기
     <NodeWrapper
       id={id}
-      typeLabel={isMulti ? `API (${apiCount} calls)` : 'API'}
+      typeLabel={isMulti ? `API (${apiCount} calls)` : "API"}
       icon={null} // (ApiNode는 아이콘이 없었음)
       nodeColor={nodeColor}
       textColor={textColor}
@@ -158,27 +158,27 @@ function ApiNode({ id, data }) {
         <div className={styles.section}>
           {data.apis?.map((api) => (
             <div key={api.id} className={styles.previewBox}>
-              {api.name || t('API Call')}
+              {api.name || t("API Call")}
             </div>
           ))}
           {(!data.apis || data.apis.length === 0) && (
             <div className={styles.formElementsPlaceholder}>
-              {t('No API calls configured')}.
+              {t("No API calls configured")}.
             </div>
           )}
         </div>
       ) : (
         <>
           <div className={styles.section}>
-            <span className={styles.sectionTitle}>{t('Method')}</span>
+            <span className={styles.sectionTitle}>{t("Method")}</span>
             <input
               className={styles.textInput}
-              value={data.method || 'GET'}
+              value={data.method || "GET"}
               readOnly
             />
           </div>
           <div className={styles.section}>
-            <span className={styles.sectionTitle}>{t('URL')}</span>
+            <span className={styles.sectionTitle}>{t("URL")}</span>
             <textarea
               className={styles.textInput}
               value={data.url}

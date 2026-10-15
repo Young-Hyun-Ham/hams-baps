@@ -8,9 +8,9 @@ import {
   TableCell,
   TableContainer,
   TableRow,
-} from '@mui/material';
+} from "@mui/material";
 
-import { GridElement } from '../type';
+import { GridElement } from "../type";
 
 function GridDataEditor({
   element,
@@ -24,7 +24,7 @@ function GridDataEditor({
   const updateCell = (index: number, value: string) => {
     const nextData = Array.from(
       { length: element.rows * element.columns },
-      (_, cellIndex) => element.data[cellIndex] ?? '',
+      (_, cellIndex) => element.data[cellIndex] ?? "",
     );
     nextData[index] = value;
     onChange(nextData);
@@ -36,7 +36,7 @@ function GridDataEditor({
         variant="caption"
         fontWeight={700}
         color="text.secondary"
-        sx={{ display: 'block', mb: 0.75 }}
+        sx={{ display: "block", mb: 0.75 }}
       >
         Data
       </Typography>
@@ -44,19 +44,19 @@ function GridDataEditor({
         component={Paper}
         variant="outlined"
         sx={{
-          maxWidth: '100%',
-          overflow: 'auto',
+          maxWidth: "100%",
+          overflow: "auto",
           borderRadius: 1,
         }}
       >
         <Table
           size="small"
           sx={{
-            tableLayout: 'fixed',
+            tableLayout: "fixed",
             minWidth: Math.max(260, element.columns * 96),
-            '& .MuiTableCell-root': {
+            "& .MuiTableCell-root": {
               p: 0.75,
-              borderColor: 'grey.200',
+              borderColor: "grey.200",
             },
           }}
         >
@@ -71,20 +71,20 @@ function GridDataEditor({
                       <TextField
                         size="small"
                         fullWidth
-                        value={element.data[index] ?? ''}
+                        value={element.data[index] ?? ""}
                         placeholder={`${rowIndex + 1},${columnIndex + 1}`}
                         onChange={(event) =>
                           !isReadonly && updateCell(index, event.target.value)
                         }
                         onKeyDown={(event) => event.stopPropagation()}
                         inputProps={{
-                          'aria-label': `Grid cell ${rowIndex + 1}, ${
+                          "aria-label": `Grid cell ${rowIndex + 1}, ${
                             columnIndex + 1
                           }`,
                         }}
                         sx={{
-                          '& .MuiOutlinedInput-root': {
-                            bgcolor: 'background.paper',
+                          "& .MuiOutlinedInput-root": {
+                            bgcolor: "background.paper",
                           },
                         }}
                       />

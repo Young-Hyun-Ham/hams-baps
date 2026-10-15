@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import CloseIcon from '@mui/icons-material/Close';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import SaveIcon from '@mui/icons-material/Save';
+import { useCallback, useEffect, useRef, useState } from "react";
+import CloseIcon from "@mui/icons-material/Close";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import SaveIcon from "@mui/icons-material/Save";
 import {
   Box,
   Button,
@@ -16,44 +16,44 @@ import {
   Select,
   Stack,
   Typography,
-} from '@mui/material';
-import { useTranslation } from 'react-i18next';
+} from "@mui/material";
+import { useTranslation } from "react-i18next";
 import ReactFlow, {
   Background,
   Controls,
   MiniMap,
   ReactFlowProvider,
   useReactFlow,
-} from 'reactflow';
-import 'reactflow/dist/style.css';
-import '@reactflow/node-resizer/dist/style.css';
+} from "reactflow";
+import "reactflow/dist/style.css";
+import "@reactflow/node-resizer/dist/style.css";
 
-import { Copy, Plus, Scissors, Trash } from 'lucide-react';
+import { Copy, Plus, Scissors, Trash } from "lucide-react";
 
-import { NodeControllerEditor } from '../NodeController';
-import ApiNode from '../nodes/ApiNode';
-import BranchNode from '../nodes/BranchNode';
-import DelayNode from '../nodes/DelayNode';
-import FixedMenuNode from '../nodes/FixedMenuNode';
-import FormNode from '../nodes/FormNode';
-import GroupNode from '../nodes/GroupNode';
-import IframeNode from '../nodes/IframeNode';
-import LinkNode from '../nodes/LinkNode';
-import LlmNode from '../nodes/LlmNode';
-import MessageNode from '../nodes/MessageNode';
-import ScenarioNode from '../nodes/ScenarioNode';
-import SetSlotNode from '../nodes/SetSlotNode';
-import SlotFillingNode from '../nodes/SlotFillingNode';
-import ToastNode from '../nodes/ToastNode';
-import CustomOrthogonalEdge from '../edges/CustomOrthogonalEdge';
-import { getScenarioVersion } from '../../services/fastApi';
-import { useBuilderStore } from '../../store/index';
-import styles from '../../components/Detail.module.css';
-import { BuilderNode, BuilderNodeData, InsertTarget } from '../../types/types';
-import ActivityPickerModal, { ActivityType } from './ActivityPickerModal';
-import { createNodeData } from '../../utils/nodeFactory';
+import { NodeControllerEditor } from "../NodeController";
+import ApiNode from "../nodes/ApiNode";
+import BranchNode from "../nodes/BranchNode";
+import DelayNode from "../nodes/DelayNode";
+import FixedMenuNode from "../nodes/FixedMenuNode";
+import FormNode from "../nodes/FormNode";
+import GroupNode from "../nodes/GroupNode";
+import IframeNode from "../nodes/IframeNode";
+import LinkNode from "../nodes/LinkNode";
+import LlmNode from "../nodes/LlmNode";
+import MessageNode from "../nodes/MessageNode";
+import ScenarioNode from "../nodes/ScenarioNode";
+import SetSlotNode from "../nodes/SetSlotNode";
+import SlotFillingNode from "../nodes/SlotFillingNode";
+import ToastNode from "../nodes/ToastNode";
+import CustomOrthogonalEdge from "../edges/CustomOrthogonalEdge";
+import { getScenarioVersion } from "../../services/fastApi";
+import { useBuilderStore } from "../../store/index";
+import styles from "../../components/Detail.module.css";
+import { BuilderNode, BuilderNodeData, InsertTarget } from "../../types/types";
+import ActivityPickerModal, { ActivityType } from "./ActivityPickerModal";
+import { createNodeData } from "../../utils/nodeFactory";
 
-import type { Edge, Node } from 'reactflow';
+import type { Edge, Node } from "reactflow";
 
 const nodeTypes = {
   message: MessageNode,
@@ -73,18 +73,18 @@ const nodeTypes = {
 };
 const edgeTypes = { orthogonal: CustomOrthogonalEdge };
 const editableNodeTypes = [
-  'message',
-  'form',
-  'branch',
-  'slotfilling',
-  'api',
-  'llm',
-  'setSlot',
-  'delay',
-  'fixedmenu',
-  'link',
-  'toast',
-  'iframe',
+  "message",
+  "form",
+  "branch",
+  "slotfilling",
+  "api",
+  "llm",
+  "setSlot",
+  "delay",
+  "fixedmenu",
+  "link",
+  "toast",
+  "iframe",
 ] as const;
 
 type Props = {
@@ -121,11 +121,11 @@ type ContextMenuState = {
 function EditorCanvas({
   scenario,
 }: {
-  scenario: NonNullable<Props['scenario']>;
+  scenario: NonNullable<Props["scenario"]>;
 }) {
   const { t } = useTranslation();
   const { screenToFlowPosition } = useReactFlow();
-  const [newNodeType, setNewNodeType] = useState('message');
+  const [newNodeType, setNewNodeType] = useState("message");
   const [saving, setSaving] = useState(false);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
@@ -159,7 +159,7 @@ function EditorCanvas({
       await saveScenario({
         ...scenario,
         name: scenario.name || scenario.scenario_nm,
-        job: scenario.job || 'Process',
+        job: scenario.job || "Process",
         version_yn: false,
       });
     } finally {
@@ -170,27 +170,27 @@ function EditorCanvas({
   // ========================================================================================================
   // add node 모달 팝업
   const [insertTarget, setInsertTarget] = useState<InsertTarget | null>(null);
-  const [activitySearch, setActivitySearch] = useState('');
+  const [activitySearch, setActivitySearch] = useState("");
   const [activityInsertPosition, setActivityInsertPosition] = useState<{
     x: number;
     y: number;
   } | null>(null);
   const [recentTypes, setRecentTypes] = useState<ActivityType[]>([
-    'message',
-    'setSlot',
-    'branch',
-    'form',
+    "message",
+    "setSlot",
+    "branch",
+    "form",
   ]);
 
   const closeActivityPicker = () => {
     setInsertTarget(null);
-    setActivitySearch('');
+    setActivitySearch("");
     setActivityInsertPosition(null);
   };
 
   const openActivityPicker = useCallback(async (target: InsertTarget) => {
     setInsertTarget(target);
-    setActivitySearch('');
+    setActivitySearch("");
   }, []);
 
   useEffect(() => {
@@ -202,11 +202,11 @@ function EditorCanvas({
       openActivityPicker({ parentId: groupId });
     };
 
-    window.addEventListener('flow-uipath:add-group-node', handleGroupNodeAdd);
+    window.addEventListener("flow-uipath:add-group-node", handleGroupNodeAdd);
 
     return () => {
       window.removeEventListener(
-        'flow-uipath:add-group-node',
+        "flow-uipath:add-group-node",
         handleGroupNodeAdd,
       );
     };
@@ -216,7 +216,7 @@ function EditorCanvas({
     if (!insertTarget) return;
     if (
       // unuseNodes.includes(type) ||
-      type === 'branch' &&
+      type === "branch" &&
       insertTarget.targetId
     )
       return;
@@ -262,14 +262,14 @@ function EditorCanvas({
       type,
       position,
       parentNode: parentNode?.id,
-      extent: parentNode ? 'parent' : undefined,
+      extent: parentNode ? "parent" : undefined,
       data: {
         ...data,
         flowCollapsed: false,
       },
       selected: true,
     };
-    const insertedNodeNextSourceHandle = type === 'api' ? 'onSuccess' : null;
+    const insertedNodeNextSourceHandle = type === "api" ? "onSuccess" : null;
 
     if (parentNode) {
       const groupChildren = nodes
@@ -379,7 +379,7 @@ function EditorCanvas({
   const getSafeMenuPosition = (
     clientX: number,
     clientY: number,
-    menuType: 'pane' | 'node' | 'edge',
+    menuType: "pane" | "node" | "edge",
   ) => {
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
@@ -410,7 +410,7 @@ function EditorCanvas({
       selected: false,
     }));
 
-    const { x, y } = getSafeMenuPosition(event.clientX, event.clientY, 'pane');
+    const { x, y } = getSafeMenuPosition(event.clientX, event.clientY, "pane");
     const flowPosition = screenToFlowPosition({
       x: event.clientX,
       y: event.clientY,
@@ -424,7 +424,7 @@ function EditorCanvas({
       x,
       y,
       flowPosition,
-      target: { type: 'pane' },
+      target: { type: "pane" },
     });
   };
 
@@ -437,7 +437,7 @@ function EditorCanvas({
       selected: false,
     }));
 
-    const { x, y } = getSafeMenuPosition(event.clientX, event.clientY, 'node');
+    const { x, y } = getSafeMenuPosition(event.clientX, event.clientY, "node");
     const flowPosition = screenToFlowPosition({
       x: event.clientX,
       y: event.clientY,
@@ -451,15 +451,15 @@ function EditorCanvas({
       x,
       y,
       flowPosition,
-      target: { type: 'node', id: node.id },
+      target: { type: "node", id: node.id },
     });
   };
 
   return (
-    <Box sx={{ display: 'flex', flex: 1, minWidth: 0, minHeight: 0 }}>
+    <Box sx={{ display: "flex", flex: 1, minWidth: 0, minHeight: 0 }}>
       <Box
         ref={reactFlowWrapper}
-        sx={{ position: 'relative', flex: 1, minWidth: 0 }}
+        sx={{ position: "relative", flex: 1, minWidth: 0 }}
       >
         <ReactFlow
           nodes={nodes}
@@ -473,7 +473,7 @@ function EditorCanvas({
           onPaneClick={() => setSelectedNodeId(null)}
           deleteKeyCode="Delete"
           fitView
-          defaultEdgeOptions={{ type: 'orthogonal' }}
+          defaultEdgeOptions={{ type: "orthogonal" }}
           // 마우스 우클릭 메뉴 custom 수정
           onPaneContextMenu={handlePaneContextMenu}
           onNodeContextMenu={handleNodeContextMenu}
@@ -500,12 +500,12 @@ function EditorCanvas({
               }}
             >
               <Plus size={16} className={styles.layerMenuIcon} />
-              <span>{t('Add Node')}</span>
+              <span>{t("Add Node")}</span>
             </button>
           </div>
         )}
         {/* 노드 우클릭 */}
-        {contextMenu.open && contextMenu.target?.type === 'node' && (
+        {contextMenu.open && contextMenu.target?.type === "node" && (
           <div
             className={styles.layerMenu}
             style={{ left: contextMenu.x, top: contextMenu.y }}
@@ -519,20 +519,20 @@ function EditorCanvas({
               }}
             >
               <Trash size={16} className={styles.layerMenuIcon} />
-              <span>{t('Delete Node')}</span>
+              <span>{t("Delete Node")}</span>
             </button>
           </div>
         )}
         <Stack
           direction="row"
           spacing={1}
-          sx={{ position: 'absolute', zIndex: 5, top: 12, left: 12 }}
+          sx={{ position: "absolute", zIndex: 5, top: 12, left: 12 }}
         >
           <Select
             size="small"
             value={newNodeType}
             onChange={(event) => setNewNodeType(event.target.value)}
-            sx={{ minWidth: 150, bgcolor: 'background.paper' }}
+            sx={{ minWidth: 150, bgcolor: "background.paper" }}
           >
             {editableNodeTypes.map((type) => (
               <MenuItem key={type} value={type}>
@@ -541,7 +541,7 @@ function EditorCanvas({
             ))}
           </Select>
           <Button variant="contained" onClick={handleAddNode}>
-            {t('Add Node')}
+            {t("Add Node")}
           </Button>
           <Button
             variant="outlined"
@@ -553,7 +553,7 @@ function EditorCanvas({
               setSelectedNodeId(null);
             }}
           >
-            {t('Delete')}
+            {t("Delete")}
           </Button>
           <Button
             variant="contained"
@@ -562,7 +562,7 @@ function EditorCanvas({
             disabled={saving}
             onClick={handleSave}
           >
-            {saving ? t('Saving...') : t('Save')}
+            {saving ? t("Saving...") : t("Save")}
           </Button>
         </Stack>
       </Box>
@@ -570,14 +570,14 @@ function EditorCanvas({
         sx={{
           width: 400,
           minWidth: 400,
-          overflow: 'auto',
+          overflow: "auto",
           borderLeft: 1,
-          borderColor: 'divider',
-          bgcolor: 'background.paper',
+          borderColor: "divider",
+          bgcolor: "background.paper",
         }}
       >
         <NodeControllerEditor
-          key={selectedNode?.id ?? 'empty'}
+          key={selectedNode?.id ?? "empty"}
           selectedNode={selectedNode}
         />
       </Box>
@@ -608,7 +608,7 @@ export default function ScenarioFlowEditorModal({
 }: Props) {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const snapshotRef = useRef<StoreSnapshot | null>(null);
 
   const restoreStore = useCallback(() => {
@@ -645,7 +645,7 @@ export default function ScenarioFlowEditorModal({
       .then(() => {
         if (!active) return null;
         setLoading(true);
-        setError('');
+        setError("");
         return getScenarioVersion({
           scenario_id: scenario.id,
           version_id: scenario.ltst_ver_id,
@@ -659,7 +659,7 @@ export default function ScenarioFlowEditorModal({
           startNodeId: result?.startNodeId ?? result?.start_node_id ?? null,
         });
       })
-      .catch(() => active && setError(t('Failed to load scenario data.')))
+      .catch(() => active && setError(t("Failed to load scenario data.")))
       .finally(() => active && setLoading(false));
     return () => {
       active = false;
@@ -670,29 +670,29 @@ export default function ScenarioFlowEditorModal({
     <Dialog open={isOpen} onClose={handleClose} fullScreen>
       <DialogTitle
         sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
           borderBottom: 1,
-          borderColor: 'divider',
+          borderColor: "divider",
           py: 1,
           pr: 1,
         }}
       >
-        {scenario?.name || scenario?.scenario_nm || t('Scenario Editor')}
-        <IconButton onClick={handleClose} aria-label={t('Close')}>
+        {scenario?.name || scenario?.scenario_nm || t("Scenario Editor")}
+        <IconButton onClick={handleClose} aria-label={t("Close")}>
           <CloseIcon />
         </IconButton>
       </DialogTitle>
-      <DialogContent sx={{ display: 'flex', flex: 1, minHeight: 0, p: 0 }}>
+      <DialogContent sx={{ display: "flex", flex: 1, minHeight: 0, p: 0 }}>
         {!scenario ? (
-          <Typography color="text.secondary" sx={{ m: 'auto' }}>
-            {t('Please select a scenario.')}
+          <Typography color="text.secondary" sx={{ m: "auto" }}>
+            {t("Please select a scenario.")}
           </Typography>
         ) : loading ? (
-          <CircularProgress sx={{ m: 'auto' }} />
+          <CircularProgress sx={{ m: "auto" }} />
         ) : error ? (
-          <Typography color="error" sx={{ m: 'auto' }}>
+          <Typography color="error" sx={{ m: "auto" }}>
             {error}
           </Typography>
         ) : (

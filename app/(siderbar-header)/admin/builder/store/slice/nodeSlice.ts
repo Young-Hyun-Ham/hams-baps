@@ -1,53 +1,53 @@
 /* @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 // app/(content-header)/builder/store/slice/nodeSlice.ts
 
-import { addEdge, applyNodeChanges, applyEdgeChanges } from 'reactflow';
+import { addEdge, applyNodeChanges, applyEdgeChanges } from "reactflow";
 
-import { createNodeData, createFormElement } from '../../utils/nodeFactory';
+import { createNodeData, createFormElement } from "../../utils/nodeFactory";
 import {
   fetchScenarioData,
   saveScenarioData,
-} from '../../services/backendService';
+} from "../../services/backendService";
 
 const defaultColors = {
-  message: '#f39c12',
-  form: '#9b59b6',
-  branch: '#2ecc71',
-  slotfilling: '#3498db',
-  api: '#e74c3c',
-  fixedmenu: '#e74c3c',
-  link: '#34495e',
-  llm: '#1abc9c',
-  toast: '#95a5a6',
-  iframe: '#596d82ff',
-  scenario: '#7f8c8d',
+  message: "#f39c12",
+  form: "#9b59b6",
+  branch: "#2ecc71",
+  slotfilling: "#3498db",
+  api: "#e74c3c",
+  fixedmenu: "#e74c3c",
+  link: "#34495e",
+  llm: "#1abc9c",
+  toast: "#95a5a6",
+  iframe: "#596d82ff",
+  scenario: "#7f8c8d",
 };
 
 const defaultTextColors = {
-  message: '#ffffff',
-  form: '#ffffff',
-  branch: '#ffffff',
-  slotfilling: '#ffffff',
-  api: '#ffffff',
-  fixedmenu: '#ffffff',
-  link: '#ffffff',
-  llm: '#ffffff',
-  toast: '#ffffff',
+  message: "#ffffff",
+  form: "#ffffff",
+  branch: "#ffffff",
+  slotfilling: "#ffffff",
+  api: "#ffffff",
+  fixedmenu: "#ffffff",
+  link: "#ffffff",
+  llm: "#ffffff",
+  toast: "#ffffff",
 };
 
 // 💡 [추가] 기본적으로 표시할 노드 타입 리스트
 const defaultVisibleNodeTypes = [
-  'message',
-  'form',
-  'branch',
-  'slotfilling',
-  'api',
-  'setSlot',
-  'delay',
-  'fixedmenu',
-  'link',
-  'iframe',
-  'scenario',
+  "message",
+  "form",
+  "branch",
+  "slotfilling",
+  "api",
+  "setSlot",
+  "delay",
+  "fixedmenu",
+  "link",
+  "iframe",
+  "scenario",
   // 'llm', // 기본 숨김
   // 'toast', // 기본 숨김
 ];
@@ -103,7 +103,7 @@ export const nodeSlice = (set: any, get: any) => ({
       if (!nodeToDelete) return state;
 
       const nodesToRemove = [nodeId];
-      if (nodeToDelete.type === 'scenario') {
+      if (nodeToDelete.type === "scenario") {
         const childNodes = state.nodes.filter(
           (n: any) => n.parentNode === nodeId,
         );
@@ -136,7 +136,7 @@ export const nodeSlice = (set: any, get: any) => ({
   toggleScenarioNode: (nodeId: any) => {
     set((state: any) => {
       const newNodes = state.nodes.map((n: any) => {
-        if (n.id === nodeId && n.type === 'scenario') {
+        if (n.id === nodeId && n.type === "scenario") {
           const isCollapsed = !(n.data.isCollapsed || false);
           const newStyle = { ...n.style };
 
@@ -252,12 +252,12 @@ export const nodeSlice = (set: any, get: any) => ({
           const nodeType = node.type;
           const newReply = {
             display:
-              nodeType === 'branch'
-                ? 'New Condition'
-                : nodeType === 'fixedmenu'
-                  ? 'New Menu'
-                  : 'New Reply',
-            value: `${nodeType === 'branch' ? 'cond' : nodeType === 'fixedmenu' ? 'menu' : 'val'}_${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+              nodeType === "branch"
+                ? "New Condition"
+                : nodeType === "fixedmenu"
+                  ? "New Menu"
+                  : "New Reply",
+            value: `${nodeType === "branch" ? "cond" : nodeType === "fixedmenu" ? "menu" : "val"}_${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
           };
           const newReplies = [...(node.data.replies || []), newReply];
           return { ...node, data: { ...node.data, replies: newReplies } };
@@ -297,7 +297,7 @@ export const nodeSlice = (set: any, get: any) => ({
   addElement: (nodeId: any, elementType: any) => {
     set((state: any) => ({
       nodes: state.nodes.map((node: any) => {
-        if (node.id === nodeId && node.type === 'form') {
+        if (node.id === nodeId && node.type === "form") {
           const newElement = createFormElement(elementType);
           const newElements = [...(node.data.elements || []), newElement];
           return { ...node, data: { ...node.data, elements: newElements } };
@@ -310,20 +310,20 @@ export const nodeSlice = (set: any, get: any) => ({
   updateElement: (nodeId: any, elementIndex: any, elementUpdate: any) => {
     set((state: any) => ({
       nodes: state.nodes.map((node: any) => {
-        if (node.id === nodeId && node.type === 'form') {
+        if (node.id === nodeId && node.type === "form") {
           const newElements = [...node.data.elements];
           const oldElement = newElements[elementIndex];
           const newElement = { ...oldElement, ...elementUpdate };
 
           if (
-            newElement.type === 'grid' &&
+            newElement.type === "grid" &&
             (oldElement.rows !== newElement.rows ||
               oldElement.columns !== newElement.columns)
           ) {
             const oldData = oldElement.data || [];
             const newRows = newElement.rows || 2;
             const newColumns = newElement.columns || 2;
-            const newData = Array(newRows * newColumns).fill('');
+            const newData = Array(newRows * newColumns).fill("");
 
             for (let r = 0; r < Math.min(oldElement.rows || 0, newRows); r++) {
               for (
@@ -352,7 +352,7 @@ export const nodeSlice = (set: any, get: any) => ({
   deleteElement: (nodeId: any, elementIndex: any) => {
     set((state: any) => ({
       nodes: state.nodes.map((node: any) => {
-        if (node.id === nodeId && node.type === 'form') {
+        if (node.id === nodeId && node.type === "form") {
           const newElements = node.data.elements.filter(
             (_: any, i: any) => i !== elementIndex,
           );
@@ -372,11 +372,11 @@ export const nodeSlice = (set: any, get: any) => ({
   ) => {
     set((state: any) => ({
       nodes: state.nodes.map((node: any) => {
-        if (node.id === nodeId && node.type === 'form') {
+        if (node.id === nodeId && node.type === "form") {
           const newElements = JSON.parse(JSON.stringify(node.data.elements));
           const gridElement = newElements[elementIndex];
 
-          if (gridElement && gridElement.type === 'grid') {
+          if (gridElement && gridElement.type === "grid") {
             const index = rowIndex * gridElement.columns + colIndex;
             gridElement.data[index] = value;
             return { ...node, data: { ...node.data, elements: newElements } };
@@ -390,7 +390,7 @@ export const nodeSlice = (set: any, get: any) => ({
   moveElement: (nodeId: any, startIndex: any, endIndex: any) => {
     set((state: any) => ({
       nodes: state.nodes.map((node: any) => {
-        if (node.id === nodeId && node.type === 'form') {
+        if (node.id === nodeId && node.type === "form") {
           const newElements = [...node.data.elements];
           const [removed] = newElements.splice(startIndex, 1);
           newElements.splice(endIndex, 0, removed);
@@ -416,7 +416,7 @@ export const nodeSlice = (set: any, get: any) => ({
     navigator.clipboard
       .writeText(JSON.stringify(dataToExport, null, 2))
       .then(() => alert(`${selectedNodes.length} nodes exported to clipboard!`))
-      .catch((err) => console.error('Failed to export nodes: ', err));
+      .catch((err) => console.error("Failed to export nodes: ", err));
   },
 
   importNodes: async () => {
@@ -425,7 +425,7 @@ export const nodeSlice = (set: any, get: any) => ({
       const dataToImport = JSON.parse(clipboardText);
 
       if (!dataToImport.nodes || !Array.isArray(dataToImport.nodes)) {
-        throw new Error('Invalid data format in clipboard.');
+        throw new Error("Invalid data format in clipboard.");
       }
 
       const { nodes: currentNodes, edges: currentEdges } = get();
@@ -451,7 +451,7 @@ export const nodeSlice = (set: any, get: any) => ({
           if (newSource && newTarget) {
             return {
               ...edge,
-              id: `reactflow__edge-${newSource}${edge.sourceHandle || ''}-${newTarget}${edge.targetHandle || ''}`,
+              id: `reactflow__edge-${newSource}${edge.sourceHandle || ""}-${newTarget}${edge.targetHandle || ""}`,
               source: newSource,
               target: newTarget,
             };
@@ -467,9 +467,9 @@ export const nodeSlice = (set: any, get: any) => ({
 
       alert(`${newNodes.length} nodes imported successfully!`);
     } catch (err) {
-      console.error('Failed to import nodes: ', err);
+      console.error("Failed to import nodes: ", err);
       alert(
-        'Failed to import nodes from clipboard. Check console for details.',
+        "Failed to import nodes from clipboard. Check console for details.",
       );
     }
   },
@@ -525,13 +525,13 @@ export const nodeSlice = (set: any, get: any) => ({
           y: node.position.y - minY + PADDING,
         },
         parentNode: groupNodeId,
-        extent: 'parent',
+        extent: "parent",
       };
     });
 
     const groupNode = {
       id: groupNodeId,
-      type: 'scenario',
+      type: "scenario",
       position: groupPosition,
       data: {
         label: scenario.name,
@@ -565,8 +565,8 @@ export const nodeSlice = (set: any, get: any) => ({
       });
       return data; // 추가
     } catch (error) {
-      console.error('Error fetching scenario:', error);
-      alert('Failed to load scenario details.');
+      console.error("Error fetching scenario:", error);
+      alert("Failed to load scenario details.");
       set({ nodes: [], edges: [], selectedNodeId: null, startNodeId: null }); // <<< [수정] startNodeId 초기화 추가
     }
   },
@@ -574,8 +574,8 @@ export const nodeSlice = (set: any, get: any) => ({
   saveScenario: async (backend: any, scenario: any) => {
     try {
       const { nodes, edges, startNodeId } = get(); // <<< [수정] startNodeId 가져오기
-      console.log('시나리오 저장 데이터 : ', scenario);
-      console.log('시나리오 변경 노드 데이터 : ', nodes, edges, startNodeId);
+      console.log("시나리오 저장 데이터 : ", scenario);
+      console.log("시나리오 변경 노드 데이터 : ", nodes, edges, startNodeId);
       return;
       // await saveScenarioData(backend, {
       //   scenario,
@@ -584,7 +584,7 @@ export const nodeSlice = (set: any, get: any) => ({
       // });
       // alert(`Scenario '${scenario.name}' has been saved successfully!`); // 시나리오 이름 포함
     } catch (error: any) {
-      console.error('Error saving scenario:', error);
+      console.error("Error saving scenario:", error);
       alert(`Failed to save scenario: ${error.message}`);
     }
   },

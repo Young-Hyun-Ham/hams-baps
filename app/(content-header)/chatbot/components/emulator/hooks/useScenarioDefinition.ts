@@ -8,9 +8,17 @@ import * as backendService from "@/app/(siderbar-header)/admin/builder/services/
 
 import type { AnyEdge, AnyNode } from "../../../types";
 
+export type ScenarioDefinitionOverride = {
+  nodes: AnyNode[];
+  edges: AnyEdge[];
+  startNodeId?: string | null;
+  deployedVersionId?: string | null;
+};
+
 export function useScenarioDefinition(
   scenarioKey: string,
   pinnedVersionId?: string | null,
+  definitionOverride?: ScenarioDefinitionOverride,
 ) {
   const backend = useStore((s: any) => s.backend);
 
@@ -22,6 +30,14 @@ export function useScenarioDefinition(
   );
 
   useEffect(() => {
+    if (definitionOverride) {
+      setNodes(definitionOverride.nodes);
+      setEdges(definitionOverride.edges);
+      setStartNodeId(definitionOverride.startNodeId ?? null);
+      setDeployedVersionId(definitionOverride.deployedVersionId ?? null);
+      return;
+    }
+
     let mounted = true;
 
     const fetchScenarioData = async () => {
@@ -73,7 +89,15 @@ export function useScenarioDefinition(
     return () => {
       mounted = false;
     };
-  }, [backend, scenarioKey, pinnedVersionId]);
+  }, [
+    backend,
+    scenarioKey,
+    pinnedVersionId,
+    definitionOverride?.nodes,
+    definitionOverride?.edges,
+    definitionOverride?.startNodeId,
+    definitionOverride?.deployedVersionId,
+  ]);
 
   return { nodes, edges, startNodeId, deployedVersionId };
 }

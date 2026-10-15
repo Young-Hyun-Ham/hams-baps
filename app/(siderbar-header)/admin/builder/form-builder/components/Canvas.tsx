@@ -1,14 +1,14 @@
-import { Box, Paper, Stack, Typography } from '@mui/material';
-import { DndContext, useSensors, type DragEndEvent } from '@dnd-kit/core';
+import { Box, Paper, Stack, Typography } from "@mui/material";
+import { DndContext, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import {
   SortableContext,
   verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import { Add as PlusIcon } from '@mui/icons-material';
-import { useTranslation } from 'react-i18next';
+} from "@dnd-kit/sortable";
+import { Add as PlusIcon } from "@mui/icons-material";
+import { useTranslation } from "react-i18next";
 
-import SortableCanvasElement from './SortableCanvasElement';
-import { FormElement } from '../type';
+import SortableCanvasElement from "./SortableCanvasElement";
+import { FormElement } from "../type";
 
 type CanvasProps = {
   elements: FormElement[];
@@ -48,25 +48,25 @@ function Canvas({
       onDrop={handleDrop}
       sx={{
         flex: 1,
-        overflow: 'auto',
+        overflow: "auto",
         p: 4,
-        display: 'flex',
-        justifyContent: 'center',
+        display: "flex",
+        justifyContent: "center",
       }}
     >
       <Paper
         variant="outlined"
         sx={{
-          width: '90%',
+          width: "90%",
           minHeight: 120,
-          height: 'fit-content',
+          height: "fit-content",
           p: 2.5,
           borderRadius: 1,
-          borderStyle: elements.length === 0 ? 'dashed' : 'solid',
+          borderStyle: elements.length === 0 ? "dashed" : "solid",
           borderWidth: 2,
-          borderColor: isDragOver ? 'primary.main' : 'divider',
-          bgcolor: isDragOver ? 'primary.50' : 'background.paper',
-          transition: 'border-color 0.2s, background-color 0.2s',
+          borderColor: isDragOver ? "primary.main" : "divider",
+          bgcolor: isDragOver ? "primary.50" : "background.paper",
+          transition: "border-color 0.2s, background-color 0.2s",
         }}
       >
         <DndContext sensors={sensors} onDragEnd={handleElementDragEnd}>
@@ -98,25 +98,25 @@ function Canvas({
                 sx={{
                   minHeight: 96,
                   p: 3,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderStyle: 'dashed',
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderStyle: "dashed",
                   borderWidth: 2,
-                  borderColor: isDragOver ? 'primary.main' : 'divider',
-                  color: 'text.disabled',
-                  cursor: 'pointer',
-                  bgcolor: isDragOver ? 'primary.50' : 'transparent',
-                  '&:hover': {
-                    bgcolor: 'grey.50',
-                    borderColor: 'grey.400',
+                  borderColor: isDragOver ? "primary.main" : "divider",
+                  color: "text.disabled",
+                  cursor: "pointer",
+                  bgcolor: isDragOver ? "primary.50" : "transparent",
+                  "&:hover": {
+                    bgcolor: "grey.50",
+                    borderColor: "grey.400",
                   },
                 }}
               >
                 <PlusIcon sx={{ mb: 1 }} />
                 <Typography variant="body2" fontWeight={500} align="center">
-                  {t('Drag or click components here to add')}
+                  {t("Drag or click components here to add")}
                 </Typography>
               </Paper>
               {/* )} */}

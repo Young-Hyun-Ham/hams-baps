@@ -1,7 +1,7 @@
-import styles from '../NodeController.module.css';
-import { useNodeController } from './hooks/useNodeController';
-import ChainNextCheckbox from './common/ChainNextCheckbox';
-import { useTranslation } from 'react-i18next';
+import styles from "../NodeController.module.css";
+import { useNodeController } from "./hooks/useNodeController";
+import ChainNextCheckbox from "./common/ChainNextCheckbox";
+import { useTranslation } from "react-i18next";
 
 function LlmNodeController({ localNode, setLocalNode }) {
   const { t } = useTranslation();
@@ -13,21 +13,21 @@ function LlmNodeController({ localNode, setLocalNode }) {
   const handleLlmConditionChange = (index, value) => {
     const newConditions = [...(data.conditions || [])];
     newConditions[index] = { ...newConditions[index], keyword: value };
-    handleLocalDataChange('conditions', newConditions); // 훅 함수 사용
+    handleLocalDataChange("conditions", newConditions); // 훅 함수 사용
   };
 
   const addLlmCondition = () => {
     const newCondition = {
       id: `cond-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      keyword: 'New Keyword',
+      keyword: "New Keyword",
     };
     const newConditions = [...(data.conditions || []), newCondition];
-    handleLocalDataChange('conditions', newConditions); // 훅 함수 사용
+    handleLocalDataChange("conditions", newConditions); // 훅 함수 사용
   };
 
   const deleteLlmCondition = (index) => {
     const newConditions = (data.conditions || []).filter((_, i) => i !== index);
-    handleLocalDataChange('conditions', newConditions); // 훅 함수 사용
+    handleLocalDataChange("conditions", newConditions); // 훅 함수 사용
   };
 
   return (
@@ -35,29 +35,29 @@ function LlmNodeController({ localNode, setLocalNode }) {
       {/* 5. 기존 UI를 공통 컴포넌트로 대체 */}
       <ChainNextCheckbox
         checked={data.chainNext}
-        onChange={(value) => handleLocalDataChange('chainNext', value)}
+        onChange={(value) => handleLocalDataChange("chainNext", value)}
       />
       <div className={styles.formGroup}>
-        <label>{t('Prompt')}</label>
+        <label>{t("Prompt")}</label>
         <textarea
-          value={data.prompt || ''}
-          onChange={(e) => handleLocalDataChange('prompt', e.target.value)}
+          value={data.prompt || ""}
+          onChange={(e) => handleLocalDataChange("prompt", e.target.value)}
           rows={8}
         />
       </div>
       <div className={styles.formGroup}>
-        <label>{t('Output Variable')}</label>
+        <label>{t("Output Variable")}</label>
         <input
           type="text"
-          value={data.outputVar || ''}
-          onChange={(e) => handleLocalDataChange('outputVar', e.target.value)}
+          value={data.outputVar || ""}
+          onChange={(e) => handleLocalDataChange("outputVar", e.target.value)}
           placeholder="Variable to store LLM output"
         />
       </div>
       <div className={styles.separator} />
       <div className={styles.formGroup}>
         <label>
-          {t('Conditions')} ({t('Branching')})
+          {t("Conditions")} ({t("Branching")})
         </label>
         <div className={styles.repliesContainer}>
           {(data.conditions || []).map((cond, index) => (
@@ -79,7 +79,7 @@ function LlmNodeController({ localNode, setLocalNode }) {
             </div>
           ))}
           <button onClick={addLlmCondition} className={styles.addReplyButton}>
-            + {t('Add Condition')}
+            + {t("Add Condition")}
           </button>
         </div>
       </div>

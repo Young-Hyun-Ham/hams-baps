@@ -1,4 +1,4 @@
-import { type Edge, Node } from 'reactflow';
+import { type Edge, Node } from "reactflow";
 
 type ScenarioSummary = {
   id?: string;
@@ -57,10 +57,10 @@ type ExecutionFormElement = {
   sendByOption?: boolean;
   allowDeselection?: boolean;
   optionsSlot?: string;
-  selectKind?: 'single' | 'multi';
+  selectKind?: "single" | "multi";
   defaultValue?: unknown;
   apiData?: Record<string, unknown> | null;
-  eventType?: 'onChange' | 'onClick' | '';
+  eventType?: "onChange" | "onClick" | "";
   parameterId?: string;
   optionalParameter?: string;
   targetElementId?: string;
@@ -71,11 +71,13 @@ type ExecutionFormElement = {
   displayKeys?: Array<string | { key?: string; label?: string }>;
   hideNullColumns?: boolean;
 };
-type ExecutionFormOption = string | {
-  label?: string;
-  value?: string;
-  param?: string;
-};
+type ExecutionFormOption =
+  | string
+  | {
+      label?: string;
+      value?: string;
+      param?: string;
+    };
 
 // Sidebar menu data
 type SidebarMenuData = {

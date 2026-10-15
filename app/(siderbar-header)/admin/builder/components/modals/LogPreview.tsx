@@ -1,6 +1,6 @@
 // app/(siderbar-header)/admin/builder/components/modals/LogPreview.tsx
 
-import { useRef, useState } from 'react';
+import { useRef, useState } from "react";
 import {
   Box,
   Button,
@@ -9,12 +9,12 @@ import {
   IconButton,
   Tooltip,
   Divider,
-} from '@mui/material';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import UndoIcon from '@mui/icons-material/Undo';
-import RedoIcon from '@mui/icons-material/Redo';
-import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
-import { useTranslation } from 'react-i18next';
+} from "@mui/material";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import UndoIcon from "@mui/icons-material/Undo";
+import RedoIcon from "@mui/icons-material/Redo";
+import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
+import { useTranslation } from "react-i18next";
 
 type LogPreviewProps = {
   nodes: any[];
@@ -77,7 +77,7 @@ const LogPreview = ({ nodes, edges, setNodes, setEdges }: LogPreviewProps) => {
 
       if (!Array.isArray(parsedNodes) || !Array.isArray(parsedEdges)) {
         //alert('Nodes와 Edges는 모두 배열 형태여야 합니다.');
-        alert(`${t('Nodes and Edges must both be in array form')}.`);
+        alert(`${t("Nodes and Edges must both be in array form")}.`);
         return;
       }
 
@@ -90,10 +90,10 @@ const LogPreview = ({ nodes, edges, setNodes, setEdges }: LogPreviewProps) => {
       setNodes(parsedNodes);
       setEdges(parsedEdges);
       // alert('Flow UI가 성공적으로 갱신되었습니다.');
-      alert(`${t('Flow UI updated successfully')}.`);
+      alert(`${t("Flow UI updated successfully")}.`);
     } catch (err) {
       // alert('유효하지 않은 JSON 형식입니다.');
-      alert(`${t('Invalid JSON format')}.`);
+      alert(`${t("Invalid JSON format")}.`);
     }
   };
 
@@ -102,50 +102,50 @@ const LogPreview = ({ nodes, edges, setNodes, setEdges }: LogPreviewProps) => {
 
   // 공통 텍스트에디터 스타일
   const textAreaStyle = {
-    width: '100%',
-    padding: '12px',
+    width: "100%",
+    padding: "12px",
     fontFamily: 'Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace',
-    fontSize: '12px',
-    lineHeight: '1.5',
-    backgroundColor: '#f8f9fa',
-    border: '1px solid #e0e0e0',
-    borderRadius: '8px',
-    outline: 'none',
-    resize: 'vertical' as const,
-    minHeight: '150px',
-    maxHeight: '300px',
-    '&:focus': {
-      borderColor: '#3b82f6',
-      backgroundColor: '#ffffff',
+    fontSize: "12px",
+    lineHeight: "1.5",
+    backgroundColor: "#f8f9fa",
+    border: "1px solid #e0e0e0",
+    borderRadius: "8px",
+    outline: "none",
+    resize: "vertical" as const,
+    minHeight: "150px",
+    maxHeight: "300px",
+    "&:focus": {
+      borderColor: "#3b82f6",
+      backgroundColor: "#ffffff",
     },
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
       {/* 상단 컨트롤바 */}
       <Stack
         direction="row"
         justifyContent="space-between"
         alignItems="center"
-        sx={{ bgcolor: '#f1f5f9', p: 1.5, borderRadius: 2 }}
+        sx={{ bgcolor: "#f1f5f9", p: 1.5, borderRadius: 2 }}
       >
         <Typography
           variant="subtitle2"
           color="text.secondary"
           fontWeight="bold"
         >
-          {t('DB JSON Editor')}
+          {t("DB JSON Editor")}
         </Typography>
 
         <Stack direction="row" spacing={1}>
-          <Tooltip title={t('Import data back from graph')}>
+          <Tooltip title={t("Import data back from graph")}>
             <Button
               size="small"
               variant="outlined"
               startIcon={<RefreshIcon />}
               onClick={handleReloadFromFlow}
             >
-              {t('Sync')}
+              {t("Sync")}
             </Button>
           </Tooltip>
 
@@ -166,7 +166,7 @@ const LogPreview = ({ nodes, edges, setNodes, setEdges }: LogPreviewProps) => {
             startIcon={<PlayCircleOutlineIcon />}
             onClick={handleApplyJson}
           >
-            {t('Apply')}
+            {t("Apply")}
           </Button>
         </Stack>
       </Stack>
@@ -181,10 +181,10 @@ const LogPreview = ({ nodes, edges, setNodes, setEdges }: LogPreviewProps) => {
             alignItems="center"
           >
             <Typography variant="caption" fontWeight="bold" color="primary">
-              {t('NODES DATA')}
+              {t("NODES DATA")}
             </Typography>
             <Typography variant="caption" color="text.disabled">
-              {t('Array of Objects')} [&#123;...&#125;]
+              {t("Array of Objects")} [&#123;...&#125;]
             </Typography>
           </Stack>
           <Box
@@ -205,10 +205,10 @@ const LogPreview = ({ nodes, edges, setNodes, setEdges }: LogPreviewProps) => {
             alignItems="center"
           >
             <Typography variant="caption" fontWeight="bold" color="primary">
-              {t('EDGES DATA')}
+              {t("EDGES DATA")}
             </Typography>
             <Typography variant="caption" color="text.disabled">
-              {t('Array of Objects')} [&#123;...&#125;]
+              {t("Array of Objects")} [&#123;...&#125;]
             </Typography>
           </Stack>
           <Box
@@ -224,13 +224,13 @@ const LogPreview = ({ nodes, edges, setNodes, setEdges }: LogPreviewProps) => {
       <Typography
         variant="caption"
         color="error"
-        sx={{ fontStyle: 'italic', textAlign: 'center' }}
+        sx={{ fontStyle: "italic", textAlign: "center" }}
       >
         {/* ※ JSON 구조를 수동으로 변경 시 그래프 렌더링에 오류가 발생할 수 있으니
         주의하세요. */}
-        ※{' '}
+        ※{" "}
         {t(
-          'Manually changing the JSON structure can cause errors in graph rendering Be careful',
+          "Manually changing the JSON structure can cause errors in graph rendering Be careful",
         )}
         .
       </Typography>

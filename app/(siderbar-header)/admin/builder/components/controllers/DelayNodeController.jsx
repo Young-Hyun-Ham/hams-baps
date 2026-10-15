@@ -1,7 +1,7 @@
-import styles from '../NodeController.module.css';
-import { useNodeController } from './hooks/useNodeController';
-import ChainNextCheckbox from './common/ChainNextCheckbox';
-import { useTranslation } from 'react-i18next';
+import styles from "../NodeController.module.css";
+import { useNodeController } from "./hooks/useNodeController";
+import ChainNextCheckbox from "./common/ChainNextCheckbox";
+import { useTranslation } from "react-i18next";
 
 function DelayNodeController({ localNode, setLocalNode }) {
   const { t } = useTranslation();
@@ -13,14 +13,14 @@ function DelayNodeController({ localNode, setLocalNode }) {
   const handleDurationChange = (value) => {
     const numericValue = parseInt(value, 10);
     const validValue = numericValue >= 0 ? numericValue : 0;
-    handleLocalDataChange('duration', validValue); // 훅 함수 사용
+    handleLocalDataChange("duration", validValue); // 훅 함수 사용
   };
 
   return (
     <>
       <div className={styles.formGroup}>
         <label>
-          {t('Delay Duration')} ({t('milliseconds')})
+          {t("Delay Duration")} ({t("milliseconds")})
         </label>
         <input
           type="number"
@@ -30,15 +30,15 @@ function DelayNodeController({ localNode, setLocalNode }) {
         />
         <p
           className={styles.instructionText}
-          style={{ marginTop: '4px', fontSize: '0.75rem' }}
+          style={{ marginTop: "4px", fontSize: "0.75rem" }}
         >
-          {t('Enter the time in milliseconds (e.g., 1000 for 1 second)')}.
+          {t("Enter the time in milliseconds (e.g., 1000 for 1 second)")}.
         </p>
       </div>
       {/* 6. 기존 UI를 공통 컴포넌트로 대체 */}
       <ChainNextCheckbox
         checked={data.chainNext}
-        onChange={(value) => handleLocalDataChange('chainNext', value)} // 훅 함수 사용
+        onChange={(value) => handleLocalDataChange("chainNext", value)} // 훅 함수 사용
       />
     </>
   );

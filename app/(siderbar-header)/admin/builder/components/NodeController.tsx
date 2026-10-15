@@ -1,25 +1,25 @@
-import { useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
-import { useBuilderStore } from '../store/index';
-import styles from './NodeController.module.css';
-import ApiNodeController from './controllers/ApiNodeController';
-import FormNodeController from './controllers/FormNodeController';
-import LlmNodeController from './controllers/LlmNodeController';
-import ToastNodeController from './controllers/ToastNodeController';
-import IframeNodeController from './controllers/IframeNodeController';
-import MessageNodeController from './controllers/MessageNodeController';
-import SlotFillingNodeController from './controllers/SlotFillingNodeController';
-import BranchNodeController from './controllers/BranchNodeController';
-import LinkNodeController from './controllers/LinkNodeController';
-import FixedMenuNodeController from './controllers/FixedMenuNodeController';
-import SetSlotNodeController from './controllers/SetSlotNodeController';
-import DelayNodeController from './controllers/DelayNodeController';
-import GroupNodeController from './controllers/GroupNodeController';
-import ScenarioNodeController from './controllers/ScenarioNodeController';
-import YnBranchNodeController from './controllers/YnBranchNodeController';
+import { useBuilderStore } from "../store/index";
+import styles from "./NodeController.module.css";
+import ApiNodeController from "./controllers/ApiNodeController";
+import FormNodeController from "./controllers/FormNodeController";
+import LlmNodeController from "./controllers/LlmNodeController";
+import ToastNodeController from "./controllers/ToastNodeController";
+import IframeNodeController from "./controllers/IframeNodeController";
+import MessageNodeController from "./controllers/MessageNodeController";
+import SlotFillingNodeController from "./controllers/SlotFillingNodeController";
+import BranchNodeController from "./controllers/BranchNodeController";
+import LinkNodeController from "./controllers/LinkNodeController";
+import FixedMenuNodeController from "./controllers/FixedMenuNodeController";
+import SetSlotNodeController from "./controllers/SetSlotNodeController";
+import DelayNodeController from "./controllers/DelayNodeController";
+import GroupNodeController from "./controllers/GroupNodeController";
+import ScenarioNodeController from "./controllers/ScenarioNodeController";
+import YnBranchNodeController from "./controllers/YnBranchNodeController";
 
-import { useModal } from '@/providers/ModalProvider';
+import { useModal } from "@/providers/ModalProvider";
 
 const nodeControllerMap = {
   api: ApiNodeController,
@@ -54,7 +54,7 @@ function NodeController() {
 
   return (
     <NodeControllerEditor
-      key={effectiveSelectedNode?.id ?? 'empty'}
+      key={effectiveSelectedNode?.id ?? "empty"}
       selectedNode={effectiveSelectedNode}
     />
   );
@@ -79,9 +79,9 @@ export function NodeControllerEditor({ selectedNode }: { selectedNode: any }) {
     return (
       <div className={styles.controllerContainer}>
         <div className={styles.mainControls}>
-          <h3>{t('Controller')}</h3>
+          <h3>{t("Controller")}</h3>
           <p className={styles.placeholder}>
-            {t('Please select a node to edit')}.
+            {t("Please select a node to edit")}.
           </p>
         </div>
       </div>
@@ -89,7 +89,7 @@ export function NodeControllerEditor({ selectedNode }: { selectedNode: any }) {
   }
 
   const getBranchHandlesForData = (data: any) => {
-    if (data?.evaluationType === 'CONDITION' && data.conditions?.length) {
+    if (data?.evaluationType === "CONDITION" && data.conditions?.length) {
       return [
         ...data.conditions.map(
           (condition: any, index: number) =>
@@ -112,7 +112,7 @@ export function NodeControllerEditor({ selectedNode }: { selectedNode: any }) {
 
   const handleSaveChanges = async () => {
     const evaluationTypeChanged =
-      localNode.type === 'branch' &&
+      localNode.type === "branch" &&
       selectedNode?.data?.evaluationType !== localNode.data?.evaluationType;
 
     if (evaluationTypeChanged) {
@@ -126,7 +126,7 @@ export function NodeControllerEditor({ selectedNode }: { selectedNode: any }) {
       if (invalidBranchEdges.length > 0) {
         const confirmed = await showConfirm(
           t(
-            'Some connected branch paths do not match the new Evaluation Type. Do you want to change it and remove orphan nodes?',
+            "Some connected branch paths do not match the new Evaluation Type. Do you want to change it and remove orphan nodes?",
           ),
         );
 
@@ -191,7 +191,7 @@ export function NodeControllerEditor({ selectedNode }: { selectedNode: any }) {
       <ControllerComponent {...commonProps} />
     ) : (
       <p className={styles.placeholder}>
-        {t('This node type has no editable properties')}.
+        {t("This node type has no editable properties")}.
       </p>
     );
   };
@@ -200,7 +200,7 @@ export function NodeControllerEditor({ selectedNode }: { selectedNode: any }) {
     <div className={styles.controllerContainer}>
       <div className={styles.mainControls}>
         <h3>
-          {t('Type')}: {localNode.type}
+          {t("Type")}: {localNode.type}
         </h3>
         <div className={styles.form}>{renderContent()}</div>
       </div>
@@ -210,7 +210,7 @@ export function NodeControllerEditor({ selectedNode }: { selectedNode: any }) {
           className={styles.saveNodeButton}
           disabled={!isDirty}
         >
-          {t('Save Changes')} {isDirty && ' *'}
+          {t("Save Changes")} {isDirty && " *"}
         </button>
       </div>
     </div>

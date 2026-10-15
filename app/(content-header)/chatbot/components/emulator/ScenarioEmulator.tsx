@@ -2,14 +2,20 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import { useStore } from "@/store";
 import ScenarioNodeControls from "../ScenarioNodeControls";
 import useChatbotStore from "../../store";
 import type { AnyNode, ChatStep } from "../../types";
 import { makeStepId, resolveTemplate } from "../../utils";
 import { useEngineLogger } from "../../utils/engine";
+import { RotateCw } from "lucide-react";
+import { IconButton } from "@mui/material";
 
-import { useScenarioDefinition } from "./hooks/useScenarioDefinition";
+import {
+  useScenarioDefinition,
+  type ScenarioDefinitionOverride,
+} from "./hooks/useScenarioDefinition";
 import { useScenarioHydration } from "./hooks/useScenarioHydration";
 import { useScenarioProgress } from "./hooks/useScenarioProgress";
 import { useScenarioHistoryAppend } from "./hooks/useScenarioHistoryAppend";
@@ -25,6 +31,7 @@ import { runLlmNode as runLlmNodeImpl } from "./runners/runLlmNode";
 import { createUiHandlers } from "./handlers/createUiHandlers";
 
 export type ScenarioEmulatorProps = {
+  headerActions?: ReactNode;
   scenarioKey: string;
   scenarioTitle?: string;
 
@@ -56,9 +63,12 @@ export type ScenarioEmulatorProps = {
   initialSlotValues?: Record<string, any>;
   initialFormValues?: Record<string, any>;
   initialDeployedVersionId?: string | null;
+  /** Builder preview can execute the current, possibly unsaved graph. */
+  definitionOverride?: ScenarioDefinitionOverride;
 };
 
 export default function ScenarioEmulator({
+  headerActions,
   scenarioKey,
   scenarioTitle,
   scenarioRunId,
@@ -71,12 +81,17 @@ export default function ScenarioEmulator({
   initialSlotValues,
   initialFormValues,
   initialDeployedVersionId,
+  definitionOverride,
 }: ScenarioEmulatorProps) {
   // =============================================================================
   // 1) 시나리오 데이터 로드
   // =============================================================================
   const { nodes, edges, startNodeId, deployedVersionId } =
-    useScenarioDefinition(scenarioKey, initialDeployedVersionId);
+    useScenarioDefinition(
+      scenarioKey,
+      initialDeployedVersionId,
+      definitionOverride,
+    );
 
   // =============================================================================
   // 2) store persistence
@@ -337,13 +352,18 @@ export default function ScenarioEmulator({
         <span className="text-xs font-semibold text-emerald-700">
           시나리오 애뮬레이터
         </span>
-        <button
-          className="rounded-md border border-gray-200 bg-white px-2 py-0.5 text-[11px] text-gray-500 hover:bg-gray-50"
-          onClick={resetScenario}
-          type="button"
-        >
-          초기화
-        </button>
+        <div className="flex items-center gap-1">
+          <IconButton
+            size="small"
+            aria-label="시나리오 초기화"
+            title="시나리오 초기화"
+            onClick={resetScenario}
+            sx={{ p: 0.25 }}
+          >
+            <RotateCw size={16} />
+          </IconButton>
+          {headerActions}
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto overflow-x-hidden rounded-md bg-emerald-50/40 p-2 text-xs">

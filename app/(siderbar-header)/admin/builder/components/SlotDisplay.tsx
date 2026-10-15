@@ -1,11 +1,8 @@
+import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 
-
-
-import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-
-import { useBuilderStore } from '../store/index';
-import styles from './SlotDisplay.module.css';
+import { useBuilderStore } from "../store/index";
+import styles from "./SlotDisplay.module.css";
 
 // 💡 실제 프로젝트에서는 useBuilderStore의 state 타입을 정의하여
 // 💡 'any' 대신 사용해야 합니다 (예: StoreState).
@@ -29,7 +26,7 @@ function SlotDisplay() {
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLHeadingElement>) => {
-    if (event.key === 'Enter' || event.key === ' ') {
+    if (event.key === "Enter" || event.key === " ") {
       event.preventDefault(); // 기본 스크롤 동작 방지
       toggleCollapse();
     }
@@ -38,18 +35,18 @@ function SlotDisplay() {
   // 💡 any 타입을 줄이고, value의 타입을 더 명확히 지정하는 것이 좋습니다.
   const renderValue = (value: unknown) => {
     // 💡 객체나 배열인 경우 바로 pretty-print 처리합니다.
-    if (typeof value === 'object' && value !== null) {
+    if (typeof value === "object" && value !== null) {
       return (
         <pre className={styles.prettyJson}>
           {/* JSON.stringify의 value 타입을 any로 임시 설정 (lint 무시) */}
-          { }
+          {}
           <code>{JSON.stringify(value as any, null, 2)}</code>
         </pre>
       );
     }
 
     // 💡 문자열인 경우 JSON 파싱을 시도합니다.
-    if (typeof value === 'string') {
+    if (typeof value === "string") {
       try {
         const parsed = JSON.parse(value);
         // 파싱에 성공하면 객체이므로 pretty-print 처리합니다.
@@ -72,11 +69,11 @@ function SlotDisplay() {
 
   return (
     <div
-      className={`${styles.slotDisplayContainer} ${isCollapsed ? styles.collapsed : ''}`}
+      className={`${styles.slotDisplayContainer} ${isCollapsed ? styles.collapsed : ""}`}
     >
       <h4 className={styles.title} onClick={toggleCollapse}>
-        {t('Current Values')} {/* 제목 수정 */}
-        <span className={styles.toggleIcon}>{isCollapsed ? '▶' : '▼'}</span>
+        {t("Current Values")} {/* 제목 수정 */}
+        <span className={styles.toggleIcon}>{isCollapsed ? "▶" : "▼"}</span>
       </h4>
       {!isCollapsed &&
         (hasSlots || hasSelectedRow ? (
@@ -91,10 +88,10 @@ function SlotDisplay() {
               <div
                 key="selectedRow"
                 className={styles.slotItem}
-                style={{ borderTop: '1px dashed #ccc', paddingTop: '8px' }}
+                style={{ borderTop: "1px dashed #ccc", paddingTop: "8px" }}
               >
-                <span className={styles.slotKey} style={{ color: '#e74c3c' }}>
-                  {t('selectedRow')}:
+                <span className={styles.slotKey} style={{ color: "#e74c3c" }}>
+                  {t("selectedRow")}:
                 </span>
                 <div className={styles.slotValue}>
                   {renderValue(selectedRow)}
@@ -103,7 +100,7 @@ function SlotDisplay() {
             )}
           </div>
         ) : (
-          <p className={styles.placeholder}>{t('No values set yet')}.</p>
+          <p className={styles.placeholder}>{t("No values set yet")}.</p>
         ))}
     </div>
   );

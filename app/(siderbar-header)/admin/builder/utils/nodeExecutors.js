@@ -1,5 +1,5 @@
 /* global window */
-import { interpolateMessage, generateUniqueId } from './simulatorUtils';
+import { interpolateMessage, generateUniqueId } from "./simulatorUtils";
 
 /**
  * 말풍선에 표시되는 노드(message, form, link, iframe, slotfilling, branch(button))를 처리하는 공통 함수.
@@ -31,14 +31,14 @@ const handleVisibleNode = (context, isInteractive, preparePacket = null) => {
   }
 
   // 3. 폼 노드인 경우, 기본값(defaultValue)을 보간하여 슬롯에 선제적으로 적용
-  if (node.type === 'form') {
+  if (node.type === "form") {
     let initialSlotsUpdate = {};
     (node.data.elements || []).forEach((element) => {
       if (
-        element.type === 'input' &&
+        element.type === "input" &&
         element.name &&
         element.defaultValue !== undefined &&
-        element.defaultValue !== ''
+        element.defaultValue !== ""
       ) {
         const defaultValueConfig = element.defaultValue;
         let resolvedValue = interpolateMessage(
@@ -49,17 +49,17 @@ const handleVisibleNode = (context, isInteractive, preparePacket = null) => {
           initialSlotsUpdate[element.name] = resolvedValue;
         }
       } else if (
-        (element.type === 'date' || element.type === 'dropbox') &&
+        (element.type === "date" || element.type === "dropbox") &&
         element.name &&
         element.defaultValue !== undefined &&
-        element.defaultValue !== ''
+        element.defaultValue !== ""
       ) {
         initialSlotsUpdate[element.name] = interpolateMessage(
           String(element.defaultValue),
           updatedSlots,
         );
       } else if (
-        element.type === 'checkbox' &&
+        element.type === "checkbox" &&
         element.name &&
         Array.isArray(element.defaultValue)
       ) {
@@ -81,7 +81,7 @@ const handleVisibleNode = (context, isInteractive, preparePacket = null) => {
     // --- A. 새 체인 시작 ---
     const newChainId = generateUniqueId();
     const newItem = {
-      type: 'bot',
+      type: "bot",
       id: newChainId, // 새 말풍선 ID
       combinedData: [nodeDataPacket], // 이 노드를 첫 번째 멤버로 추가
       isCompleted: !isInteractive,
@@ -91,7 +91,7 @@ const handleVisibleNode = (context, isInteractive, preparePacket = null) => {
 
     if (!isInteractive) {
       // 500ms 딜레이 후 다음 노드로 진행
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         window.setTimeout(() => {
           proceedToNextNode(
             null,
@@ -119,7 +119,7 @@ const handleVisibleNode = (context, isInteractive, preparePacket = null) => {
 
     if (!isInteractive) {
       // 500ms 딜레이 후 다음 노드로 진행
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         window.setTimeout(() => {
           proceedToNextNode(
             null,
@@ -139,7 +139,7 @@ const handleVisibleNode = (context, isInteractive, preparePacket = null) => {
 export const delay = (context) => {
   const { node, updatedSlots, activeChainId, proceedToNextNode } = context;
   const duration = node.data.duration || 0;
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     window.setTimeout(() => {
       proceedToNextNode(null, node.id, updatedSlots, activeChainId);
     }, duration);
@@ -161,15 +161,15 @@ export const setSlot = (context) => {
       try {
         const trimmedValue = interpolatedValue.trim();
         if (
-          (trimmedValue.startsWith('{') && trimmedValue.endsWith('}')) ||
-          (trimmedValue.startsWith('[') && trimmedValue.endsWith(']'))
+          (trimmedValue.startsWith("{") && trimmedValue.endsWith("}")) ||
+          (trimmedValue.startsWith("[") && trimmedValue.endsWith("]"))
         ) {
           newSlots[assignment.key] = JSON.parse(trimmedValue);
-        } else if (trimmedValue.toLowerCase() === 'true') {
+        } else if (trimmedValue.toLowerCase() === "true") {
           newSlots[assignment.key] = true;
-        } else if (trimmedValue.toLowerCase() === 'false') {
+        } else if (trimmedValue.toLowerCase() === "false") {
           newSlots[assignment.key] = false;
-        } else if (!isNaN(trimmedValue) && trimmedValue !== '') {
+        } else if (!isNaN(trimmedValue) && trimmedValue !== "") {
           const num = Number(trimmedValue);
           if (!isNaN(num)) newSlots[assignment.key] = num;
           else newSlots[assignment.key] = interpolatedValue;
@@ -191,8 +191,8 @@ export const setSlot = (context) => {
 export const toast = (context) => {
   const { node, updatedSlots, activeChainId, proceedToNextNode } = context;
   const message = interpolateMessage(node.data.message, updatedSlots);
-  if (typeof window !== 'undefined') {
-    window.alert(`[${node.data.toastType || 'info'}] ${message}`);
+  if (typeof window !== "undefined") {
+    window.alert(`[${node.data.toastType || "info"}] ${message}`);
   }
   proceedToNextNode(null, node.id, updatedSlots, activeChainId);
 };
@@ -260,8 +260,8 @@ export const link = (context) => {
     const url = interpolateMessage(packet.data.content, slots);
     const display = interpolateMessage(packet.data.display, slots);
     packet.linkData = { url, display }; // linkData 설정
-    if (url && typeof window !== 'undefined') {
-      window.open(url, '_blank', 'noopener,noreferrer');
+    if (url && typeof window !== "undefined") {
+      window.open(url, "_blank", "noopener,noreferrer");
     }
     return packet;
   };
@@ -285,7 +285,7 @@ export const slotfilling = (context) => {
 
 /** (보이는/인터랙티브 노드) Button Branch */
 export const branch = (context) => {
-  if (context.node.data.evaluationType === 'BUTTON') {
+  if (context.node.data.evaluationType === "BUTTON") {
     handleVisibleNode(context, true);
   } else {
     // Condition Branch는 invisible과 동일하게 처리

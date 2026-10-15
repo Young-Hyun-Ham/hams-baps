@@ -1,4 +1,4 @@
-import { FormControl, MenuItem, Select } from '@mui/material';
+import { FormControl, MenuItem, Select } from "@mui/material";
 import {
   ChevronLeft,
   ChevronRight,
@@ -10,29 +10,29 @@ import {
   Sparkles,
   Square,
   Undo,
-} from 'lucide-react';
-import { RefObject } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Panel } from 'reactflow';
+} from "lucide-react";
+import { RefObject } from "react";
+import { useTranslation } from "react-i18next";
+import { Panel } from "reactflow";
 
-import { MOCK_UP_TREE_DATA } from '../../../store';
-import { TreeItem } from '../../../types/types';
-import styles from '../FlowCanvas.module.css';
+import { MOCK_UP_TREE_DATA } from "../../../store";
+import { TreeItem } from "../../../types/types";
+import styles from "../FlowCanvas.module.css";
 
 const nodeLabels = {
-  message: '+ Message',
-  form: '+ Form',
-  branch: '+ Condition Branch',
-  slotfilling: '+ SlotFilling',
-  api: '+ API',
-  llm: '+ LLM',
-  setSlot: '+ Set Slot',
-  delay: '+ Delay',
-  fixedmenu: '+ Fixed Menu',
-  link: '+ Link',
-  toast: '+ Toast',
-  iframe: '+ iFrame',
-  scenario: '+ Scenario Group',
+  message: "+ Message",
+  form: "+ Form",
+  branch: "+ Condition Branch",
+  slotfilling: "+ SlotFilling",
+  api: "+ API",
+  llm: "+ LLM",
+  setSlot: "+ Set Slot",
+  delay: "+ Delay",
+  fixedmenu: "+ Fixed Menu",
+  link: "+ Link",
+  toast: "+ Toast",
+  iframe: "+ iFrame",
+  scenario: "+ Scenario Group",
 } as any;
 
 type FlowCanvasToolbarProps = {
@@ -91,7 +91,7 @@ export default function FlowCanvasToolbar({
       <div
         ref={searchPanelRef}
         className={`${styles.searchPanel} ${
-          isCollapsed ? styles.searchPanelCollapsed : ''
+          isCollapsed ? styles.searchPanelCollapsed : ""
         }`}
       >
         <div className={styles.searchTopRow}>
@@ -99,7 +99,7 @@ export default function FlowCanvasToolbar({
             <button
               type="button"
               onClick={onUndo}
-              title={`${t('Undo')} (Ctrl/Cmd+Z)`}
+              title={`${t("Undo")} (Ctrl/Cmd+Z)`}
               className={styles.toolButton}
               disabled={!canUndo}
             >
@@ -109,7 +109,7 @@ export default function FlowCanvasToolbar({
             <button
               type="button"
               onClick={onRedo}
-              title={`${t('Redo')} (Ctrl+Y, Cmd+Shift+Z)`}
+              title={`${t("Redo")} (Ctrl+Y, Cmd+Shift+Z)`}
               className={styles.toolButton}
               disabled={!canRedo}
             >
@@ -119,7 +119,7 @@ export default function FlowCanvasToolbar({
             <button
               type="button"
               onClick={onSaveScenario}
-              title={`${t('Commit & Save Scenario')}`}
+              title={`${t("Commit & Save Scenario")}`}
               className={styles.toolButton}
             >
               <Save size={18} />
@@ -128,7 +128,7 @@ export default function FlowCanvasToolbar({
             <button
               type="button"
               onClick={onPushScenario}
-              title={t('Push Scenario')}
+              title={t("Push Scenario")}
               className={styles.toolButton}
             >
               <SendIcon size={18} />
@@ -138,10 +138,10 @@ export default function FlowCanvasToolbar({
 
             <button
               type="button"
-              title={t('Show chatbot simulator')}
+              title={t("Show chatbot simulator")}
               onClick={onToggleSimulator}
               className={`${styles.toolButton} ${
-                isSimulatorVisible ? styles.toolButtonActive : ''
+                isSimulatorVisible ? styles.toolButtonActive : ""
               }`}
             >
               <Sparkles size={18} />
@@ -151,10 +151,10 @@ export default function FlowCanvasToolbar({
 
             <button
               type="button"
-              title={t('Run from Start to Anchor')}
+              title={t("Run from Start to Anchor")}
               onClick={onRun}
               className={`${styles.toolButton} ${
-                executionRunning ? styles.toolButtonActive : ''
+                executionRunning ? styles.toolButtonActive : ""
               }`}
               disabled={executionRunning}
             >
@@ -163,7 +163,7 @@ export default function FlowCanvasToolbar({
 
             <button
               type="button"
-              title={t('Stop execution')}
+              title={t("Stop execution")}
               onClick={onStop}
               className={styles.toolButton}
               disabled={!executionRunning}
@@ -173,7 +173,7 @@ export default function FlowCanvasToolbar({
 
             <button
               type="button"
-              title={t('Current Values')}
+              title={t("Current Values")}
               onClick={onShowCurrentValues}
               className={styles.toolButton}
             >
@@ -190,28 +190,28 @@ export default function FlowCanvasToolbar({
                 onChange={(event) => onSearchTypeChange(event.target.value)}
                 className={styles.searchSelect}
                 sx={{
-                  height: '40px',
-                  backgroundColor: '#fff',
-                  fontSize: '12px',
-                  '& .MuiSelect-select': {
-                    paddingTop: '0px',
-                    paddingBottom: '0px',
-                    display: 'flex',
-                    alignItems: 'center',
+                  height: "40px",
+                  backgroundColor: "#fff",
+                  fontSize: "12px",
+                  "& .MuiSelect-select": {
+                    paddingTop: "0px",
+                    paddingBottom: "0px",
+                    display: "flex",
+                    alignItems: "center",
                   },
                 }}
                 MenuProps={{
                   disablePortal: false,
                 }}
               >
-                <MenuItem value="all" sx={{ fontSize: '12px' }}>
-                  {t('All')}
+                <MenuItem value="all" sx={{ fontSize: "12px" }}>
+                  {t("All")}
                 </MenuItem>
                 {MOCK_UP_TREE_DATA[0].children.map((item: TreeItem) => (
                   <MenuItem
                     key={item.id}
                     value={item.id}
-                    sx={{ fontSize: '12px' }}
+                    sx={{ fontSize: "12px" }}
                   >
                     {item.id}
                   </MenuItem>
@@ -224,7 +224,7 @@ export default function FlowCanvasToolbar({
               type="text"
               value={searchKeyword}
               onChange={(event) => onSearchKeywordChange(event.target.value)}
-              placeholder={t('Search node message text')}
+              placeholder={t("Search node message text")}
             />
           </div>
 
@@ -232,8 +232,8 @@ export default function FlowCanvasToolbar({
             type="button"
             title={
               isCollapsed
-                ? `${t('Show canvas panel')}`
-                : `${t('Hide canvas panel')}`
+                ? `${t("Show canvas panel")}`
+                : `${t("Hide canvas panel")}`
             }
             onClick={onToggleCollapsed}
             className={`${styles.toolButton} ${styles.panelToggleButton}`}
@@ -256,21 +256,21 @@ export default function FlowCanvasToolbar({
                 role="button"
                 tabIndex={0}
                 onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') {
+                  if (event.key === "Enter" || event.key === " ") {
                     onFocusNode(node);
                   }
                 }}
               >
                 <div className={styles.searchResultHeader}>
                   <div className={styles.searchResultType}>
-                    {nodeLabels[node.type]?.replace('+ ', '') || node.type}
+                    {nodeLabels[node.type]?.replace("+ ", "") || node.type}
                   </div>
                   <div className={styles.searchResultId}>{node.id}</div>
                 </div>
 
                 <div className={styles.searchResultText}>
-                  {getNodeSearchText(node).filter(Boolean).join(' ') ||
-                    '(empty)'}
+                  {getNodeSearchText(node).filter(Boolean).join(" ") ||
+                    "(empty)"}
                 </div>
               </div>
             ))}

@@ -1,6 +1,6 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from "react";
 
-import type { BuilderNode } from '../../types';
+import type { BuilderNode } from "../../types";
 
 const getAbsoluteNodePosition = (node: any, allNodes: any[]) => {
   let x = node.position.x;
@@ -33,48 +33,48 @@ export function useFlowNodeSearch({
     options?: { zoom?: number; duration?: number },
   ) => void;
 }) {
-  const [searchType, setSearchType] = useState<string>('all');
-  const [searchKeyword, setSearchKeyword] = useState('');
+  const [searchType, setSearchType] = useState<string>("all");
+  const [searchKeyword, setSearchKeyword] = useState("");
 
   const getNodeSearchText = useCallback((node: any) => {
     const data = node?.data ?? {};
 
     switch (node.type) {
-      case 'message':
+      case "message":
         return [data.content];
-      case 'form':
+      case "form":
         return [data.title];
-      case 'slotfilling':
+      case "slotfilling":
         return [data.content, data.slot];
-      case 'api':
+      case "api":
         return [
           data.url,
           ...(Array.isArray(data.apis)
             ? data.apis.map((api: any) => api?.name)
             : []),
         ];
-      case 'branch':
+      case "branch":
         return Array.isArray(data.replies)
           ? data.replies.map((reply: any) => reply?.display)
           : [];
-      case 'link':
+      case "link":
         return [data.display, data.content];
-      case 'llm':
+      case "llm":
         return [data.prompt];
-      case 'toast':
+      case "toast":
         return [data.message];
-      case 'iframe':
+      case "iframe":
         return [data.url];
-      case 'scenario':
+      case "scenario":
         return [data.label];
-      case 'selectionGroup':
+      case "selectionGroup":
         return [data.label, data.title];
-      case 'setSlot':
+      case "setSlot":
         return Array.isArray(data.assignments)
           ? data.assignments.flatMap((item: any) => [item?.key, item?.value])
           : [];
-      case 'delay':
-        return [String(data.duration ?? '')];
+      case "delay":
+        return [String(data.duration ?? "")];
       default:
         return [];
     }
@@ -85,12 +85,12 @@ export function useFlowNodeSearch({
     if (!keyword) return [];
 
     return nodes.filter((node: any) => {
-      const typeMatched = searchType === 'all' || node.type === searchType;
+      const typeMatched = searchType === "all" || node.type === searchType;
       if (!typeMatched) return false;
 
       const text = getNodeSearchText(node)
         .filter(Boolean)
-        .join(' ')
+        .join(" ")
         .toLowerCase();
       return text.includes(keyword);
     });

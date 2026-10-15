@@ -1,37 +1,34 @@
-import { useState } from 'react';
+import { useState } from "react";
+import { Box, Stack, Tab, Tabs } from "@mui/material";
+import { useTranslation } from "react-i18next";
+
+import ApiResponseMappingModal from "./modals/ApiResponseMappingModal";
+import BindApiSettingsTab from "./tabs/BindApiSettingsTab";
+import TargetApiSettingsTab from "./tabs/TargetApiSettingsTab";
 import {
-  Alert,
-  Button,
-  CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  Stack,
-  TextField,
-} from '@mui/material';
-import { useTranslation } from 'react-i18next';
+  createBindApiSettings,
+  createTargetApiSettings,
+  type DisplayValue,
+  type ApiSettings,
+  type ApiParameterEntry,
+  type FormElement,
+  type GridElement,
+} from "../type";
 
-import type { DisplayValue, FormElement, GridElement } from '../type';
-import type { NxApis, NxMethod } from '../type';
-
-import apiClient from '@/lib/api/apiClient';
+import type { NxApis, NxMethod } from "../type/nxApis";
+import { useModal } from "@/providers/ModalProvider";
 
 export const getElementDefaultValue = (element: FormElement): unknown => {
-  if ('defaultValue' in element) return element.defaultValue;
-  return '';
+  if ("defaultValue" in element) return element.defaultValue;
+  return "";
 };
 
 const getNestedValue = (value: unknown, path: string): unknown => {
   if (!path.trim()) return value;
 
   return path
-    .replace(/\[(\d+)\]/g, '.$1')
-    .split('.')
+    .replace(/\[(\d+)\]/g, ".$1")
+    .split(".")
     .filter(Boolean)
     .reduce<unknown>((currentValue, key) => {
       if (currentValue == null) return undefined;
@@ -40,7 +37,7 @@ const getNestedValue = (value: unknown, path: string): unknown => {
         return currentValue[Number(key)];
       }
 
-      if (typeof currentValue === 'object') {
+      if (typeof currentValue === "object") {
         return (currentValue as Record<string, unknown>)[key];
       }
 
@@ -56,12 +53,12 @@ const getMappableResponseValue = (
     return getNestedValue(response, responsePath);
   }
 
-  if (!response || typeof response !== 'object' || Array.isArray(response)) {
+  if (!response || typeof response !== "object" || Array.isArray(response)) {
     return response;
   }
 
   const responseObject = response as Record<string, unknown>;
-  for (const key of ['data', 'result', 'items', 'list', 'rows']) {
+  for (const key of ["data", "result", "items", "list", "rows"]) {
     if (key in responseObject) return responseObject[key];
   }
 
@@ -69,13 +66,13 @@ const getMappableResponseValue = (
 };
 
 const stringifyValue = (value: unknown): string => {
-  if (value == null) return '';
-  if (typeof value === 'string') return value;
-  if (typeof value === 'number' || typeof value === 'boolean') {
+  if (value == null) return "";
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") {
     return String(value);
   }
 
-  if (typeof value === 'object' && !Array.isArray(value)) {
+  if (typeof value === "object" && !Array.isArray(value)) {
     const record = value as Record<string, unknown>;
     const preferredValue =
       record.value ?? record.label ?? record.name ?? record.title ?? record.id;
@@ -88,7 +85,7 @@ const stringifyValue = (value: unknown): string => {
 const normalizeOptions = (value: unknown): DisplayValue[] => {
   const source = Array.isArray(value)
     ? value
-    : value && typeof value === 'object'
+    : value && typeof value === "object"
       ? Object.entries(value as Record<string, unknown>).map(([key, item]) => ({
           value: key,
           label: stringifyValue(item),
@@ -99,12 +96,12 @@ const normalizeOptions = (value: unknown): DisplayValue[] => {
 
   return source
     .map((item, index): DisplayValue | null => {
-      if (typeof item === 'string') return { value: item, label: item };
-      if (typeof item === 'number' || typeof item === 'boolean') {
+      if (typeof item === "string") return { value: item, label: item };
+      if (typeof item === "number" || typeof item === "boolean") {
         const text = String(item);
         return { value: text, label: text };
       }
-      if (!item || typeof item !== 'object') return null;
+      if (!item || typeof item !== "object") return null;
 
       const record = item as Record<string, unknown>;
       const valueCandidate =
@@ -140,6 +137,26 @@ const formatDateValue = (value: unknown): string => {
   return date.toISOString().slice(0, 10);
 };
 
+const mapOptionsByKeys = (
+  value: unknown,
+  labelKey?: string,
+  valueKey?: string,
+): DisplayValue[] => {
+  if (!Array.isArray(value) || !labelKey || !valueKey) return [];
+
+  return value.flatMap((item) => {
+    if (!item || typeof item !== "object" || Array.isArray(item)) return [];
+
+    const row = item as Record<string, unknown>;
+    return [
+      {
+        label: stringifyValue(row[labelKey]),
+        value: stringifyValue(row[valueKey]),
+      },
+    ];
+  });
+};
+
 export const mapResponseToTargetElement = (
   targetElement: FormElement,
   response: unknown,
@@ -148,24 +165,41 @@ export const mapResponseToTargetElement = (
   const value = getMappableResponseValue(response, responsePath);
 
   switch (targetElement.type) {
-    case 'input':
-    case 'search':
+    case "input":
+    case "search":
       return {
         ...targetElement,
         defaultValue: stringifyValue(Array.isArray(value) ? value[0] : value),
       };
-    case 'date':
+    case "date":
       return {
         ...targetElement,
         defaultValue: formatDateValue(Array.isArray(value) ? value[0] : value),
       };
-    case 'checkbox': {
-      const options = normalizeOptions(value);
-      const defaultValue = normalizeStringArray(
-        Array.isArray(value)
-          ? value.map((item) => stringifyValue(item))
-          : value,
-      );
+    case "checkbox": {
+      const boundValue = targetElement.optionLabelKey
+        ? getMappableResponseValue(
+            response,
+            targetElement.optionsSlot || responsePath,
+          )
+        : value;
+      const options = targetElement.optionLabelKey
+        ? mapOptionsByKeys(
+            boundValue,
+            targetElement.optionLabelKey,
+            targetElement.optionValueKey,
+          )
+        : normalizeOptions(value);
+      const optionValues = options.map((option) => option.value);
+      const defaultValue = targetElement.optionLabelKey
+        ? targetElement.defaultValue.filter((item) =>
+            optionValues.includes(item),
+          )
+        : normalizeStringArray(
+            Array.isArray(value)
+              ? value.map((item) => stringifyValue(item))
+              : value,
+          );
 
       return {
         ...targetElement,
@@ -173,33 +207,71 @@ export const mapResponseToTargetElement = (
         defaultValue,
       };
     }
-    case 'radio': {
-      const options = normalizeOptions(value);
-      const firstValue = Array.isArray(value) ? value[0] : value;
+    case "radio": {
+      const boundValue = targetElement.optionLabelKey
+        ? getMappableResponseValue(
+            response,
+            targetElement.optionsSlot || responsePath,
+          )
+        : value;
+      const options = targetElement.optionLabelKey
+        ? mapOptionsByKeys(
+            boundValue,
+            targetElement.optionLabelKey,
+            targetElement.optionValueKey,
+          )
+        : normalizeOptions(value);
+
+      const optionValues = options.map((option) => option.value);
+      const defaultValue = targetElement.optionLabelKey
+        ? targetElement.defaultValue.filter((item) =>
+            optionValues.includes(item),
+          )
+        : normalizeStringArray(
+            Array.isArray(value)
+              ? value.map((item) => stringifyValue(item))
+              : value,
+          );
 
       return {
         ...targetElement,
         options: options.length ? options : targetElement.options,
-        defaultValue: stringifyValue(firstValue),
+        defaultValue,
       };
     }
-    case 'dropbox': {
-      const options = normalizeOptions(value);
-      const selectedValues = normalizeStringArray(value);
+    case "dropbox": {
+      const boundValue = targetElement.optionLabelKey
+        ? getMappableResponseValue(
+            response,
+            targetElement.optionsSlot || responsePath,
+          )
+        : value;
+      const options = targetElement.optionLabelKey
+        ? mapOptionsByKeys(
+            boundValue,
+            targetElement.optionLabelKey,
+            targetElement.optionValueKey,
+          )
+        : normalizeOptions(value);
+      const selectedValues = targetElement.optionLabelKey
+        ? normalizeStringArray(targetElement.defaultValue).filter((item) =>
+            options.some((option) => option.value === item),
+          )
+        : normalizeStringArray(value);
 
       return {
         ...targetElement,
         options: options.length ? options : targetElement.options,
         defaultValue:
-          targetElement.selectKind === 'multi'
+          targetElement.selectKind === "multi"
             ? selectedValues
-            : (selectedValues[0] ?? ''),
+            : (selectedValues[0] ?? ""),
       };
     }
-    case 'grid': {
+    case "grid": {
       const rows = Array.isArray(value) ? value : value != null ? [value] : [];
       const firstObject = rows.find(
-        (item) => item && typeof item === 'object' && !Array.isArray(item),
+        (item) => item && typeof item === "object" && !Array.isArray(item),
       ) as Record<string, unknown> | undefined;
       const firstArray = rows.find(Array.isArray) as unknown[] | undefined;
       const displayKeys = firstObject
@@ -211,11 +283,11 @@ export const mapResponseToTargetElement = (
             }))
           : targetElement.displayKeys.length
             ? targetElement.displayKeys
-            : [{ key: 'value', label: 'Value' }];
+            : [{ key: "value", label: "Value" }];
       const columns = Math.max(displayKeys.length, 1);
       const headerData = displayKeys.map((item) => item.label);
       const bodyData = rows.flatMap((row) => {
-        if (row && typeof row === 'object' && !Array.isArray(row)) {
+        if (row && typeof row === "object" && !Array.isArray(row)) {
           return displayKeys.map((item) =>
             stringifyValue((row as Record<string, unknown>)[item.key]),
           );
@@ -225,7 +297,7 @@ export const mapResponseToTargetElement = (
         }
         return [
           stringifyValue(row),
-          ...Array.from({ length: columns - 1 }, () => ''),
+          ...Array.from({ length: columns - 1 }, () => ""),
         ];
       });
       const gridData = rows.length ? [...headerData, ...bodyData] : headerData;
@@ -243,6 +315,53 @@ export const mapResponseToTargetElement = (
   }
 };
 
+const getSelectedResponseKey = (selectedPath: string): string => {
+  if (selectedPath === "$") return "data";
+
+  const pathParts = selectedPath
+    .replace(/\]$/, "")
+    .replaceAll("[", ".")
+    .split(".");
+
+  return pathParts[pathParts.length - 1] || "data";
+};
+
+const mapResponseSelectionToGrid = (
+  targetElement: GridElement,
+  selectedValue: unknown,
+  selectedPath: string,
+): GridElement => {
+  const selectedKey = getSelectedResponseKey(selectedPath);
+  const rows = Array.isArray(selectedValue)
+    ? selectedValue
+    : selectedValue != null
+      ? [selectedValue]
+      : [];
+
+  return {
+    ...(mapResponseToTargetElement(
+      targetElement,
+      selectedValue,
+    ) as GridElement),
+    optionsSlot: selectedKey,
+    sampleJson: JSON.stringify({ [selectedKey]: rows }, null, 2),
+  };
+};
+
+const getOptionColumnKeys = (value: unknown): string[] => {
+  if (!Array.isArray(value)) return [];
+
+  return Array.from(
+    new Set(
+      value.flatMap((item) =>
+        item && typeof item === "object" && !Array.isArray(item)
+          ? Object.keys(item)
+          : [],
+      ),
+    ),
+  );
+};
+
 const interpolatePayloadText = (
   text: string,
   values: Record<string, unknown>,
@@ -252,18 +371,35 @@ const interpolatePayloadText = (
   );
 
 export const parseOptionalParameter = (
-  rawValue: string | undefined,
+  rawValue: string | ApiParameterEntry[] | undefined,
   values: Record<string, unknown>,
 ) => {
+  if (Array.isArray(rawValue)) {
+    return Object.fromEntries(
+      rawValue.flatMap((entry) => {
+        const key = entry.key.trim();
+        if (!key) return [];
+        const interpolated = interpolatePayloadText(entry.value, values);
+        let value: unknown = interpolated;
+        try {
+          value = JSON.parse(interpolated);
+        } catch {
+          // Plain text parameter values remain strings.
+        }
+        return [[key, value] as const];
+      }),
+    );
+  }
+
   const text = rawValue?.trim();
   if (!text) return {};
 
   const parsed = JSON.parse(interpolatePayloadText(text, values));
-  if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+  if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
     return parsed as Record<string, unknown>;
   }
 
-  throw new Error('Optional Parameter must be a JSON object.');
+  throw new Error("Optional Parameter must be a JSON object.");
 };
 
 function CustomElementPropertyEditor({
@@ -278,31 +414,58 @@ function CustomElementPropertyEditor({
   onChange: (element: FormElement) => void;
   onGridSizeChange: (
     element: GridElement,
-    key: 'rows' | 'columns',
+    key: "rows" | "columns",
     value: number,
   ) => void;
   isReadonly?: boolean;
 }) {
   const { t } = useTranslation();
-  const [isApiModalOpen, setIsApiModalOpen] = useState(false);
+  const { showAlert, showConfirm } = useModal();
   const [isExecuting, setIsExecuting] = useState(false);
   const [responseData, setResponseData] = useState<unknown>(null);
-  const [responseError, setResponseError] = useState('');
+  const [responseError, setResponseError] = useState("");
   const [isResponseDialogOpen, setIsResponseDialogOpen] = useState(false);
+  const [isApplyToSelfDialogOpen, setIsApplyToSelfDialogOpen] = useState(false);
+  const [selectedResponsePath, setSelectedResponsePath] = useState<
+    string | null
+  >(null);
+  const [selectedResponseValue, setSelectedResponseValue] = useState<unknown>();
+  const [selectedOptionKey, setSelectedOptionKey] = useState("");
+  const [selectedOptionValue, setSelectedOptionValue] = useState("");
+  const [apiSettingsTab, setApiSettingsTab] = useState<"bind" | "target">(
+    element.targetApi.targetElementId ? "target" : "bind",
+  );
   void onGridSizeChange;
 
-  const apiData = element.apiData as NxApis | null | undefined;
+  const activeApiSettings =
+    apiSettingsTab === "bind" ? element.bindApi : element.targetApi;
   const targetElement =
-    elements.find((item) => item.id === element.targetElementId) ?? null;
-
-  const handleSelectApi = (api: NxApis) => {
-    onChange({
-      ...element,
-      apiId: api.id || '',
-      apiData: api as unknown as Record<string, unknown>,
-    });
-    setIsApiModalOpen(false);
-  };
+    apiSettingsTab === "target"
+      ? (elements.find(
+          (item) => item.id === element.targetApi.targetElementId,
+        ) ?? null)
+      : null;
+  const canApplyResponseToSelf = [
+    "checkbox",
+    "radio",
+    "dropbox",
+    "grid",
+  ].includes(element.type);
+  const isOptionTarget = Boolean(
+    targetElement &&
+    ["checkbox", "radio", "dropbox"].includes(targetElement.type),
+  );
+  const isOptionSelf = ["checkbox", "radio", "dropbox"].includes(element.type);
+  const optionColumnKeys = getOptionColumnKeys(selectedResponseValue);
+  const canApplyToTarget = Boolean(
+    targetElement &&
+    selectedResponsePath !== null &&
+    (!isOptionTarget || (selectedOptionKey && selectedOptionValue)),
+  );
+  const canApplyToSelf = Boolean(
+    selectedResponsePath !== null &&
+    (!isOptionSelf || (selectedOptionKey && selectedOptionValue)),
+  );
 
   const getParameterQueryParams = (
     parameterId: string | undefined,
@@ -327,284 +490,406 @@ function CustomElementPropertyEditor({
       }),
     );
 
-    return parseOptionalParameter(element.optionalParameter, sourceValues);
+    return {
+      ...parseOptionalParameter(activeApiSettings.body, sourceValues),
+      ...parseOptionalParameter(
+        activeApiSettings.optionalParameter,
+        sourceValues,
+      ),
+    };
   };
 
-  const applyResponseToTarget = (response: unknown) => {
-    if (!targetElement) {
-      setResponseError(t('Target Element ID is required.'));
+  const handleApiSettingsChange = (settings: ApiSettings) => {
+    if (settings.mode === "bind") {
+      onChange({
+        ...element,
+        bindApi: { ...element.bindApi, ...settings },
+      });
+    } else {
+      onChange({
+        ...element,
+        targetApi: { ...element.targetApi, ...settings },
+      });
+    }
+  };
+
+  const handleOpenBindApiModal = async () => {
+    const conflictingElements = elements.filter(
+      (item) =>
+        item.id !== element.id &&
+        item.targetApi.targetElementId === element.id &&
+        Boolean(item.targetApi.apiId),
+    );
+
+    if (conflictingElements.length) {
+      const confirmed = await showConfirm(
+        t(
+          "Another element is sending Target API data to this element. Clear that Target API configuration and continue?",
+        ),
+      );
+      if (!confirmed) return;
+
+      conflictingElements.forEach((item) =>
+        onChange({ ...item, targetApi: createTargetApiSettings() }),
+      );
+    }
+  };
+
+  const handleTargetElementChange = async (targetElementId: string) => {
+    if (!targetElementId) {
+      handleApiSettingsChange({
+        ...element.targetApi,
+        targetElementId: "",
+      });
       return;
     }
 
-    onChange(
-      mapResponseToTargetElement(targetElement, response, element.responsePath),
-    );
-    // close
+    const nextTarget = elements.find((item) => item.id === targetElementId);
+    if (!nextTarget) return;
+
+    if (nextTarget.bindApi.apiId) {
+      const confirmed = await showConfirm(
+        t(
+          "The selected target element already has a Bind API. Clear its Bind API configuration and continue?",
+        ),
+      );
+      if (!confirmed) return;
+      onChange({ ...nextTarget, bindApi: createBindApiSettings() });
+    }
+
+    handleApiSettingsChange({
+      ...element.targetApi,
+      targetElementId,
+    });
+  };
+
+  const applyResponseToTarget = () => {
+    if (!targetElement || selectedResponsePath === null) {
+      setResponseError(t("Target Element ID is required."));
+      return;
+    }
+
+    if (
+      (targetElement.type === "checkbox" ||
+        targetElement.type === "radio" ||
+        targetElement.type === "dropbox") &&
+      Array.isArray(selectedResponseValue)
+    ) {
+      if (!selectedOptionKey || !selectedOptionValue) return;
+
+      const optionsSlot = getSelectedResponseKey(selectedResponsePath);
+
+      onChange({
+        ...targetElement,
+        options: [],
+        optionsSlot,
+        optionLabelKey: selectedOptionKey,
+        optionValueKey: selectedOptionValue,
+        sampleJson: JSON.stringify(
+          { [optionsSlot]: selectedResponseValue },
+          null,
+          2,
+        ),
+      });
+    } else if (targetElement.type === "grid") {
+      onChange(
+        mapResponseSelectionToGrid(
+          targetElement,
+          selectedResponseValue,
+          selectedResponsePath,
+        ),
+      );
+    } else {
+      onChange(
+        mapResponseToTargetElement(targetElement, selectedResponseValue),
+      );
+    }
+
     setIsResponseDialogOpen(false);
+  };
+
+  const applyResponseToSelf = () => {
+    if (selectedResponsePath === null) return;
+
+    if (
+      (element.type === "checkbox" ||
+        element.type === "radio" ||
+        element.type === "dropbox") &&
+      Array.isArray(selectedResponseValue)
+    ) {
+      if (!selectedOptionKey || !selectedOptionValue) return;
+
+      const optionsSlot = getSelectedResponseKey(selectedResponsePath);
+
+      onChange({
+        ...element,
+        options: [],
+        optionsSlot,
+        optionLabelKey: selectedOptionKey,
+        optionValueKey: selectedOptionValue,
+        sampleJson: JSON.stringify(
+          { [optionsSlot]: selectedResponseValue },
+          null,
+          2,
+        ),
+      });
+    } else if (element.type === "grid") {
+      onChange(
+        mapResponseSelectionToGrid(
+          element,
+          selectedResponseValue,
+          selectedResponsePath,
+        ),
+      );
+    } else {
+      onChange(mapResponseToTargetElement(element, selectedResponseValue));
+    }
+    setIsApplyToSelfDialogOpen(false);
+  };
+
+  const applyResponseToSelfAsStatic = () => {
+    if (selectedResponsePath === null) return;
+
+    if (
+      (element.type === "checkbox" ||
+        element.type === "radio" ||
+        element.type === "dropbox") &&
+      Array.isArray(selectedResponseValue)
+    ) {
+      if (!selectedOptionKey || !selectedOptionValue) return;
+
+      onChange({
+        ...element,
+        options: mapOptionsByKeys(
+          selectedResponseValue,
+          selectedOptionKey,
+          selectedOptionValue,
+        ),
+        optionsSlot: "",
+        optionLabelKey: "",
+        optionValueKey: "",
+        sampleJson: "",
+      });
+    } else {
+      const mappedElement = mapResponseToTargetElement(
+        element,
+        selectedResponseValue,
+      );
+
+      onChange(
+        mappedElement.type === "grid"
+          ? { ...mappedElement, optionsSlot: "", sampleJson: "" }
+          : mappedElement,
+      );
+    }
+
+    setIsApplyToSelfDialogOpen(false);
   };
 
   const fnCustomElementUI = () => {
     return (
       <Stack spacing={2}>
-        <Dialog
+        <ApiResponseMappingModal
           open={isResponseDialogOpen}
-          onClose={() => setIsResponseDialogOpen(false)}
-          fullWidth
-          maxWidth="md"
-        >
-          <DialogTitle>{t('API Response Data')}</DialogTitle>
-          <DialogContent dividers>
-            <TextField
-              value={JSON.stringify(responseData, null, 2)}
-              fullWidth
-              multiline
-              minRows={12}
-              InputProps={{ readOnly: true }}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button
-              disabled={!responseData || !targetElement || isReadonly}
-              onClick={() => applyResponseToTarget(responseData)}
-            >
-              {t('Apply to Target')}
-            </Button>
-            <Button onClick={() => setIsResponseDialogOpen(false)}>
-              {t('Close')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-        {/*
-        <FormControl fullWidth size="small">
-          <InputLabel id="validation-label">{t('Method')}</InputLabel>
-          <Select
-            labelId="validation-label"
-            label={t('Method')}
-            disabled={isReadonly}
-            value={apiData?.method ?? "get"}
-            onChange={(event) =>
-              onChange({ ...element, apiData: { ...element.apiData, method: event.target.value } })
-            }
-          >
-            <MenuItem value="get">GET</MenuItem>
-            <MenuItem value="post">POST</MenuItem>
-            <MenuItem value="put">PUT</MenuItem>
-            <MenuItem value="delete">DELETE</MenuItem>
-            <MenuItem value="patch">PATCH</MenuItem>
-          </Select>
-        </FormControl>
-        <TextField
-          label={t('headers (JSON)')}
-          size="small"
-          fullWidth
-          multiline
-          minRows={4}
-          value={apiData?.headers ?? ""}
-          onChange={(event) =>
-            onChange({ ...element, apiData: { ...element.apiData, headers: event.target.value } })
-          }
-          // InputProps={{ readOnly: true }}
-        />
-        */}
-        <TextField
-          label={t('API ID')}
-          size="small"
-          fullWidth
-          value={element.apiId ?? ''}
-          InputProps={{ readOnly: true }}
-        />
-        <TextField
-          label={t('Endpoint')}
-          size="small"
-          fullWidth
-          value={apiData?.endPoint ?? ''}
-          onChange={(event) =>
-            onChange({
-              ...element,
-              apiData: { ...element.apiData, endPoint: event.target.value },
-            })
-          }
-          // InputProps={{ readOnly: true }}
-        />
-        <FormControl fullWidth size="small">
-          <InputLabel id="validation-label">{t('event type')}</InputLabel>
-          <Select
-            labelId="validation-label"
-            label={t('event type')}
-            disabled={isReadonly}
-            value={element.eventType ?? 'onChange'}
-            onChange={(event) =>
-              onChange({
-                ...element,
-                eventType: event.target.value as FormElement['eventType'],
-              })
-            }
-          >
-            <MenuItem value="">
-              <em>{t('None')}</em>
-            </MenuItem>
-            <MenuItem value="onChange">onChange</MenuItem>
-          </Select>
-        </FormControl>
-        <TextField
-          label={t('Parameter ID')}
-          size="small"
-          fullWidth
-          disabled={isReadonly}
-          value={element.parameterId ?? ''}
-          onChange={(event) =>
-            onChange({ ...element, parameterId: event.target.value })
-          }
-        />
-        <TextField
-          label={t('Optional Parameter')}
-          helperText={t('Enter additional API parameters as JSON object')}
-          size="small"
-          fullWidth
-          multiline
-          minRows={4}
-          disabled={isReadonly}
-          value={element.optionalParameter ?? ''}
-          onChange={(event) =>
-            onChange({ ...element, optionalParameter: event.target.value })
-          }
-        />
-        <FormControl fullWidth size="small">
-          <InputLabel id="target-element-id-label">
-            {t('Target Element ID')}
-          </InputLabel>
-          <Select
-            labelId="target-element-id-label"
-            label={t('Target Element ID')}
-            disabled={isReadonly}
-            value={element.targetElementId ?? ''}
-            onChange={(event) =>
-              onChange({ ...element, targetElementId: event.target.value })
-            }
-          >
-            <MenuItem value="">
-              <em>{t('None')}</em>
-            </MenuItem>
-            {elements
-              .filter((item) => item.id !== element.id)
-              .map((item) => (
-                <MenuItem key={item.id} value={item.id}>
-                  {item.label || item.id} ({item.type})
-                </MenuItem>
-              ))}
-          </Select>
-        </FormControl>
-        <TextField
-          label={t('Response Path')}
-          helperText={t(
-            'Optional dot path to map from the response, for example data.items',
+          title={t("Apply API Response to Target Element")}
+          instruction={t(
+            "Select the response key to connect to the target element.",
           )}
-          size="small"
-          fullWidth
-          disabled={isReadonly}
-          value={element.responsePath ?? ''}
-          onChange={(event) =>
-            onChange({ ...element, responsePath: event.target.value })
-          }
+          responseData={responseData}
+          responseError={responseError}
+          isExecuting={isExecuting}
+          selectedPath={selectedResponsePath}
+          onSelect={(path, value) => {
+            setSelectedResponsePath(path);
+            setSelectedResponseValue(value);
+            setSelectedOptionKey("");
+            setSelectedOptionValue("");
+          }}
+          isOptionsElement={isOptionTarget}
+          optionColumnKeys={optionColumnKeys}
+          selectedLabelKey={selectedOptionKey}
+          selectedValueKey={selectedOptionValue}
+          onLabelKeyChange={setSelectedOptionKey}
+          onValueKeyChange={setSelectedOptionValue}
+          actions={[
+            {
+              label: t("Apply to Target"),
+              onClick: applyResponseToTarget,
+              disabled: !canApplyToTarget || isReadonly,
+            },
+          ]}
+          onClose={() => setIsResponseDialogOpen(false)}
         />
-        {responseError ? <Alert severity="error">{responseError}</Alert> : null}
-        <Stack direction="row" spacing={1}>
-          <Button
-            variant="contained"
-            size="small"
-            sx={{ fontSize: '10px' }}
-            disabled={isReadonly}
-            onClick={() => setIsApiModalOpen(true)}
+        <ApiResponseMappingModal
+          open={isApplyToSelfDialogOpen}
+          title={t("Apply API Response to Current Element")}
+          instruction={t(
+            "No target element is selected. Select the response key to connect to the current element.",
+          )}
+          responseData={responseData}
+          selectedPath={selectedResponsePath}
+          onSelect={(path, value) => {
+            setSelectedResponsePath(path);
+            setSelectedResponseValue(value);
+            setSelectedOptionKey("");
+            setSelectedOptionValue("");
+          }}
+          isOptionsElement={isOptionSelf}
+          optionColumnKeys={optionColumnKeys}
+          selectedLabelKey={selectedOptionKey}
+          selectedValueKey={selectedOptionValue}
+          onLabelKeyChange={setSelectedOptionKey}
+          onValueKeyChange={setSelectedOptionValue}
+          actions={[
+            {
+              label: t("Apply as Static Data"),
+              onClick: applyResponseToSelfAsStatic,
+              disabled: !canApplyToSelf || isReadonly,
+              variant: "outlined",
+            },
+            {
+              label: t("Apply as Dynamic Data"),
+              onClick: applyResponseToSelf,
+              disabled: !canApplyToSelf || isReadonly,
+            },
+          ]}
+          onClose={() => setIsApplyToSelfDialogOpen(false)}
+        />
+        <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+          <Tabs
+            value={apiSettingsTab}
+            onChange={(_, value: "bind" | "target") => setApiSettingsTab(value)}
+            variant="fullWidth"
           >
-            {t('API Modal popup')}
-          </Button>
-          <Button
-            variant="outlined"
-            size="small"
-            sx={{ fontSize: '10px' }}
-            disabled={isReadonly || isExecuting}
-            onClick={() => void handleRunApi(false)}
-            startIcon={isExecuting ? <CircularProgress size={14} /> : undefined}
-          >
-            {t('Run API')}
-          </Button>
-          <Button
-            variant="outlined"
-            size="small"
-            sx={{ fontSize: '10px' }}
-            disabled={isReadonly || isExecuting || !element.targetElementId}
-            onClick={() => void handleRunApi(true)}
-          >
-            {t('Run and Apply')}
-          </Button>
-        </Stack>
+            <Tab value="bind" label={t("Bind")} />
+            <Tab value="target" label={t("Target")} />
+          </Tabs>
+        </Box>
+        {apiSettingsTab === "bind" ? (
+          <BindApiSettingsTab
+            settings={element.bindApi}
+            isReadonly={isReadonly}
+            isExecuting={isExecuting}
+            responseError={responseError}
+            onChange={handleApiSettingsChange}
+            onRunApi={() => void handleRunApi()}
+          />
+        ) : (
+          <TargetApiSettingsTab
+            settings={element.targetApi}
+            elements={elements}
+            sourceElementId={element.id}
+            onTargetElementChange={handleTargetElementChange}
+            isReadonly={isReadonly}
+            isExecuting={isExecuting}
+            responseError={responseError}
+            onChange={handleApiSettingsChange}
+            onRunApi={() => void handleRunApi()}
+          />
+        )}
       </Stack>
     );
   };
 
-  const handleRunApi = async (shouldApplyTarget: boolean) => {
-    const mockMethod = 'get';
+  const handleRunApi = async () => {
+    const mockMethod = "post";
     const mockHeaders = `{
   "Content-Type":"application/json",
   "Accept":"application/json",
   "X-API-KEY":"6458f478e47abbea0079a1fe7e5f1417",
-  "X-TEN-ID":"2000"
+  "X-TEN-ID":"2000",
+  "Authorization":"Bearer nxhub_-8-pD2JS8FU92Ej2vN_FIZAhNUWgYSSYQGdNxDc3neE"
 }`;
-    const endpoint = apiData?.endPoint?.trim();
+    const mockUrl = "/api/v1/hub/nx";
+    const endpoint = mockUrl;
 
-    const method = apiData?.method?.trim() ?? mockMethod;
+    const method = activeApiSettings.method.trim() || mockMethod;
     const httpMethod = method.toLowerCase() as NxMethod;
-    const headersStr = apiData?.headers?.trim() ?? mockHeaders;
+    const headersStr = activeApiSettings.headers.trim() || mockHeaders;
     // apiData에 method(get, post, put, delete, patch) 및 headers, body 데이터가 없음.
     // console.log("============> ", endpoint)
     if (!endpoint) {
-      setResponseError(t('Endpoint is required.'));
+      setResponseError(t("Endpoint is required."));
       return;
     }
     if (!httpMethod) {
-      setResponseError(t('HTTP method is required.'));
+      setResponseError(t("HTTP method is required."));
       return;
     }
     if (!headersStr) {
-      setResponseError(t('Headers are required.'));
+      setResponseError(t("Headers are required."));
+      return;
+    }
+    if (apiSettingsTab === "target" && !targetElement) {
+      setResponseError(t("Target Element ID is required."));
       return;
     }
 
+    setResponseError("");
+    if (isOptionTarget) {
+      setResponseData(null);
+      setSelectedResponsePath(null);
+      setSelectedResponseValue(undefined);
+      setSelectedOptionKey("");
+      setSelectedOptionValue("");
+      setIsApplyToSelfDialogOpen(false);
+      setIsResponseDialogOpen(true);
+    }
     setIsExecuting(true);
-    setResponseError('');
 
     try {
-      const parsedHeaders = JSON.parse(headersStr);
+      const parsedHeaders = JSON.parse(mockHeaders); // JSON.parse(headersStr);
       const payload = buildRequestPayload();
       const parameterParams = getParameterQueryParams(
-        element.parameterId,
+        activeApiSettings.parameterId,
         getElementDefaultValue(element),
       );
-      let response;
-      if (httpMethod === 'get' || httpMethod === 'delete') {
-        response = await apiClient[httpMethod](endpoint, {
-          params: {
-            ...payload,
-            ...parameterParams,
-          },
-          headers: parsedHeaders,
-        });
+      // nx용 mockbody 데이터
+      const mockBody = {
+        header: {
+          uri: activeApiSettings.url.trim(),
+          caller: "chatbuilder",
+        },
+        ChatbotRequestDto: {
+          ...payload,
+          ...parameterParams,
+        },
+      };
+      const abortCtrl = new AbortController();
+      const response = await fetch(endpoint, {
+        method: mockMethod,
+        headers: parsedHeaders,
+        body: JSON.stringify(mockBody),
+        credentials: "same-origin",
+        signal: abortCtrl.signal,
+      });
+      const responseData = await response.json();
+
+      // if (httpMethod === 'get' || httpMethod === 'delete') {
+      //   response = await apiClient[httpMethod](endpoint, {
+      //     params: mockBody,
+      //     headers: parsedHeaders,
+      //   });
+      // } else {
+      //   response = await apiClient[httpMethod](endpoint, payload, {
+      //     params: mockBody,
+      //     headers: parsedHeaders,
+      //   });
+      // }
+
+      setResponseData(responseData.data.result.body);
+      setSelectedResponsePath(null);
+      setSelectedResponseValue(undefined);
+      setSelectedOptionKey("");
+      setSelectedOptionValue("");
+      if (!targetElement && canApplyResponseToSelf) {
+        setIsApplyToSelfDialogOpen(true);
       } else {
-        response = await apiClient[httpMethod](endpoint, payload, {
-          params: parameterParams,
-          headers: parsedHeaders,
-        });
-      }
-
-      setResponseData(response);
-      setIsResponseDialogOpen(true);
-
-      if (shouldApplyTarget) {
-        applyResponseToTarget(response);
+        setIsResponseDialogOpen(true);
       }
     } catch (error) {
       setResponseError(
-        error instanceof Error ? error.message : t('API request failed.'),
+        error instanceof Error ? error.message : t("API request failed."),
       );
     } finally {
       setIsExecuting(false);
@@ -612,14 +897,14 @@ function CustomElementPropertyEditor({
   };
 
   switch (element.type) {
-    case 'input':
-    case 'date':
-    case 'checkbox':
-    case 'radio':
-    case 'dropbox':
-    case 'grid':
+    case "input":
+    case "date":
+    case "checkbox":
+    case "radio":
+    case "dropbox":
+    case "grid":
       return fnCustomElementUI();
-    case 'search':
+    case "search":
       break;
     default:
       return null;

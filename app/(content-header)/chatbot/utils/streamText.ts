@@ -17,7 +17,8 @@ function tryParseJson(line: string): string | null {
   if (!s) return null;
 
   const looksJson =
-    (s.startsWith("{") && s.endsWith("}")) || (s.startsWith("[") && s.endsWith("]"));
+    (s.startsWith("{") && s.endsWith("}")) ||
+    (s.startsWith("[") && s.endsWith("]"));
   if (!looksJson) return null;
 
   try {

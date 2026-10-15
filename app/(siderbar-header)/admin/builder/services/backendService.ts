@@ -1,9 +1,9 @@
 // src/backendService.js
 
-import * as firebaseApi from './firebaseApi';
-import * as fastApi from './fastApi';
-import { interpolateMessage } from '../utils/simulatorUtils';
-import { useBuilderStore } from '../store/index';
+import * as firebaseApi from "./firebaseApi";
+import * as fastApi from "./fastApi";
+import { interpolateMessage } from "../utils/simulatorUtils";
+import { useBuilderStore } from "../store/index";
 
 const services: any = {
   firebase: firebaseApi,
@@ -11,7 +11,7 @@ const services: any = {
 };
 
 const getService = (backend: any) => {
-  const service = services[backend ?? 'fastapi'];
+  const service = services[backend ?? "fastapi"];
   if (!service) {
     throw new Error(`Invalid backend specified: ${backend}`);
   }
@@ -63,17 +63,17 @@ export const testApiCall = async (apiCall: any) => {
   const { slots } = useBuilderStore.getState();
   const interpolatedUrl = interpolateMessage(apiCall.url, slots);
   const interpolatedHeaders = JSON.parse(
-    interpolateMessage(apiCall.headers || '{}', slots),
+    interpolateMessage(apiCall.headers || "{}", slots),
   );
 
-  const rawBody = apiCall.body || '{}';
+  const rawBody = apiCall.body || "{}";
   const finalBody = interpolateMessage(rawBody, slots);
 
   const options = {
     method: apiCall.method,
-    headers: { 'Content-Type': 'application/json', ...interpolatedHeaders },
+    headers: { "Content-Type": "application/json", ...interpolatedHeaders },
     body:
-      apiCall.method !== 'GET' && apiCall.method !== 'HEAD'
+      apiCall.method !== "GET" && apiCall.method !== "HEAD"
         ? finalBody
         : undefined,
   };
@@ -81,8 +81,8 @@ export const testApiCall = async (apiCall: any) => {
   const response = await fetch(interpolatedUrl, options);
 
   let result;
-  const contentType = response.headers.get('content-type');
-  if (contentType && contentType.includes('application/json')) {
+  const contentType = response.headers.get("content-type");
+  if (contentType && contentType.includes("application/json")) {
     try {
       result = await response.json();
     } catch (e) {
@@ -94,7 +94,7 @@ export const testApiCall = async (apiCall: any) => {
 
   if (!response.ok) {
     const errorMessage =
-      typeof result === 'string' ? result : JSON.stringify(result, null, 2);
+      typeof result === "string" ? result : JSON.stringify(result, null, 2);
     throw new Error(`HTTP ${response.status}: ${errorMessage}`);
   }
 

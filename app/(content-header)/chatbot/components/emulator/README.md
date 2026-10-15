@@ -1,4 +1,5 @@
 ## 패키지 구조
+
 ```bash
 app/(content-header)/chatbot/components/emulator/
   ScenarioEmulator.tsx                # 기존 파일을 이쪽으로 옮기거나, 기존 파일이 re-export

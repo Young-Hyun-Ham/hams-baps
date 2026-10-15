@@ -1,13 +1,8 @@
-import { useState } from 'react';
-import {
-  Checkbox,
-  FormControlLabel,
-  Stack,
-  TextField,
-} from '@mui/material';
-import { useTranslation } from 'react-i18next';
+import { useState } from "react";
+import { Checkbox, FormControlLabel, Stack, TextField } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
-import { FormElement, } from '../type';
+import { FormElement } from "../type";
 
 function ElementDefaultProperty({
   element,
@@ -23,55 +18,39 @@ function ElementDefaultProperty({
   return (
     <Stack spacing={2}>
       <TextField
-        label={t('Element ID')}
+        label={t("Element ID")}
         size="small"
         fullWidth
         value={element.id}
         InputProps={{ readOnly: true }}
       />
       <TextField
-        label={`${t('Label')} *`}
+        label={`${t("Label")} *`}
         size="small"
         fullWidth
         disabled={isReadonly}
         value={element.label}
-        onChange={(event) =>
-          onChange(
-            element.id,
-            'label',
-            event.target.value,
-          )
-        }
+        onChange={(event) => onChange(element.id, "label", event.target.value)}
       />
       <TextField
-        label={`${t('Name')} (Slot Key)`}
+        label={`${t("Name")} (Slot Key)`}
         size="small"
         fullWidth
         disabled={isReadonly}
         value={element.name}
-        onChange={(event) =>
-          onChange(
-            element.id,
-            'name',
-            event.target.value,
-          )
-        }
+        onChange={(event) => onChange(element.id, "name", event.target.value)}
       />
       <TextField
-        label={`${t('Description')} (Tooltip)`}
+        label={`${t("Description")} (Tooltip)`}
         size="small"
         fullWidth
         disabled={isReadonly}
-        value={element.description ?? ''}
+        value={element.description ?? ""}
         onChange={(event) =>
-          onChange(
-            element.id,
-            'description',
-            event.target.value,
-          )
+          onChange(element.id, "description", event.target.value)
         }
       />
-      {(element.type !== 'grid' && element.type !== 'search') && (
+      {element.type !== "grid" && element.type !== "search" && (
         <FormControlLabel
           control={
             <Checkbox
@@ -79,15 +58,11 @@ function ElementDefaultProperty({
               checked={element.requires ?? false}
               disabled={isReadonly}
               onChange={(event) =>
-                onChange(
-                  element.id,
-                  "requires",
-                  event.target.checked,
-                )
+                onChange(element.id, "requires", event.target.checked)
               }
             />
           }
-          label={t('Requires')}
+          label={t("Requires")}
         />
       )}
     </Stack>

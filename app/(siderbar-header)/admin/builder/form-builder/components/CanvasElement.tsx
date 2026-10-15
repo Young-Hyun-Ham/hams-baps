@@ -16,14 +16,14 @@ import {
   ListItemText,
   Tooltip,
   IconButton,
-} from '@mui/material';
-import { Search as SearchIcon } from '@mui/icons-material';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
-import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
+} from "@mui/material";
+import { Search as SearchIcon } from "@mui/icons-material";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import { useTranslation } from "react-i18next";
+import { useState } from "react";
 
-import { FormElement } from '../type';
-import { toLocaleTimeValue } from '../../utils/util';
+import { FormElement } from "../type";
+import { toLocaleTimeValue } from "../../utils/util";
 
 function ElementPreview({
   element,
@@ -34,95 +34,108 @@ function ElementPreview({
 }) {
   const { t } = useTranslation();
   const initialValue =
-    element.type === 'date'
-      ? (element.value || element.defaultValue)
-      : 'defaultValue' in element
-        ? (element.defaultValue ?? '')
-        : '';
+    element.type === "date"
+      ? element.value || element.defaultValue
+      : "defaultValue" in element
+        ? (element.defaultValue ?? "")
+        : "";
   const [value, setValue] = useState<unknown>(initialValue);
   const [fromDateValue, setFromDateValue] = useState<unknown>(
-    element.type === 'date'
-      ? (element.hasFromTo
-          ? element.fromDateValue || element.defaultFromValue || element.defaultValue
-          : element.dateValue || element.defaultValue)
-      : '',
+    element.type === "date"
+      ? element.hasFromTo
+        ? element.fromDateValue ||
+          element.defaultFromValue ||
+          element.defaultValue
+        : element.dateValue || element.defaultValue
+      : "",
   );
   const [toDateValue, setToDateValue] = useState<unknown>(
-    element.type === 'date'
-      ? (element.toDateValue || element.defaultToValue || '')
-      : '',
+    element.type === "date"
+      ? element.toDateValue || element.defaultToValue || ""
+      : "",
   );
   const [fromTimeValue, setFromTimeValue] = useState<unknown>(
-    element.type === 'date'
-      ? (element.fromTimeValue || element.defaultFromTimeValue || element.defaultTimeValue)
-      : '',
+    element.type === "date"
+      ? element.fromTimeValue ||
+          element.defaultFromTimeValue ||
+          element.defaultTimeValue
+      : "",
   );
   const [toTimeValue, setToTimeValue] = useState<unknown>(
-    element.type === 'date'
-      ? (element.toTimeValue || element.defaultToTimeValue || element.defaultTimeValue)
-      : '',
+    element.type === "date"
+      ? element.toTimeValue ||
+          element.defaultToTimeValue ||
+          element.defaultTimeValue
+      : "",
   );
   const [touched, setTouched] = useState(false);
 
   const isEmpty = (currentValue: unknown) =>
     Array.isArray(currentValue)
       ? currentValue.length === 0
-      : String(currentValue ?? '').trim() === '';
+      : String(currentValue ?? "").trim() === "";
 
   const getErrorMessage = (currentValue: unknown) => {
     if (element.requires && isEmpty(currentValue)) {
-      return t('This field is required.');
+      return t("This field is required.");
     }
 
-    if (element.type !== 'input' || isEmpty(currentValue)) return '';
+    if (element.type !== "input" || isEmpty(currentValue)) return "";
 
     const textValue = String(currentValue);
 
     if (
-      element.validation.type === 'email' &&
+      element.validation.type === "email" &&
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(textValue)
     ) {
-      return t('Please enter a valid email address.');
+      return t("Please enter a valid email address.");
     }
 
     if (
-      element.validation.type === 'number' &&
+      element.validation.type === "number" &&
       !Number.isFinite(Number(textValue))
     ) {
-      return t('Please enter a valid number.');
+      return t("Please enter a valid number.");
     }
 
     // minLength, maxLength validation
     if (element.minLength && textValue.length < Number(element.minLength)) {
-      return t('Please enter at least {{minLength}} characters.', { minLength: element.minLength });
+      return t("Please enter at least {{minLength}} characters.", {
+        minLength: element.minLength,
+      });
     }
     if (element.maxLength && textValue.length > Number(element.maxLength)) {
-      return t('Please enter no more than {{maxLength}} characters.', { maxLength: element.maxLength });
+      return t("Please enter no more than {{maxLength}} characters.", {
+        maxLength: element.maxLength,
+      });
     }
 
     // regex validation
-    if (element.validation.type === 'custom' && element.regex) {
+    if (element.validation.type === "custom" && element.regex) {
       const regex = new RegExp(element.regex);
       if (!regex.test(textValue)) {
-        return t('Please enter a valid value.');
+        return t("Please enter a valid value.");
       }
     }
 
-    return '';
+    return "";
   };
 
   const updatePreviewValue = (nextValue: unknown) => {
-    const textValue = String(nextValue ?? '');
+    const textValue = String(nextValue ?? "");
     // transformTextType validation
-    if (element.type === 'input') {
-      if (element.transformTextType === 'uppercase') {
+    if (element.type === "input") {
+      if (element.transformTextType === "uppercase") {
         nextValue = textValue.toUpperCase();
       }
-      if (element.transformTextType === 'lowercase') {
+      if (element.transformTextType === "lowercase") {
         nextValue = textValue.toLowerCase();
       }
-      if (element.transformTextType === 'capitalize') {
-        nextValue = textValue.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+      if (element.transformTextType === "capitalize") {
+        nextValue = textValue.replace(
+          /\w\S*/g,
+          (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase(),
+        );
       }
     }
 
@@ -132,7 +145,7 @@ function ElementPreview({
   };
 
   const addDaysToDateString = (dateString: string, days: number): string => {
-    const [year, month, day] = dateString.split('-').map(Number);
+    const [year, month, day] = dateString.split("-").map(Number);
 
     const date = new Date(Date.UTC(year, month - 1, day));
     date.setUTCDate(date.getUTCDate() + days);
@@ -143,19 +156,19 @@ function ElementPreview({
   const updatePreviewValueOptions = (
     nextValue: string,
     options: {
-      flag?: "from" | "to" | "",
-      type?: "date" | "time" | "",
+      flag?: "from" | "to" | "";
+      type?: "date" | "time" | "";
     },
   ) => {
-    if (element.type !== 'date') return;
+    if (element.type !== "date") return;
 
-    let nextFromDateValue = String(fromDateValue ?? '');
-    let nextToDateValue = String(toDateValue ?? '');
-    let nextFromTimeValue = String(fromTimeValue ?? '');
-    let nextToTimeValue = String(toTimeValue ?? '');
+    let nextFromDateValue = String(fromDateValue ?? "");
+    let nextToDateValue = String(toDateValue ?? "");
+    let nextFromTimeValue = String(fromTimeValue ?? "");
+    let nextToTimeValue = String(toTimeValue ?? "");
 
-    if (options?.flag === 'from') {
-      if (options?.type === 'date') {
+    if (options?.flag === "from") {
+      if (options?.type === "date") {
         nextFromDateValue = nextValue;
         setFromDateValue(nextValue);
         if (element.defaultToDateOffset && element.defaultToDateOffset > 0) {
@@ -165,27 +178,27 @@ function ElementPreview({
           );
           setToDateValue(nextToDateValue);
         }
-      } else if (options?.type === 'time') {
+      } else if (options?.type === "time") {
         nextFromTimeValue = nextValue;
         setFromTimeValue(nextValue);
       }
-    } else if (options?.flag === 'to') {
-      if (options?.type === 'date') {
+    } else if (options?.flag === "to") {
+      if (options?.type === "date") {
         nextToDateValue = nextValue;
         setToDateValue(nextValue);
-      } else if (options?.type === 'time') {
+      } else if (options?.type === "time") {
         nextToTimeValue = nextValue;
         setToTimeValue(nextValue);
       }
     } else {
-      nextFromDateValue = '';
-      nextToDateValue = '';
-      nextFromTimeValue = '';
-      nextToTimeValue = '';
-      setFromDateValue('');
-      setToDateValue('');
-      setFromTimeValue('');
-      setToTimeValue('');
+      nextFromDateValue = "";
+      nextToDateValue = "";
+      nextFromTimeValue = "";
+      nextToTimeValue = "";
+      setFromDateValue("");
+      setToDateValue("");
+      setFromTimeValue("");
+      setToTimeValue("");
     }
     setTouched(true);
     onElementEvent?.(
@@ -194,12 +207,27 @@ function ElementPreview({
         dateValue: element.hasFromTo ? element.dateValue : nextFromDateValue,
         value: element.hasFromTo
           ? element.value
-          : toLocaleTimeValue(nextFromDateValue, nextFromTimeValue, element.hasTime, element.locale),
+          : toLocaleTimeValue(
+              nextFromDateValue,
+              nextFromTimeValue,
+              element.hasTime,
+              element.locale,
+            ),
         fromValue: element.hasFromTo
-          ? toLocaleTimeValue(nextFromDateValue, nextFromTimeValue, element.hasTime, element.locale)
+          ? toLocaleTimeValue(
+              nextFromDateValue,
+              nextFromTimeValue,
+              element.hasTime,
+              element.locale,
+            )
           : undefined,
         toValue: element.hasFromTo
-          ? toLocaleTimeValue(nextToDateValue, nextToTimeValue, element.hasTime, element.locale)
+          ? toLocaleTimeValue(
+              nextToDateValue,
+              nextToTimeValue,
+              element.hasTime,
+              element.locale,
+            )
           : undefined,
         timeValue: element.hasFromTo ? element.timeValue : nextFromTimeValue,
         fromDateValue: nextFromDateValue,
@@ -209,28 +237,28 @@ function ElementPreview({
       },
       nextValue,
     );
-  }
+  };
 
-  const errorMessage = touched ? getErrorMessage(value) : '';
+  const errorMessage = touched ? getErrorMessage(value) : "";
   const normalizeOption = (
     option: string | { value: string; label: string; param?: string },
-  ) => (typeof option === 'string' ? { value: option, label: option } : option);
+  ) => (typeof option === "string" ? { value: option, label: option } : option);
 
   const createOptionParams = (selectedValues: string[]) =>
-    'options' in element
+    "options" in element
       ? Object.fromEntries(
           element.options.map((item) => {
             const option = normalizeOption(item);
             return [
               option.param?.trim() || option.value,
-              selectedValues.includes(option.value) ? 'Y' : 'N',
+              selectedValues.includes(option.value) ? "Y" : "N",
             ];
           }),
         )
       : {};
 
   switch (element.type) {
-    case 'input':
+    case "input":
       return (
         <TextField
           fullWidth
@@ -239,71 +267,91 @@ function ElementPreview({
           onChange={(event) => updatePreviewValue(event.target.value)}
           onBlur={() => setTouched(true)}
           placeholder={element.placeholder}
-          value={String(value ?? '')}
+          value={String(value ?? "")}
           error={Boolean(errorMessage)}
           helperText={errorMessage}
         />
       );
-    case 'date':
+    case "date":
       return (
         <Stack
           direction="row"
           spacing={1}
           useFlexGap
           sx={{
-            width: '100%',
+            width: "100%",
             minWidth: 0,
-            flexWrap: 'wrap',
+            flexWrap: "wrap",
           }}
         >
           {element.hasFromTo ? (
             <Stack
               direction="row"
               spacing={1}
-              sx={{ flex: '1 1 260px', minWidth: 0 }}
+              sx={{ flex: "1 1 260px", minWidth: 0 }}
             >
               <TextField
                 size="small"
                 type="date"
                 onClick={(event) => event.stopPropagation()}
-                onChange={(event) => updatePreviewValueOptions(event.target.value, { flag: 'from', type: 'date' })}
+                onChange={(event) =>
+                  updatePreviewValueOptions(event.target.value, {
+                    flag: "from",
+                    type: "date",
+                  })
+                }
                 onBlur={() => setTouched(true)}
-                value={String(fromDateValue ?? '')}
+                value={String(fromDateValue ?? "")}
                 error={Boolean(errorMessage)}
                 helperText={errorMessage}
-                sx={{ flex: '1 1 140px', minWidth: 0 }}
+                sx={{ flex: "1 1 140px", minWidth: 0 }}
               />
               {element.hasTime ? (
                 <TextField
                   size="small"
                   type="time"
                   onClick={(event) => event.stopPropagation()}
-                  onChange={(event) => updatePreviewValueOptions(event.target.value, { flag: 'from', type: 'time' })}
+                  onChange={(event) =>
+                    updatePreviewValueOptions(event.target.value, {
+                      flag: "from",
+                      type: "time",
+                    })
+                  }
                   value={fromTimeValue}
                   inputProps={{ step: 60 }}
-                  sx={{ flex: '1 1 140px', minWidth: 0 }}
+                  sx={{ flex: "1 1 140px", minWidth: 0 }}
                 />
               ) : null}
               <TextField
                 size="small"
                 type="date"
                 onClick={(event) => event.stopPropagation()}
-                onChange={(event) => updatePreviewValueOptions(event.target.value, { flag: 'to', type: 'date' })}
+                onChange={(event) =>
+                  updatePreviewValueOptions(event.target.value, {
+                    flag: "to",
+                    type: "date",
+                  })
+                }
                 onBlur={() => setTouched(true)}
-                value={String(toDateValue ?? '')}
+                value={String(toDateValue ?? "")}
                 error={Boolean(errorMessage)}
                 helperText={errorMessage}
-                sx={{ flex: '1 1 140px', minWidth: 0 }}
+                sx={{ flex: "1 1 140px", minWidth: 0 }}
               />
               {element.hasTime ? (
                 <TextField
                   size="small"
                   type="time"
                   onClick={(event) => event.stopPropagation()}
-                  onChange={(event) => updatePreviewValueOptions(event.target.value, { flag: 'to', type: 'time' })}
+                  onChange={(event) =>
+                    updatePreviewValueOptions(event.target.value, {
+                      flag: "to",
+                      type: "time",
+                    })
+                  }
                   value={toTimeValue}
                   inputProps={{ step: 60 }}
-                  sx={{ flex: '1 1 140px', minWidth: 0 }}
+                  sx={{ flex: "1 1 140px", minWidth: 0 }}
                 />
               ) : null}
             </Stack>
@@ -311,16 +359,21 @@ function ElementPreview({
             <Stack
               direction="row"
               spacing={1}
-              sx={{ flex: '1 1 260px', minWidth: 0 }}
+              sx={{ flex: "1 1 260px", minWidth: 0 }}
             >
               <TextField
                 fullWidth
                 size="small"
                 type="date"
                 onClick={(event) => event.stopPropagation()}
-                onChange={(event) => updatePreviewValueOptions(event.target.value, { flag: 'from', type: 'date' })}
+                onChange={(event) =>
+                  updatePreviewValueOptions(event.target.value, {
+                    flag: "from",
+                    type: "date",
+                  })
+                }
                 onBlur={() => setTouched(true)}
-                value={String(fromDateValue ?? '')}
+                value={String(fromDateValue ?? "")}
                 error={Boolean(errorMessage)}
                 helperText={errorMessage}
               />
@@ -329,7 +382,12 @@ function ElementPreview({
                   size="small"
                   type="time"
                   onClick={(event) => event.stopPropagation()}
-                  onChange={(event) => updatePreviewValueOptions(event.target.value, { flag: 'from', type: 'time' })}
+                  onChange={(event) =>
+                    updatePreviewValueOptions(event.target.value, {
+                      flag: "from",
+                      type: "time",
+                    })
+                  }
                   value={fromTimeValue}
                   inputProps={{ step: 60 }}
                   sx={{ minWidth: 130 }}
@@ -339,15 +397,15 @@ function ElementPreview({
           )}
         </Stack>
       );
-    case 'checkbox':
+    case "checkbox":
       return (
         <Box
           sx={{
-            display: 'grid',
+            display: "grid",
             gridTemplateColumns:
-              element.optionLayout === 'horizontal'
+              element.optionLayout === "horizontal"
                 ? `repeat(${Math.max(1, element.optionsPerRow ?? 2)}, minmax(0, 1fr))`
-                : 'minmax(0, 1fr)',
+                : "minmax(0, 1fr)",
             columnGap: 1,
             rowGap: 0.5,
           }}
@@ -386,21 +444,21 @@ function ElementPreview({
             );
           })}
           {errorMessage ? (
-            <FormHelperText error sx={{ gridColumn: '1 / -1' }}>
+            <FormHelperText error sx={{ gridColumn: "1 / -1" }}>
               {errorMessage}
             </FormHelperText>
           ) : null}
         </Box>
       );
-    case 'radio':
+    case "radio":
       return (
         <Box
           sx={{
-            display: 'grid',
+            display: "grid",
             gridTemplateColumns:
-              element.optionLayout === 'horizontal'
+              element.optionLayout === "horizontal"
                 ? `repeat(${Math.max(1, element.optionsPerRow ?? 2)}, minmax(0, 1fr))`
-                : 'minmax(0, 1fr)',
+                : "minmax(0, 1fr)",
             columnGap: 1,
             rowGap: 0.5,
           }}
@@ -418,7 +476,7 @@ function ElementPreview({
                       event.stopPropagation();
                       const nextValue =
                         element.allowDeselection && value === option.value
-                          ? ''
+                          ? ""
                           : option.value;
                       setValue(nextValue);
                       setTouched(true);
@@ -437,15 +495,15 @@ function ElementPreview({
             );
           })}
           {errorMessage ? (
-            <FormHelperText error sx={{ gridColumn: '1 / -1' }}>
+            <FormHelperText error sx={{ gridColumn: "1 / -1" }}>
               {errorMessage}
             </FormHelperText>
           ) : null}
         </Box>
       );
-    case 'dropbox': {
+    case "dropbox": {
       const options = element.options.map(normalizeOption);
-      const isMultiSelect = element.selectKind === 'multi';
+      const isMultiSelect = element.selectKind === "multi";
       const selectedValues = Array.isArray(value)
         ? value
         : value
@@ -460,7 +518,7 @@ function ElementPreview({
           <FormControl fullWidth size="small" error={Boolean(errorMessage)}>
             <Select
               multiple={isMultiSelect}
-              value={isMultiSelect ? selectedValues : (selectedValues[0] ?? '')}
+              value={isMultiSelect ? selectedValues : (selectedValues[0] ?? "")}
               displayEmpty
               onClick={(event) => event.stopPropagation()}
               onChange={(event) => updatePreviewValue(event.target.value)}
@@ -471,7 +529,7 @@ function ElementPreview({
                     ? [String(selected)]
                     : [];
 
-                if (!values.length) return <em>{t('Select option')}</em>;
+                if (!values.length) return <em>{t("Select option")}</em>;
 
                 if (!isMultiSelect) {
                   return optionLabels.get(values[0]) ?? values[0];
@@ -480,11 +538,11 @@ function ElementPreview({
                 return (
                   <Box
                     sx={{
-                      display: 'flex',
-                      flexWrap: 'nowrap',
+                      display: "flex",
+                      flexWrap: "nowrap",
                       gap: 0.5,
                       minWidth: 0,
-                      overflow: 'hidden',
+                      overflow: "hidden",
                     }}
                   >
                     {values.slice(0, 3).map((value) => (
@@ -495,10 +553,10 @@ function ElementPreview({
                         sx={{
                           flexShrink: 1,
                           minWidth: 0,
-                          '& .MuiChip-label': {
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
+                          "& .MuiChip-label": {
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
                           },
                         }}
                       />
@@ -506,7 +564,7 @@ function ElementPreview({
                     {values.length > 3 ? (
                       <Typography
                         variant="caption"
-                        sx={{ alignSelf: 'center' }}
+                        sx={{ alignSelf: "center" }}
                       >
                         +{values.length - 3}
                       </Typography>
@@ -517,7 +575,7 @@ function ElementPreview({
             >
               {!isMultiSelect ? (
                 <MenuItem value="">
-                  <em>{t('Select option')}</em>
+                  <em>{t("Select option")}</em>
                 </MenuItem>
               ) : null}
               {options.map((option) => (
@@ -547,7 +605,7 @@ function ElementPreview({
           <Box
             sx={{
               border: 1,
-              borderColor: 'divider',
+              borderColor: "divider",
               borderRadius: 0.75,
               px: 1,
               py: 0.75,
@@ -557,10 +615,10 @@ function ElementPreview({
               <Box
                 key={option.value}
                 sx={{
-                  display: 'grid',
-                  gridTemplateColumns: '24px minmax(0, 1fr)',
+                  display: "grid",
+                  gridTemplateColumns: "24px minmax(0, 1fr)",
                   columnGap: 1,
-                  alignItems: 'center',
+                  alignItems: "center",
                   minHeight: 24,
                 }}
               >
@@ -571,7 +629,7 @@ function ElementPreview({
                   onChange={(event) => {
                     if (!isMultiSelect) {
                       updatePreviewValue(
-                        event.target.checked ? option.value : '',
+                        event.target.checked ? option.value : "",
                       );
                       return;
                     }
@@ -600,30 +658,30 @@ function ElementPreview({
         </Stack>
       );
     }
-    case 'search':
+    case "search":
       return (
         <Box
           sx={{
-            bgcolor: '#ddd',
+            bgcolor: "#ddd",
             borderRadius: 1,
             px: 2.5,
             py: 2,
-            textAlign: 'center',
+            textAlign: "center",
           }}
         >
           <Typography
             variant="subtitle1"
             fontWeight={700}
-            sx={{ color: '#2d4558', mb: 1 }}
+            sx={{ color: "#2d4558", mb: 1 }}
           >
-            {element.label || '(No label)'}
+            {element.label || "(No label)"}
           </Typography>
 
           <Box
             sx={{
-              display: 'grid',
-              gridTemplateColumns: 'minmax(0, 1fr) auto',
-              alignItems: 'center',
+              display: "grid",
+              gridTemplateColumns: "minmax(0, 1fr) auto",
+              alignItems: "center",
               gap: 2,
             }}
           >
@@ -634,25 +692,25 @@ function ElementPreview({
               onChange={(event) => updatePreviewValue(event.target.value)}
               onBlur={() => setTouched(true)}
               placeholder={element.placeholder}
-              value={String(value ?? '')}
+              value={String(value ?? "")}
               error={Boolean(errorMessage)}
               helperText={errorMessage}
               sx={{
-                '& .MuiInputBase-root': {
-                  bgcolor: 'background.paper',
+                "& .MuiInputBase-root": {
+                  bgcolor: "background.paper",
                   borderRadius: 0.75,
                   fontSize: 22,
                 },
-                '& .MuiInputBase-input': {
+                "& .MuiInputBase-input": {
                   py: 1,
                 },
               }}
             />
             <SearchIcon
               sx={{
-                color: '#1f7fd1',
+                color: "#1f7fd1",
                 fontSize: 36,
-                filter: 'drop-shadow(3px 3px 0 #7b4f96)',
+                filter: "drop-shadow(3px 3px 0 #7b4f96)",
               }}
             />
           </Box>
@@ -660,52 +718,52 @@ function ElementPreview({
           <Typography
             variant="body2"
             fontStyle="italic"
-            sx={{ mt: 0.75, color: '#006cff', fontSize: 16 }}
+            sx={{ mt: 0.75, color: "#006cff", fontSize: 16 }}
           >
-            {t('Result Slot')}:{' '}
-            {`{${element.resultSlot || '(No result slot)'}}`}
+            {t("Result Slot")}:{" "}
+            {`{${element.resultSlot || "(No result slot)"}}`}
           </Typography>
         </Box>
       );
-    case 'grid':
+    case "grid":
       return (
         <>
           {element.selectable && (
             <Typography
               variant="caption"
               color="primary.main"
-              sx={{ mb: 0.5, display: 'block', fontWeight: 600 }}
+              sx={{ mb: 0.5, display: "block", fontWeight: 600 }}
             >
-              [{t('Selectable Enabled')}]
+              [{t("Selectable Enabled")}]
             </Typography>
           )}
           {element.hasHeader && (
             <Typography
               variant="caption"
               color="secondary.main"
-              sx={{ mb: 0.5, display: 'block', fontWeight: 600 }}
+              sx={{ mb: 0.5, display: "block", fontWeight: 600 }}
             >
-              [{t('Header Row Enabled')}]
+              [{t("Header Row Enabled")}]
             </Typography>
           )}
           {element.optionsSlot ? (
             // 바인딩 된 데이터
             <>
-              <Box sx={{ mb: 1, color: 'text.secondary' }}>
-                {t('Bound to')} :{' '}
-                {`{${element.optionsSlot || '(No data slot)'}}`}
+              <Box sx={{ mb: 1, color: "text.secondary" }}>
+                {t("Bound to")} :{" "}
+                {`{${element.optionsSlot || "(No data slot)"}}`}
               </Box>
 
               <Divider />
 
-              <Box sx={{ mb: 1, color: 'text.secondary' }}>
-                {t('Columns Count')} : {element.displayKeys.length}
+              <Box sx={{ mb: 1, color: "text.secondary" }}>
+                {t("Columns Count")} : {element.displayKeys.length}
                 {element.displayKeys.length ? (
                   <>
                     <Box
                       sx={{
-                        display: 'grid',
-                        gridTemplateColumns: `${element.selectable ? '30px ' : ''}repeat(${element.displayKeys.length}, minmax(0, 1fr))`,
+                        display: "grid",
+                        gridTemplateColumns: `${element.selectable ? "30px " : ""}repeat(${element.displayKeys.length}, minmax(0, 1fr))`,
                         gap: 0.75,
                       }}
                     >
@@ -714,12 +772,12 @@ function ElementPreview({
                           sx={{
                             minHeight: 34,
                             border: 1,
-                            borderColor: 'divider',
+                            borderColor: "divider",
                             borderRadius: 0.75,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            bgcolor: 'grey.100',
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            bgcolor: "grey.100",
                           }}
                         >
                           <Checkbox
@@ -736,13 +794,13 @@ function ElementPreview({
                           sx={{
                             minHeight: 34,
                             border: 1,
-                            borderColor: 'divider',
+                            borderColor: "divider",
                             borderRadius: 0.75,
                             px: 1,
-                            display: 'flex',
-                            alignItems: 'center',
-                            color: 'text.primary',
-                            bgcolor: 'grey.50',
+                            display: "flex",
+                            alignItems: "center",
+                            color: "text.primary",
+                            bgcolor: "grey.50",
                             fontSize: 13,
                           }}
                         >
@@ -754,12 +812,12 @@ function ElementPreview({
                           sx={{
                             minHeight: 34,
                             border: 1,
-                            borderColor: 'divider',
+                            borderColor: "divider",
                             borderRadius: 0.75,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            bgcolor: 'grey.100',
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            bgcolor: "grey.100",
                           }}
                         >
                           <Checkbox
@@ -776,13 +834,13 @@ function ElementPreview({
                           sx={{
                             minHeight: 34,
                             border: 1,
-                            borderColor: 'divider',
+                            borderColor: "divider",
                             borderRadius: 0.75,
                             px: 1,
-                            display: 'flex',
-                            alignItems: 'center',
-                            color: 'text.disabled',
-                            bgcolor: 'grey.50',
+                            display: "flex",
+                            alignItems: "center",
+                            color: "text.disabled",
+                            bgcolor: "grey.50",
                             fontSize: 13,
                           }}
                         >
@@ -793,14 +851,14 @@ function ElementPreview({
                     </Box>
                   </>
                 ) : (
-                  t('(No display value)')
+                  t("(No display value)")
                 )}
               </Box>
             </>
           ) : (
             <Box
               sx={{
-                display: 'grid',
+                display: "grid",
                 gridTemplateColumns: `repeat(${element.columns}, minmax(0, 1fr))`,
                 gap: 0.75,
               }}
@@ -811,13 +869,13 @@ function ElementPreview({
                   sx={{
                     minHeight: 34,
                     border: 1,
-                    borderColor: 'divider',
+                    borderColor: "divider",
                     borderRadius: 0.75,
                     px: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    color: cell ? 'text.primary' : 'text.disabled',
-                    bgcolor: 'grey.50',
+                    display: "flex",
+                    alignItems: "center",
+                    color: cell ? "text.primary" : "text.disabled",
+                    bgcolor: "grey.50",
                     fontSize: 13,
                   }}
                 >
@@ -853,15 +911,15 @@ function CanvasElement({
       }}
       sx={{
         p: 1.5,
-        position: 'relative',
-        cursor: 'pointer',
-        transition: 'all 0.2s',
+        position: "relative",
+        cursor: "pointer",
+        transition: "all 0.2s",
         borderWidth: 2,
-        borderStyle: selected ? 'solid' : 'dashed',
-        borderColor: selected ? 'primary.main' : 'divider',
-        bgcolor: selected ? 'primary.50' : 'background.paper',
-        '&:hover': {
-          borderColor: selected ? 'primary.main' : 'primary.light',
+        borderStyle: selected ? "solid" : "dashed",
+        borderColor: selected ? "primary.main" : "divider",
+        bgcolor: selected ? "primary.50" : "background.paper",
+        "&:hover": {
+          borderColor: selected ? "primary.main" : "primary.light",
         },
       }}
     >
@@ -869,21 +927,21 @@ function CanvasElement({
         label={element.type.toUpperCase()}
         size="small"
         sx={{
-          position: 'absolute',
+          position: "absolute",
           top: -10,
           left: 10,
           height: 20,
           fontSize: 10,
           fontWeight: 700,
-          bgcolor: 'background.paper',
-          color: 'primary.main',
+          bgcolor: "background.paper",
+          color: "primary.main",
         }}
       />
 
-      {element.type !== 'search' ? (
+      {element.type !== "search" ? (
         <Stack spacing={1} direction="row" alignItems="center">
           <Typography variant="body2" fontWeight={600} sx={{ mb: 1, mt: 0.5 }}>
-            {element.label || '(No label)'}
+            {element.label || "(No label)"}
           </Typography>
           {element.description && (
             <Tooltip title={element.description} arrow placement="top">
@@ -895,7 +953,7 @@ function CanvasElement({
         </Stack>
       ) : null}
       <ElementPreview
-        key={`${element.id}:${'defaultValue' in element ? JSON.stringify(element.defaultValue) : ''}:${element.type === 'date' ? JSON.stringify([element.hasTime, element.defaultTimeValue, element.defaultFromValue, element.defaultToValue, element.defaultFromTimeValue, element.defaultToTimeValue]) : ''}`}
+        key={`${element.id}:${"defaultValue" in element ? JSON.stringify(element.defaultValue) : ""}:${element.type === "date" ? JSON.stringify([element.hasTime, element.defaultTimeValue, element.defaultFromValue, element.defaultToValue, element.defaultFromTimeValue, element.defaultToTimeValue]) : ""}`}
         element={element}
         onElementEvent={onElementEvent}
       />

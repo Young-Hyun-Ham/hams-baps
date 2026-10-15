@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import styles from './ChatbotSimulator.module.css';
-import { AttachIcon } from '../../../../components/icons/Icons';
-import { useDraggableScroll } from '../../../../components/controllers/hooks/useDraggableScroll';
+import React, { useState } from "react";
+import styles from "./ChatbotSimulator.module.css";
+import { AttachIcon } from "../../../../components/icons/Icons";
+import { useDraggableScroll } from "../../../../components/controllers/hooks/useDraggableScroll";
 
 const UserInput = ({
   currentNode,
@@ -9,13 +9,13 @@ const UserInput = ({
   onTextInputSend,
   onOptionClick,
 }) => {
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
   const quickRepliesSlider = useDraggableScroll();
 
   const handleSend = () => {
     if (inputValue.trim()) {
       onTextInputSend(inputValue);
-      setInputValue('');
+      setInputValue("");
     }
   };
 
@@ -28,7 +28,7 @@ const UserInput = ({
             className={styles.textInput}
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+            onKeyDown={(e) => e.key === "Enter" && handleSend()}
             placeholder="Ask about this Booking Master Page"
             disabled={!isStarted}
           />
@@ -40,7 +40,7 @@ const UserInput = ({
         </button>
         <div
           ref={quickRepliesSlider.ref}
-          className={`${styles.quickRepliesContainer} ${quickRepliesSlider.isDragging ? styles.dragging : ''}`}
+          className={`${styles.quickRepliesContainer} ${quickRepliesSlider.isDragging ? styles.dragging : ""}`}
           onMouseDown={quickRepliesSlider.onMouseDown}
           onMouseLeave={quickRepliesSlider.onMouseLeave}
           onMouseUp={quickRepliesSlider.onMouseUp}
@@ -48,8 +48,8 @@ const UserInput = ({
         >
           {isStarted &&
             currentNode?.data.replies?.length > 0 &&
-            (currentNode.type === 'message' ||
-              currentNode.type === 'slotfilling') &&
+            (currentNode.type === "message" ||
+              currentNode.type === "slotfilling") &&
             currentNode.data.replies.map((answer) => (
               <button
                 key={answer.value}

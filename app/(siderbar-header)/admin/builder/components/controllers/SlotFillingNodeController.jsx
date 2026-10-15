@@ -1,6 +1,6 @@
-import styles from '../NodeController.module.css';
-import { useNodeController } from './hooks/useNodeController';
-import { useTranslation } from 'react-i18next';
+import styles from "../NodeController.module.css";
+import { useNodeController } from "./hooks/useNodeController";
+import { useTranslation } from "react-i18next";
 
 function SlotFillingNodeController({ localNode, setLocalNode }) {
   const { t } = useTranslation();
@@ -12,36 +12,36 @@ function SlotFillingNodeController({ localNode, setLocalNode }) {
   return (
     <>
       <div className={styles.formGroup}>
-        <label>{t('Question')}</label>
+        <label>{t("Question")}</label>
         <textarea
-          value={data.content || ''}
-          onChange={(e) => handleLocalDataChange('content', e.target.value)}
+          value={data.content || ""}
+          onChange={(e) => handleLocalDataChange("content", e.target.value)}
           rows={4}
         />
       </div>
       <div className={styles.formGroup}>
-        <label>{t('Slot')}</label>
+        <label>{t("Slot")}</label>
         <input
           type="text"
-          value={data.slot || ''}
-          onChange={(e) => handleLocalDataChange('slot', e.target.value)}
+          value={data.slot || ""}
+          onChange={(e) => handleLocalDataChange("slot", e.target.value)}
         />
       </div>
       <div className={styles.formGroup}>
-        <label>{t('Quick Replies')}</label>
+        <label>{t("Quick Replies")}</label>
         <div className={styles.repliesContainer}>
           {data.replies?.map((reply, index) => (
             <div key={reply.value || index} className={styles.quickReply}>
               <input
                 className={styles.quickReplyInput}
                 value={reply.display}
-                onChange={(e) => updateReply(index, 'display', e.target.value)}
+                onChange={(e) => updateReply(index, "display", e.target.value)}
                 placeholder="Display text"
               />
               <input
                 className={styles.quickReplyInput}
                 value={reply.value}
-                onChange={(e) => updateReply(index, 'value', e.target.value)}
+                onChange={(e) => updateReply(index, "value", e.target.value)}
                 placeholder="Actual value"
               />
               <button
@@ -53,7 +53,7 @@ function SlotFillingNodeController({ localNode, setLocalNode }) {
             </div>
           ))}
           <button onClick={addReply} className={styles.addReplyButton}>
-            + {t('Add Reply')}
+            + {t("Add Reply")}
           </button>
         </div>
       </div>

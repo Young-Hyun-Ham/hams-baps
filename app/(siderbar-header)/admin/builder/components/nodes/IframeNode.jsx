@@ -1,11 +1,11 @@
 // (Handle, Position 임포트 제거)
-import styles from './ChatNodes.module.css';
-import { useBuilderStore } from '../../store/index';
+import styles from "./ChatNodes.module.css";
+import { useBuilderStore } from "../../store/index";
 // (AnchorIcon, StartNodeIcon 임포트 제거)
-import { IframeIcon } from '../icons/Icons';
-import NodeWrapper from './NodeWrapper';
-import { useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+import { IframeIcon } from "../icons/Icons";
+import NodeWrapper from "./NodeWrapper";
+import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 function IframeNode({ id, data }) {
   const { t } = useTranslation();
@@ -19,16 +19,16 @@ function IframeNode({ id, data }) {
   const currentNode = nodes.find((node) => node.id === id);
   const isSelectionGroupChild = Boolean(
     currentNode?.parentNode &&
-      nodes.find((node) => node.id === currentNode.parentNode)?.type ===
-        'selectionGroup',
+    nodes.find((node) => node.id === currentNode.parentNode)?.type ===
+      "selectionGroup",
   );
   const nodeWidth = isSelectionGroupChild
     ? 520
-    : Math.max(parseInt(data.width || '250', 10) + 40, 250);
+    : Math.max(parseInt(data.width || "250", 10) + 40, 250);
 
   // URL을 안전하게 변환해주는 헬퍼 함수
   const encodeUrlParamsKeepingTemplates = (originalUrl) => {
-    if (!originalUrl) return '';
+    if (!originalUrl) return "";
 
     try {
       const urlObj = new URL(originalUrl);
@@ -36,9 +36,9 @@ function IframeNode({ id, data }) {
       const newParams = new URLSearchParams();
 
       for (const [key, value] of params.entries()) {
-        if (value.startsWith('{{') && value.endsWith('}}')) {
+        if (value.startsWith("{{") && value.endsWith("}}")) {
           // 빈 문자열로 대체하여 URL 구조는 유지하되, 실제 값은 노출되지 않도록 합니다.
-          newParams.append(key, '');
+          newParams.append(key, "");
         } else {
           newParams.append(key, value);
         }
@@ -46,13 +46,13 @@ function IframeNode({ id, data }) {
       let queryString = newParams.toString();
       return `${urlObj.origin}?${queryString}`;
     } catch (error) {
-      console.error('URL Encoding error:', error);
+      console.error("URL Encoding error:", error);
       return originalUrl;
     }
   };
 
   useEffect(() => {
-    const setSlotNodes = nodes.filter((node) => node.type === 'setSlot');
+    const setSlotNodes = nodes.filter((node) => node.type === "setSlot");
   }, [data]);
 
   return (
@@ -67,10 +67,10 @@ function IframeNode({ id, data }) {
     >
       {/* 8. 기존 nodeBody의 내용만 children으로 전달 */}
       <div className={styles.section}>
-        <span className={styles.sectionTitle}>{t('URL')}</span>
+        <span className={styles.sectionTitle}>{t("URL")}</span>
         <textarea
           className={styles.textInput}
-          value={data.url || ''}
+          value={data.url || ""}
           readOnly
           rows={2}
         />
@@ -80,21 +80,21 @@ function IframeNode({ id, data }) {
         {data.url ? (
           <iframe
             src={encodeUrlParamsKeepingTemplates(data.url)}
-            width={isSelectionGroupChild ? '100%' : data.width || '100%'}
-            height={data.height || '200'}
+            width={isSelectionGroupChild ? "100%" : data.width || "100%"}
+            height={data.height || "200"}
             style={{
-              border: '1px solid #ccc',
-              borderRadius: '4px',
-              overflowX: 'hidden',
-              maxWidth: '100%',
-              boxSizing: 'border-box',
+              border: "1px solid #ccc",
+              borderRadius: "4px",
+              overflowX: "hidden",
+              maxWidth: "100%",
+              boxSizing: "border-box",
             }}
             title="iframe-preview"
-            onError={(e) => console.warn('Iframe preview error:', e)}
+            onError={(e) => console.warn("Iframe preview error:", e)}
           ></iframe>
         ) : (
           <div className={styles.formElementsPlaceholder}>
-            {t('No URL provided')}.
+            {t("No URL provided")}.
           </div>
         )}
       </div>

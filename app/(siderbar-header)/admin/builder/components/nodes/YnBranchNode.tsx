@@ -1,6 +1,6 @@
-import React, { memo, useLayoutEffect } from 'react';
-import { Handle, Position, NodeProps, useUpdateNodeInternals } from 'reactflow';
-import { Box, Typography } from '@mui/material';
+import React, { memo, useLayoutEffect } from "react";
+import { Handle, Position, NodeProps, useUpdateNodeInternals } from "reactflow";
+import { Box, Typography } from "@mui/material";
 
 export interface YnBranchNodeData {
   id?: string;
@@ -11,11 +11,11 @@ export interface YnBranchNodeData {
 }
 
 const YnBranchNode = ({ id, data, selected }: NodeProps<YnBranchNodeData>) => {
-  const replyYId = data?.replies?.[0]?.value || 'Y';
-  const replyNId = data?.replies?.[1]?.value || 'N';
+  const replyYId = data?.replies?.[0]?.value || "Y";
+  const replyNId = data?.replies?.[1]?.value || "N";
   const updateNodeInternals = useUpdateNodeInternals();
 
-  const inputPos = data?.inputPosition === 'top' ? Position.Top : Position.Left;
+  const inputPos = data?.inputPosition === "top" ? Position.Top : Position.Left;
 
   useLayoutEffect(() => {
     updateNodeInternals(id);
@@ -26,21 +26,21 @@ const YnBranchNode = ({ id, data, selected }: NodeProps<YnBranchNodeData>) => {
       sx={{
         width: 30,
         height: 30,
-        borderRadius: '50%',
-        bgcolor: '#ffffff',
-        border: selected ? '2px solid #2563eb' : '2px solid #475569',
+        borderRadius: "50%",
+        bgcolor: "#ffffff",
+        border: selected ? "2px solid #2563eb" : "2px solid #475569",
         boxShadow: selected
-          ? '0 0 0 3px rgba(37, 99, 235, 0.25), 0 4px 10px rgba(0,0,0,0.15)'
-          : '0 2px 6px rgba(0,0,0,0.12)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        position: 'relative',
-        cursor: 'pointer',
-        transition: 'all 0.15s ease',
-        '&:hover': {
-          transform: 'scale(1.1)',
-          borderColor: '#2563eb',
+          ? "0 0 0 3px rgba(37, 99, 235, 0.25), 0 4px 10px rgba(0,0,0,0.15)"
+          : "0 2px 6px rgba(0,0,0,0.12)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        position: "relative",
+        cursor: "pointer",
+        transition: "all 0.15s ease",
+        "&:hover": {
+          transform: "scale(1.1)",
+          borderColor: "#2563eb",
         },
       }}
     >
@@ -48,12 +48,12 @@ const YnBranchNode = ({ id, data, selected }: NodeProps<YnBranchNodeData>) => {
       <Handle
         type="target"
         position={inputPos}
-        id={inputPos === Position.Top ? 'input-top' : 'input'}
+        id={inputPos === Position.Top ? "input-top" : "input"}
         style={{
           width: 8,
           height: 8,
-          background: '#64748b',
-          border: '1.5px solid #ffffff',
+          background: "#64748b",
+          border: "1.5px solid #ffffff",
           zIndex: 10,
           ...(inputPos === Position.Top ? { top: -4 } : { left: -4 }),
         }}
@@ -63,11 +63,11 @@ const YnBranchNode = ({ id, data, selected }: NodeProps<YnBranchNodeData>) => {
       <Typography
         variant="caption"
         sx={{
-          fontSize: '9px',
+          fontSize: "9px",
           fontWeight: 800,
-          color: '#1e293b',
-          userSelect: 'none',
-          letterSpacing: '-0.5px',
+          color: "#1e293b",
+          userSelect: "none",
+          letterSpacing: "-0.5px",
         }}
       >
         Y/N
@@ -77,21 +77,21 @@ const YnBranchNode = ({ id, data, selected }: NodeProps<YnBranchNodeData>) => {
       {data?.slotKey && (
         <Box
           sx={{
-            position: 'absolute',
+            position: "absolute",
             top: -20,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            whiteSpace: 'nowrap',
-            fontSize: '9px',
+            left: "50%",
+            transform: "translateX(-50%)",
+            whiteSpace: "nowrap",
+            fontSize: "9px",
             fontWeight: 700,
-            color: '#2563eb',
-            bgcolor: '#eff6ff',
-            px: '4px',
-            py: '1px',
-            borderRadius: '3px',
-            border: '1px solid #bfdbfe',
-            pointerEvents: 'none',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+            color: "#2563eb",
+            bgcolor: "#eff6ff",
+            px: "4px",
+            py: "1px",
+            borderRadius: "3px",
+            border: "1px solid #bfdbfe",
+            pointerEvents: "none",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
           }}
         >
           {data.slotKey}
@@ -100,8 +100,8 @@ const YnBranchNode = ({ id, data, selected }: NodeProps<YnBranchNodeData>) => {
 
       {/* Output Y handle */}
       {(() => {
-        const posY = data?.outputPositions?.['Y'] || 'right';
-        const isBottomY = posY === 'bottom';
+        const posY = data?.outputPositions?.["Y"] || "right";
+        const isBottomY = posY === "bottom";
 
         return (
           <>
@@ -112,33 +112,33 @@ const YnBranchNode = ({ id, data, selected }: NodeProps<YnBranchNodeData>) => {
               style={{
                 width: 8,
                 height: 8,
-                background: '#16a34a',
+                background: "#16a34a",
                 ...(isBottomY
-                  ? { bottom: -4, left: '35%' }
-                  : { right: -4, top: '50%' }),
-                border: '1.5px solid #ffffff',
+                  ? { bottom: -4, left: "35%" }
+                  : { right: -4, top: "50%" }),
+                border: "1.5px solid #ffffff",
               }}
             />
             <Box
               sx={{
-                position: 'absolute',
+                position: "absolute",
                 ...(isBottomY
                   ? {
                       bottom: -15,
-                      left: '35%',
-                      transform: 'translateX(-50%)',
+                      left: "35%",
+                      transform: "translateX(-50%)",
                     }
-                  : { right: -15, top: '50%', transform: 'translateY(-50%)' }),
-                bgcolor: '#16a34a',
-                color: '#ffffff',
-                fontSize: '9px',
+                  : { right: -15, top: "50%", transform: "translateY(-50%)" }),
+                bgcolor: "#16a34a",
+                color: "#ffffff",
+                fontSize: "9px",
                 fontWeight: 800,
-                px: '3px',
-                py: '1px',
-                borderRadius: '3px',
+                px: "3px",
+                py: "1px",
+                borderRadius: "3px",
                 lineHeight: 1,
-                pointerEvents: 'none',
-                userSelect: 'none',
+                pointerEvents: "none",
+                userSelect: "none",
               }}
             >
               Y
@@ -149,8 +149,8 @@ const YnBranchNode = ({ id, data, selected }: NodeProps<YnBranchNodeData>) => {
 
       {/* Output N handle */}
       {(() => {
-        const posN = data?.outputPositions?.['N'] || 'bottom';
-        const isRightN = posN === 'right';
+        const posN = data?.outputPositions?.["N"] || "bottom";
+        const isRightN = posN === "right";
 
         return (
           <>
@@ -161,33 +161,33 @@ const YnBranchNode = ({ id, data, selected }: NodeProps<YnBranchNodeData>) => {
               style={{
                 width: 8,
                 height: 8,
-                background: '#dc2626',
+                background: "#dc2626",
                 ...(isRightN
-                  ? { right: -4, top: '75%' }
-                  : { bottom: -4, left: '65%' }),
-                border: '1.5px solid #ffffff',
+                  ? { right: -4, top: "75%" }
+                  : { bottom: -4, left: "65%" }),
+                border: "1.5px solid #ffffff",
               }}
             />
             <Box
               sx={{
-                position: 'absolute',
+                position: "absolute",
                 ...(isRightN
-                  ? { right: -15, top: '75%', transform: 'translateY(-50%)' }
+                  ? { right: -15, top: "75%", transform: "translateY(-50%)" }
                   : {
                       bottom: -15,
-                      left: '65%',
-                      transform: 'translateX(-50%)',
+                      left: "65%",
+                      transform: "translateX(-50%)",
                     }),
-                bgcolor: '#dc2626',
-                color: '#ffffff',
-                fontSize: '9px',
+                bgcolor: "#dc2626",
+                color: "#ffffff",
+                fontSize: "9px",
                 fontWeight: 800,
-                px: '3px',
-                py: '1px',
-                borderRadius: '3px',
+                px: "3px",
+                py: "1px",
+                borderRadius: "3px",
                 lineHeight: 1,
-                pointerEvents: 'none',
-                userSelect: 'none',
+                pointerEvents: "none",
+                userSelect: "none",
               }}
             >
               N

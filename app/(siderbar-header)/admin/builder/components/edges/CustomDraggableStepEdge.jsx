@@ -1,4 +1,4 @@
-import { BaseEdge, EdgeLabelRenderer } from 'reactflow';
+import { BaseEdge, EdgeLabelRenderer } from "reactflow";
 
 const MIN_SEGMENT_LENGTH = 36;
 
@@ -98,7 +98,7 @@ function buildPath(points) {
     .map((point, index) =>
       index === 0 ? `M ${point.x},${point.y}` : `L ${point.x},${point.y}`,
     )
-    .join(' ');
+    .join(" ");
 }
 
 function getSegments(points) {
@@ -208,7 +208,7 @@ function CustomDraggableStepEdge(props) {
     event.preventDefault();
     event.stopPropagation();
 
-    if (typeof updateEdgeSegment !== 'function') {
+    if (typeof updateEdgeSegment !== "function") {
       return;
     }
 
@@ -232,12 +232,12 @@ function CustomDraggableStepEdge(props) {
     };
 
     const onMouseUp = () => {
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseup', onMouseUp);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
     };
 
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
   };
 
   return (
@@ -251,21 +251,21 @@ function CustomDraggableStepEdge(props) {
               <div
                 key={`${id}-segment-${segment.index}`}
                 style={{
-                  position: 'absolute',
+                  position: "absolute",
                   transform: `translate(-50%, -50%) translate(${segment.centerX}px, ${segment.centerY}px)`,
-                  pointerEvents: 'all',
+                  pointerEvents: "all",
                   width: 14,
                   height: 14,
-                  borderRadius: '9999px',
-                  background: '#2563eb',
-                  border: '2px solid #ffffff',
-                  cursor: segment.isHorizontal ? 'ns-resize' : 'ew-resize',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                  borderRadius: "9999px",
+                  background: "#2563eb",
+                  border: "2px solid #ffffff",
+                  cursor: segment.isHorizontal ? "ns-resize" : "ew-resize",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
                   zIndex: 30,
                 }}
                 onMouseDown={createMouseDownHandler(segment)}
                 title={
-                  segment.isHorizontal ? 'Move vertical' : 'Move horizontal'
+                  segment.isHorizontal ? "Move vertical" : "Move horizontal"
                 }
               />
             ))}

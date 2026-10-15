@@ -82,15 +82,21 @@ export function subscribeMessages(
   });
 }
 
-// buider function to fetch scenario data 
+// buider function to fetch scenario data
 export const fetchScenarioDatas = async ({ scenarioId }: any) => {
-  if (!scenarioId) return { nodes: [], edges: [], startNodeId: null, description: '' };
+  if (!scenarioId)
+    return { nodes: [], edges: [], startNodeId: null, description: "" };
   const scenarioDocRef = doc(db, "scenarios", scenarioId);
   const docSnap = await getDoc(scenarioDocRef);
   if (docSnap.exists()) {
     const data = docSnap.data();
-    return { ...data, startNodeId: data.startNodeId || null, description: data.description || '', lastUsedAt: data.lastUsedAt || null };
+    return {
+      ...data,
+      startNodeId: data.startNodeId || null,
+      description: data.description || "",
+      lastUsedAt: data.lastUsedAt || null,
+    };
   }
   console.log(`No such document for scenario: ${scenarioId}!`);
-  return { nodes: [], edges: [], startNodeId: null, description: '' };
+  return { nodes: [], edges: [], startNodeId: null, description: "" };
 };

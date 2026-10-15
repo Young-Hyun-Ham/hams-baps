@@ -1,10 +1,9 @@
-
 // src/store/slices/scenarioSlice.ts
-'use client';
+"use client";
 
-import { fetchScenarios } from '../../services/backendService';
+import { fetchScenarios } from "../../services/backendService";
 
-import type { DB_TYPE, Scenario } from '../../types/types';
+import type { DB_TYPE, Scenario } from "../../types/types";
 
 // get -> _get (사용하지 않는 변수 처리)
 export const scenarioSlice = (set: any, _get: any) => ({
@@ -18,19 +17,19 @@ export const scenarioSlice = (set: any, _get: any) => ({
 
   // UI 초기값
   isCreating: false,
-  createDraft: { name: '', description: '' },
+  createDraft: { name: "", description: "" },
   selectedScenarioId: null as string | null,
   setSelectedScenarioId: (id: string | null) => set({ selectedScenarioId: id }),
   editingScenarioId: null,
-  editDraft: { name: '', description: '' },
+  editDraft: { name: "", description: "" },
   openTooltipId: null,
 
   // 등록 폼
   openCreate() {
-    set({ isCreating: true, createDraft: { name: '', description: '' } });
+    set({ isCreating: true, createDraft: { name: "", description: "" } });
   },
   cancelCreate() {
-    set({ isCreating: false, createDraft: { name: '', description: '' } });
+    set({ isCreating: false, createDraft: { name: "", description: "" } });
   },
   setCreateField(name: string, value: string) {
     set((s: any) => ({ createDraft: { ...s.createDraft, [name]: value } }));
@@ -43,8 +42,8 @@ export const scenarioSlice = (set: any, _get: any) => ({
         scenarios: data || [],
       });
     } catch (error) {
-      console.error('Error fetching scenario:', error);
-      alert('Failed to load scenario details.');
+      console.error("Error fetching scenario:", error);
+      alert("Failed to load scenario details.");
       set({ scenarios: [] });
     }
   },
@@ -53,11 +52,11 @@ export const scenarioSlice = (set: any, _get: any) => ({
   startEdit(s: any) {
     set({
       editingScenarioId: s.id,
-      editDraft: { name: s.name ?? '', description: s.description ?? '' },
+      editDraft: { name: s.name ?? "", description: s.description ?? "" },
     });
   },
   cancelEdit() {
-    set({ editingScenarioId: null, editDraft: { name: '', description: '' } });
+    set({ editingScenarioId: null, editDraft: { name: "", description: "" } });
   },
   setEditField(name: string, value: string) {
     set((state: any) => ({ editDraft: { ...state.editDraft, [name]: value } }));

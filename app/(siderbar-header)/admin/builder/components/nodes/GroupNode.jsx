@@ -1,12 +1,12 @@
-import { useEffect } from 'react';
-import { useUpdateNodeInternals } from 'reactflow';
-import { NodeResizer } from '@reactflow/node-resizer';
-import styles from './ChatNodes.module.css';
-import { useBuilderStore } from '../../store/index';
-import { CollapseNodeIcon, ExpandNodeIcon } from '../icons/Icons';
-import { Plus, Split } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import NodeWrapper from './NodeWrapper';
+import { useEffect } from "react";
+import { useUpdateNodeInternals } from "reactflow";
+import { NodeResizer } from "@reactflow/node-resizer";
+import styles from "./ChatNodes.module.css";
+import { useBuilderStore } from "../../store/index";
+import { CollapseNodeIcon, ExpandNodeIcon } from "../icons/Icons";
+import { Plus, Split } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import NodeWrapper from "./NodeWrapper";
 
 function GroupNode({ id, data, selected }) {
   const { t } = useTranslation();
@@ -17,7 +17,7 @@ function GroupNode({ id, data, selected }) {
   const ungroupNode = useBuilderStore((state) => state.ungroupNode);
 
   const isCollapsed = data?.isCollapsed || false;
-  const title = data?.label || data?.title || 'Selected Group';
+  const title = data?.label || data?.title || "Selected Group";
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
@@ -32,13 +32,13 @@ function GroupNode({ id, data, selected }) {
       isVisible={selected}
       minWidth={420}
       minHeight={260}
-      lineStyle={{ borderColor: '#475569', borderWidth: 1 }}
+      lineStyle={{ borderColor: "#475569", borderWidth: 1 }}
       handleStyle={{
         width: 10,
         height: 10,
         borderRadius: 9999,
-        background: '#475569',
-        border: '1px solid #fff',
+        background: "#475569",
+        border: "1px solid #fff",
       }}
     />
   ) : null;
@@ -61,7 +61,7 @@ function GroupNode({ id, data, selected }) {
           toggleScenarioNode(id);
         }}
         className={styles.anchorButton}
-        title={isCollapsed ? 'Expand' : 'Collapse'}
+        title={isCollapsed ? "Expand" : "Collapse"}
       >
         {isCollapsed ? <ExpandNodeIcon /> : <CollapseNodeIcon />}
       </button>
@@ -71,7 +71,7 @@ function GroupNode({ id, data, selected }) {
   return (
     <NodeWrapper
       id={id}
-      typeLabel={`${t('Group')}: ${title}`}
+      typeLabel={`${t("Group")}: ${title}`}
       icon={null}
       nodeColor="#475569"
       textColor="#ffffff"
@@ -79,12 +79,12 @@ function GroupNode({ id, data, selected }) {
       nodeChrome={nodeChrome}
       hideBody={isCollapsed}
       customClassName={`${styles.groupNodeWrapper} ${
-        isCollapsed ? styles.groupNodeWrapperCollapsed : ''
+        isCollapsed ? styles.groupNodeWrapperCollapsed : ""
       }`}
-      style={isCollapsed ? { height: '50px', width: '250px' } : undefined}
+      style={isCollapsed ? { height: "50px", width: "250px" } : undefined}
     >
       <p className={styles.groupNodeDescription}>
-        {t('This group contains selected nodes from the current scenario')}.
+        {t("This group contains selected nodes from the current scenario")}.
       </p>
       {!isCollapsed && (
         <button
@@ -93,14 +93,14 @@ function GroupNode({ id, data, selected }) {
           onClick={(event) => {
             event.stopPropagation();
             window.dispatchEvent(
-              new CustomEvent('flow-uipath:add-group-node', {
+              new CustomEvent("flow-uipath:add-group-node", {
                 detail: { groupId: id },
               }),
             );
           }}
         >
           <Plus size={15} />
-          <span>{t('Add Node')}</span>
+          <span>{t("Add Node")}</span>
         </button>
       )}
     </NodeWrapper>
