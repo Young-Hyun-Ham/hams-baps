@@ -1,3 +1,4 @@
+import { withNodeTitle } from "../utils/nodeTitles";
 import useBuilderHistoryStore from "./historyStore";
 
 import { makeSnapshot, type StoreState } from "./index";
@@ -85,7 +86,7 @@ export function createEdgeControlActionStore(
 }
 
 export function sanitizeNodesForSave(nodes: Node<any>[]): Node<any>[] {
-  return nodes.map((node) => stripUndefinedDeep(node));
+  return nodes.map((node) => stripUndefinedDeep(withNodeTitle(node)));
 }
 
 export function sanitizeEdgesForSave(

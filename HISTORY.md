@@ -19,6 +19,28 @@ HAMS-BAPS의 사용자 동작, API, 데이터 구조, 설정, 운영 문서 변�
 
 ### Changed
 
+- 2026-10-19: Added Unit/Multi/Sub selection below Description in the New Job/edit dialog, defaulting legacy and new scenarios to Sub. Cards show the type at the upper left; creation, metadata edits, and definition-save payloads retain scenario_type. Live backend validation limits are recorded in the work log.
+
+- 2026-10-19: Moved scenario tabs into the top-left scenario menu with a Sub default icon, title/version rows, tab close controls, and a bottom Back list action. Switching restores cached graphs and preserves current scenario metadata; Firebase sub-scenario loading now receives its expected identifier shape.
+
+- 2026-10-19: Added persistent per-node titles with type-label defaults, inline Pencil editing, and a small gray type label before the header action menu. Save serialization fills missing legacy titles, and open node options preserve externally renamed titles. Validation is recorded in the scenario publishing work log.
+
+- 2026-10-19: Moved NodeWrapper header actions into an ellipsis-triggered layer palette, preserving start/anchor/delete and custom node actions with outside-click/Escape dismissal. Validation is recorded in the scenario publishing work log.
+
+- 2026-10-19: Moved NodeWrapper's Edit button inside nodeBody so it hides with collapsed body content while preserving mounted input state. Verified JSX nesting; browser checks and full build were not repeated for this markup-only adjustment.
+
+- 2026-10-19: Scenario node selection no longer opens the right options panel; explicit footer Edit buttons open it after the existing modification-permission check. Selection, search, multi-select, and editing in other screens remain independent. Validation details are in the scenario publishing work log.
+
+- 2026-10-19: Shared node-type icons between the node palette and canvas headers, passing matching icons to NodeWrapper and the Sub Agent header while preserving node behavior and configured colors.
+
+- 2026-10-19: Matched all three scenario toolbar groups to a 30px outer height and included interaction-control padding within its button height. CSS values checked; browser visual verification was not performed.
+
+- 2026-10-19: Split the scenario header toolbar into three bordered groups: editing through StickyNote, scenario tools through Search, and viewport tools. Button behavior is unchanged.
+
+- 2026-10-19: Corrected the last scenario toolbar button to toggle the bottom-right preview (minimap) without changing node positions or edit history.
+
+- 2026-10-19: Restyled the scenario detail editor with a compact header, categorized node palette, dotted canvas, and minimap while preserving existing editor and save handlers. See [validation notes](docs/job/20261019/scenario-flow-publishing.md).
+
 - 2026-10-16: API 노드 설정의 기본 Headers를 Content-Type과 Accept가 application/json인 들여쓰기 JSON으로 통일하고 잘못된 후행 쉼표를 제거했습니다. 전체 빌드와 브라우저 실행 검증은 수행하지 않았습니다.
 - 2026-10-16: API 노드 설정에서 Templates, Router/API 모달 버튼과 ID 필드 및 관련 로직을 제거하고 단일/Multi API URL을 한 줄 입력으로 변경했습니다. 전체 빌드와 브라우저 실행 검증은 수행하지 않았습니다.
 - 2026-10-16: 시나리오 시뮬레이터 초기화 버튼을 확장/축소와 같은 작은 IconButton 스타일로 통일했습니다. 스타일 변경으로 전체 빌드 및 브라우저 시각 검증은 수행하지 않았습니다.

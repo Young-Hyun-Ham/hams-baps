@@ -1,3 +1,4 @@
+import { getScenarioType } from "../utils/scenarioTypes";
 import { db } from "@/lib/firebase";
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -29,15 +30,20 @@ export const fetchScenarios = async () => {
       updatedAt: data.updatedAt || null,
       lastUsedAt: data.lastUsedAt || null,
       ...data,
+      scenario_type: getScenarioType(data),
     };
   });
 };
 
 export const createScenario = async ({
   newScenarioName,
-  job,
-  description,
+  name,
+  job = "Process",
+  description = "",
+  scenario_type,
 }: any) => {
+  const scenarioName = String(name ?? newScenarioName ?? "").trim();
+  if (!scenarioName) throw new Error("Scenario name is required.");
   const scenarioId = uuidv4();
   const newScenarioRef = doc(db, "scenarios", scenarioId);
   const docSnap = await getDoc(newScenarioRef);
@@ -45,9 +51,10 @@ export const createScenario = async ({
     throw new Error("A scenario with that name already exists.");
   }
   const newScenarioData = {
-    name: newScenarioName,
+    name: scenarioName,
     job,
     description,
+    scenario_type: getScenarioType({ scenario_type }),
     nodes: [],
     edges: [],
     startNodeId: null,
@@ -57,7 +64,7 @@ export const createScenario = async ({
   };
   await setDoc(newScenarioRef, newScenarioData);
   return {
-    id: newScenarioName,
+    id: scenarioId,
     ...newScenarioData,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -105,7 +112,13 @@ export const renameScenario = async ({
   }
 };
 
-export const patchScenario = async ({ id, name, job, description }: any) => {
+export const patchScenario = async ({
+  id,
+  name,
+  job,
+  description,
+  scenario_type,
+}: any) => {
   if (!id) {
     throw new Error("Scenario ID is required.");
   }
@@ -121,6 +134,9 @@ export const patchScenario = async ({ id, name, job, description }: any) => {
     ...(name !== undefined && { name }),
     ...(job !== undefined && { job }),
     ...(description !== undefined && { description }),
+    ...(scenario_type !== undefined && {
+      scenario_type: getScenarioType({ scenario_type }),
+    }),
     updatedAt: serverTimestamp(),
   };
 
@@ -184,6 +200,7 @@ export const fetchScenarioData = async ({ scenarioId }: any) => {
     const data = docSnap.data();
     return {
       ...data,
+      scenario_type: getScenarioType(data),
       startNodeId: data.startNodeId || null,
       description: data.description || "",
       lastUsedAt: data.lastUsedAt || null,
@@ -202,6 +219,7 @@ export const saveScenarioData = async ({ scenario, data }: any) => {
   const saveData = {
     ...data,
     name: scenario.name,
+    scenario_type: getScenarioType(scenario),
     job: scenario.job ?? "Process",
     description: scenario.description || "",
     updatedAt: serverTimestamp(),
@@ -240,6 +258,7 @@ export const saveScenarioData = async ({ scenario, data }: any) => {
       version: nextVersion,
       depn_yn: false,
       name: scenario.name,
+      scenario_type: getScenarioType(scenario),
       job: scenario.job ?? "Process",
       description: scenario.description || "",
       nodes: data.nodes ?? [],
@@ -362,6 +381,7 @@ export const restoreScenarioVersion = async ({
     const versionData = versionSnapshot.data();
     const restoredData = {
       name: versionData.name ?? "",
+      scenario_type: getScenarioType(versionData),
       job: versionData.job ?? "Process",
       description: versionData.description ?? "",
       nodes: versionData.nodes ?? [],

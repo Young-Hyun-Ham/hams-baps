@@ -1,6 +1,7 @@
 import styles from "./ChatNodes.module.css";
 import { useBuilderStore } from "../../store/index";
-import NodeWrapper from "./NodeWrapper"; // 1. Wrapper 임포트
+import NodeWrapper from "./NodeWrapper";
+import NodeTypeIcon from "../icons/NodeTypeIcon"; // 1. Wrapper 임포트
 import { useTranslation } from "react-i18next";
 // (AnchorIcon, StartNodeIcon 임포트 제거)
 // (Handle, Position 임포트 제거)
@@ -20,7 +21,7 @@ function SlotFillingNode({ id, data }) {
     <NodeWrapper
       id={id}
       typeLabel={t("SlotFilling")}
-      icon={null} // (SlotFillingNode는 아이콘이 없었음)
+      icon={<NodeTypeIcon type="slotfilling" />}
       nodeColor={nodeColor}
       textColor={textColor}
     >

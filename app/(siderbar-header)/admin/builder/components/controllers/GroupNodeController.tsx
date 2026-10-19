@@ -44,7 +44,7 @@ function GroupNodeController({
       selectedGroupNodes.some((node: any) => node.id === edge.target),
   );
   const data = localNode.data || {};
-  const title = data.label || data.title || "";
+  const title = data.title || data.label || "";
   const childNodes = (nodes as BuilderNodeSummary[]).filter(
     (node) => node.parentNode === localNode.id,
   );

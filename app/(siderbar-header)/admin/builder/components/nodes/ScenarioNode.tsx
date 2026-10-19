@@ -3,6 +3,9 @@ import { Handle, Position, useUpdateNodeInternals } from "reactflow";
 import { useTranslation } from "react-i18next";
 
 import styles from "./ChatNodes.module.css";
+import NodeTypeIcon from "../icons/NodeTypeIcon";
+import NodeEditButton from "./NodeEditButton";
+import NodeTitle from "./NodeTitle";
 import { useBuilderStore } from "../../store/index";
 import {
   CollapseNodeIcon,
@@ -63,15 +66,12 @@ function ScenarioNode({ id, data }: { id: string; data: any }) {
         style={{ backgroundColor: nodeColor, color: textColor }}
       >
         <span
-          className={styles.headerTextContent}
-          style={{
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}
+          className={styles.headerIcon}
+          style={{ backgroundColor: nodeColor, color: textColor }}
         >
-          {t("Scenario")}: {data.label}
+          <NodeTypeIcon type="scenario" />
         </span>
+        <NodeTitle id={id} typeLabel={t("Scenario")} />
         <div className={styles.headerButtons}>
           <button
             onClick={(e) => {
@@ -122,6 +122,7 @@ function ScenarioNode({ id, data }: { id: string; data: any }) {
           </p>
         </div>
       )}
+      <NodeEditButton id={id} />
       <Handle
         type="source"
         position={outputPos}

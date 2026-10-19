@@ -2,6 +2,7 @@ import styles from "./ChatNodes.module.css";
 import { useBuilderStore } from "../../store/index";
 
 import NodeWrapper from "./NodeWrapper";
+import NodeTypeIcon from "../icons/NodeTypeIcon";
 import { useTranslation } from "react-i18next";
 
 // (AnchorIcon, StartNodeIcon 임포트 제거)
@@ -21,7 +22,7 @@ function MessageNode({ id, data }) {
     <NodeWrapper
       id={id}
       typeLabel="Message"
-      icon={null} // (MessageNode는 별도 아이콘이 없었음)
+      icon={<NodeTypeIcon type="message" />}
       nodeColor={nodeColor}
       textColor={textColor}
     >

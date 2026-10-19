@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useBuilderStore } from "../store/index";
@@ -69,6 +69,15 @@ export function NodeControllerEditor({ selectedNode }: { selectedNode: any }) {
   const [localNode, setLocalNode] = useState<any>(() =>
     selectedNode ? JSON.parse(JSON.stringify(selectedNode)) : null,
   );
+
+  useEffect(() => {
+    const title = selectedNode?.data?.title;
+    setLocalNode((previous: any) =>
+      previous && previous.data?.title !== title
+        ? { ...previous, data: { ...previous.data, title } }
+        : previous,
+    );
+  }, [selectedNode?.data?.title]);
 
   const isDirty = useMemo(() => {
     if (!localNode || !selectedNode) return false;

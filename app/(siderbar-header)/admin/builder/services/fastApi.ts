@@ -1,3 +1,4 @@
+import { getScenarioType } from "../utils/scenarioTypes";
 import apiClient from "@/lib/api/apiClient";
 
 const TENANT_ID = "1000";
@@ -15,6 +16,7 @@ export const fetchScenarios = async (sParam: any) => {
   return scenarios.map((scenario: any) => ({
     ...scenario,
     job: scenario.job || "Process",
+    scenario_type: getScenarioType(scenario),
     description: scenario.description || "",
     updatedAt: scenario.updated_at || null,
     lastUsedAt: scenario.last_used_at || null,
@@ -22,7 +24,10 @@ export const fetchScenarios = async (sParam: any) => {
 };
 
 export const createScenario = async (payload: any) => {
-  return await apiClient.post(`/chat/builder/scenarios`, payload);
+  return await apiClient.post(`/chat/builder/scenarios`, {
+    ...payload,
+    scenario_type: getScenarioType(payload),
+  });
 };
 
 export const cloneScenario = async (payload: any) => {
@@ -34,7 +39,12 @@ export const cloneScenario = async (payload: any) => {
 
 export const patchScenario = async (scenario: any) => {
   const patchUrl = `/chat/builder/scenarios/${scenario.id}`;
-  const res: any = await apiClient.patch(patchUrl.replace(/\s/g, ""), scenario);
+  const res: any = await apiClient.patch(patchUrl.replace(/\s/g, ""), {
+    ...scenario,
+    ...(scenario.scenario_type !== undefined && {
+      scenario_type: getScenarioType(scenario),
+    }),
+  });
   return {
     ...res,
     startNodeId: res.start_node_id,
@@ -54,6 +64,7 @@ export const fetchScenarioData = async (scenarioId: string) => {
   const data: any = await apiClient.get(getUrl.replace(/\s/g, ""));
   return {
     ...data,
+    scenario_type: getScenarioType(data),
     nodes: data.nodes || [],
     edges: data.edges || [],
     startNodeId: data.start_node_id || null,
@@ -71,6 +82,7 @@ export const saveScenarioData = async ({ scenario, data }: any) => {
     stg_id: STAGE_ID,
     // name: scenario.name,
     job: scenario.job,
+    scenario_type: getScenarioType(scenario),
     description: scenario.description || "",
     nodes: data.nodes,
     edges: data.edges,

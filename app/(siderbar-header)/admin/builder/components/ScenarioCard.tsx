@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 
 import { Scenario } from "../types/types";
+import { ScenarioTypeBadge } from "./ScenarioType";
 
 import { COLORS } from "@/lib/constants/color";
 import { formatDateTime } from "../utils/util";
@@ -129,8 +130,9 @@ export function ScenarioCard({
             display="flex"
             alignItems="center"
             gap={0.5}
-            sx={{ flex: 1, minWidth: 0 }}
+            sx={{ flex: "0 0 auto", minWidth: 0 }}
           >
+            <ScenarioTypeBadge scenario={scenario} />
             {scenario.depn_ver_id && (
               <Typography
                 variant="caption"
@@ -153,7 +155,10 @@ export function ScenarioCard({
                 color: COLORS.grey[600],
                 fontSize: "11px",
                 whiteSpace: "nowrap",
-                flexShrink: 0,
+                flexShrink: 1,
+                minWidth: 0,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
               }}
             >
               {formatDateTime(scenario.updated_at || scenario.updatedAt)}

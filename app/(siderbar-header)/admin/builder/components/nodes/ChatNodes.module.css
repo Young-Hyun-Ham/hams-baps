@@ -610,3 +610,207 @@
     transform: rotate(360deg);
   }
 }
+.nodeEditFooter {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  min-height: 32px;
+  padding: 4px 8px;
+  box-sizing: border-box;
+  border-top: 1px solid #eeeeef;
+  background: #fff;
+  border-radius: 0 0 8px 8px;
+}
+
+.nodeWrapper:not(.groupNodeWrapper):has(> .nodeEditFooter),
+.groupNodeWrapperCollapsed:has(> .nodeEditFooter) {
+  min-height: 72px;
+}
+
+.nodeEditButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 8px;
+  border: 1px solid #dedee2;
+  border-radius: 4px;
+  background: #fff;
+  color: #626267;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.nodeEditButton:hover {
+  color: #ff6900;
+  border-color: #ff6900;
+  background: #fff7f0;
+}
+
+.nodeEditButton:focus-visible {
+  outline: 2px solid #ff6900;
+  outline-offset: 2px;
+}
+
+.nodeEditFloating {
+  position: absolute;
+  top: calc(100% + 20px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 11;
+}
+
+.groupNodeWrapper > .nodeEditFooter {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+.headerMoreButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #73737b;
+  cursor: pointer;
+}
+
+.headerMoreButton:hover,
+.headerMoreButton[aria-expanded="true"] {
+  color: #ff6900;
+  background: #fff4ea;
+}
+
+.headerMoreButton:focus-visible {
+  outline: 2px solid #ff6900;
+  outline-offset: 2px;
+}
+
+.nodeHeader:has(.headerMoreButton) .headerLeft {
+  flex: 1;
+  min-width: 0;
+}
+
+.nodeHeader:has(.headerMoreButton) .headerTextContent {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nodeHeader:has(.headerMoreButton) > .headerButtons {
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.headerActionsPaper:global(.MuiPaper-root) {
+  margin-top: 4px;
+  border: 1px solid #e4e4e7;
+  border-radius: 6px;
+  box-shadow: 0 4px 16px #0000001a;
+}
+
+.headerActionsPalette {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px;
+  background: #fff;
+}
+
+.headerActionsPalette button {
+  min-width: 28px;
+  min-height: 28px;
+  border-radius: 4px;
+}
+
+.headerActionsPalette button:hover:not(:disabled) {
+  background: #f4f4f5;
+}
+
+.headerActionsPalette button:focus-visible {
+  outline: 2px solid #ff6900;
+  outline-offset: 1px;
+}
+.nodeTitleEditor {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  color: inherit;
+}
+
+.nodeTitleText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.nodeTitleEditButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  color: #94949c;
+  background: transparent;
+  cursor: pointer;
+}
+
+.nodeTitleEditButton:hover {
+  color: #ff6900;
+  background: #fff4ea;
+}
+.nodeTitleEditButton:focus-visible {
+  outline: 2px solid #ff6900;
+}
+.nodeTitleInput {
+  width: 100%;
+  min-width: 0;
+  height: 26px;
+  padding: 2px 5px;
+  box-sizing: border-box;
+  border: 1px solid #ff6900;
+  border-radius: 3px;
+  background: #fff;
+  color: #38383d;
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.nodeTypeLabel {
+  max-width: 74px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #a1a1aa;
+  font-size: 9px;
+  font-weight: 400;
+}
+
+.compactNodeTitle {
+  position: absolute;
+  top: calc(100% + 50px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 150px;
+  padding: 2px 6px;
+  border: 1px solid #e4e4e7;
+  border-radius: 4px;
+  background: #fff;
+  color: #38383d;
+}

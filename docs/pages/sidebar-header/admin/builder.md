@@ -351,3 +351,27 @@ app/(siderbar-header)/admin/builder/
 - `Paste` 메뉴는 clipboard 가 비어 있으면 disabled 처리하고 회색 텍스트 스타일을 적용하는 방향 정리
 - ?곸꽭 硫붾え 臾몄꽌
   - [../../../job/20260317/builder-context-menu-node-clipboard.md](../../../job/20260317/builder-context-menu-node-clipboard.md)
+
+
+## Scenario detail layout (2026-10-19)
+
+- `/admin/builder/react-flow/scenario-flow`: compact header, categorized Node type palette, dotted canvas, and minimap.
+- Save/Publish retain the original save/version-save handlers and confirmation dialogs. Version indicates a saved version.
+- Search opens from the toolbar. Zoom, fit view, preview visibility, interaction lock, Flow/Orkes, and execution tools remain available. The last toolbar button toggles the bottom-right minimap, visible by default, without changing node positions or edit history.
+- Drag & Drop mode, custom node types, and Nodes Settings retain their existing behavior. Other builder screens retain their existing appearance.
+
+- Header toolbar groups: editing tools through StickyNote; scenario tools through Search; viewport/preview tools. Each group has its own border and spacing.
+
+- Node palette and canvas headers share a node-type icon mapping, including Sub Agent; configured canvas icon colors remain unchanged.
+
+- In scenario detail, selecting a node does not open its options panel. Use the bottom Edit button to open options after the modification-permission check. Clicking the canvas, changing node selection, or switching scenarios/tabs/views closes the editor. This also applies to the embedded Orkes view; other screens retain their existing behavior.
+
+- NodeWrapper Edit buttons are inside the body: expand the body to access Edit; collapsing the body hides its content and Edit together.
+
+- NodeWrapper headers show an ellipsis button at the right edge. It opens a floating palette containing start, anchor, custom node actions (API test or group controls), and delete. An action, outside click, or Escape closes the palette; the body collapse and Edit behavior stay independent.
+
+- Node titles persist in data.title. New nodes default to their type label; legacy missing/blank titles receive the default on save. Use the Pencil beside the title to edit; Enter or blur commits, Escape cancels, and blank input resets to the type label. Use scenario Save/Publish to persist changes to the configured backend. The original type label appears in small gray text before the ellipsis. Existing form titles remain compatible.
+
+- Open the top-left Sub button (formerly Unit) to navigate open scenario tabs. Rows show a Unit/Multi/Sub icon, title, and current version (Draft when absent); Sub is the default classification. Selecting a row restores its nodes/edges and keeps unsaved graphs cached. Close controls remain available when multiple tabs are open. Back list appears below the tab rows. Explicit kind/scenario_type/type values of unit or multi select those icons.
+
+- New Job and metadata editing provide Unit/Multi/Sub selection below Description. The default is Sub. The canonical scenario_type field is included in creation, metadata updates, and scenario-definition saves; cards show its icon/label at the top left. Legacy records without a type display Sub. The scenario tab menu uses the same canonical classification.

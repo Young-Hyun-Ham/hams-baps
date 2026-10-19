@@ -2,7 +2,8 @@
 import styles from "./ChatNodes.module.css";
 import { useBuilderStore } from "../../store/index";
 // (AnchorIcon, StartNodeIcon 임포트 제거)
-import NodeWrapper from "./NodeWrapper"; // 1. Wrapper 임포트
+import NodeWrapper from "./NodeWrapper";
+import NodeTypeIcon from "../icons/NodeTypeIcon"; // 1. Wrapper 임포트
 import { useTranslation } from "react-i18next";
 
 function LinkNode({ id, data }) {
@@ -18,7 +19,7 @@ function LinkNode({ id, data }) {
     <NodeWrapper
       id={id}
       typeLabel="Link"
-      icon={null} // (아이콘 없음)
+      icon={<NodeTypeIcon type="link" />}
       nodeColor={nodeColor}
       textColor={textColor}
     >

@@ -1,3 +1,5 @@
+import NodeTitle from "../../../components/nodes/NodeTitle";
+import NodeEditButton from "../../../components/nodes/NodeEditButton";
 import { Handle, Position } from "reactflow";
 import { useEffect, useMemo, useState } from "react";
 
@@ -213,7 +215,7 @@ function NodeWrapper({
             )}
           </span>
           {icon}
-          <span className={styles.headerTextContent}>{typeLabel}</span>
+          <NodeTitle id={id} typeLabel={typeLabel} />
         </div>
         <div className={styles.headerButtons}>
           <button
@@ -254,6 +256,7 @@ function NodeWrapper({
       )}
 
       {/* 4. 커스텀 핸들 또는 기본 출력 핸들 */}
+      <NodeEditButton id={id} />
       {handles ? handles : <Handle type="source" position={Position.Bottom} />}
     </div>
   );

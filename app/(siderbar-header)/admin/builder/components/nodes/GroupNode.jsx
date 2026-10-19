@@ -7,6 +7,7 @@ import { CollapseNodeIcon, ExpandNodeIcon } from "../icons/Icons";
 import { Plus, Split } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import NodeWrapper from "./NodeWrapper";
+import NodeTypeIcon from "../icons/NodeTypeIcon";
 
 function GroupNode({ id, data, selected }) {
   const { t } = useTranslation();
@@ -71,8 +72,8 @@ function GroupNode({ id, data, selected }) {
   return (
     <NodeWrapper
       id={id}
-      typeLabel={`${t("Group")}: ${title}`}
-      icon={null}
+      typeLabel={t("Group")}
+      icon={<NodeTypeIcon type="selectionGroup" />}
       nodeColor="#475569"
       textColor="#ffffff"
       headerButtons={headerButtons}

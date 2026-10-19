@@ -1,4 +1,5 @@
 import { type Edge, Node } from "reactflow";
+import type { NodeTitleData } from "../../types/types";
 
 type ScenarioSummary = {
   id?: string;
@@ -6,10 +7,9 @@ type ScenarioSummary = {
   scenario_nm?: string;
 };
 
-type BuilderNodeData = {
+type BuilderNodeData = NodeTitleData & {
   id?: string;
   label?: string;
-  title?: string;
   replies?: Array<{ display?: string; value?: string }>;
   conditions?: Array<{ id?: string; value?: string }>;
   evaluationType?: string;

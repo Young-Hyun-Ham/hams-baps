@@ -15,10 +15,10 @@ import {
 import { useRouter } from "next/navigation";
 import ReactFlow, {
   Controls,
-  ControlButton,
   useReactFlow,
   MiniMap,
   Background,
+  BackgroundVariant,
   MarkerType,
   Panel,
   SelectionMode,
@@ -33,6 +33,8 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Menu,
+  Divider,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -77,7 +79,13 @@ import {
   SendIcon,
   Plus,
   GitFork,
-  LayoutGrid,
+  PanelBottom,
+  Search,
+  ZoomIn,
+  ZoomOut,
+  Maximize,
+  Layers,
+  Workflow,
 } from "lucide-react";
 
 import useBuilderHistoryStore from "../../store/historyStore";
@@ -90,7 +98,12 @@ import {
 } from "../../store/index";
 import { sanitizeEdgesForSave } from "../../store/edgeControlActionStore";
 import { fetchScenarioData } from "../../services/backendService";
-import styles from "../../components/Detail.module.css";
+import sharedStyles from "../../components/Detail.module.css";
+import pageStyles from "./ScenarioFlow.module.css";
+import { getScenarioTabKind, getScenarioTabVersion } from "./scenarioTabs";
+
+const styles = { ...sharedStyles, ...pageStyles };
+const SCENARIO_TAB_ICONS = { unit: Square, multi: Layers, sub: Workflow };
 import MessageNode from "../../components/nodes/MessageNode";
 import BranchNode from "../../components/nodes/BranchNode";
 import SlotFillingNode from "../../components/nodes/SlotFillingNode";
@@ -108,6 +121,7 @@ import GroupNode from "../../components/nodes/GroupNode";
 import YnBranchNode from "../../components/nodes/YnBranchNode";
 import SlotDisplay from "../../components/SlotDisplay";
 import NodeController from "../../components/NodeController";
+import { NodeEditContext } from "../../components/nodes/NodeEditButton";
 import NodesTreeUI from "../../components/NodesTreeUI";
 import ScenarioSimulatorModal from "../../components/modals/ScenarioSimulatorModal";
 
@@ -148,7 +162,8 @@ import {
 import apiClient from "@/lib/api/apiClient";
 import { useModal } from "@/providers/ModalProvider";
 import { COLORS } from "@/lib/constants/color";
-import { alignScenarioNodes } from "./autoLayout";
+
+import { useStore } from "@/store";
 
 const DEFAULT_FORM_API_HEADERS = `{
   "Content-Type":"application/json",
@@ -343,8 +358,13 @@ const Flow = ({ scenario, scenarios }: any) => {
   }
 
   const [tabs, setTabs] = useState<ScenarioTab[]>([]);
+  const [tabMenuAnchor, setTabMenuAnchor] = useState<HTMLElement | null>(null);
   const [activeTabId, setActiveTabId] = useState<string>("");
   const [viewMode, setViewMode] = useState<"flow" | "orkes">("flow");
+
+  const setAdminSidebarCollapsed = useStore(
+    (s: any) => s.setAdminSidebarCollapsed,
+  );
 
   const formattedEdges = useMemo(() => {
     const nodeById = new Map(nodes.map((node: Node) => [node.id, node]));
@@ -454,6 +474,9 @@ const Flow = ({ scenario, scenarios }: any) => {
   }, [tabs]);
 
   useEffect(() => {
+    // admin sidebar를 닫는 로직 추가
+    setAdminSidebarCollapsed(true);
+
     if (scenario?.id && tabs.length === 0) {
       const mainTab: ScenarioTab = {
         id: scenario.id,
@@ -485,15 +508,18 @@ const Flow = ({ scenario, scenarios }: any) => {
                 edges,
                 startNodeId,
                 selectedNodeId,
+                scenario,
+                name: scenario.name || scenario.scenario_nm || "Scenario",
               }
             : tab,
         ),
       );
     }, 0);
     return () => clearTimeout(timer);
-  }, [nodes, edges, startNodeId, selectedNodeId, activeTabId, scenario?.id]);
+  }, [nodes, edges, startNodeId, selectedNodeId, activeTabId, scenario]);
 
   const handleTabSwitch = (targetTabId: string) => {
+    if (targetTabId === activeTabId) return;
     const currentTabs = tabsRef.current;
     const targetTab = currentTabs.find((t) => t.id === targetTabId);
     if (!targetTab) return;
@@ -506,6 +532,8 @@ const Flow = ({ scenario, scenarios }: any) => {
             edges,
             startNodeId,
             selectedNodeId,
+            scenario,
+            name: scenario.name || scenario.scenario_nm || "Scenario",
           }
         : t,
     );
@@ -526,6 +554,7 @@ const Flow = ({ scenario, scenarios }: any) => {
     async (subScenario: any) => {
       const currentTabs = tabsRef.current;
       const existingTab = currentTabs.find((t) => t.id === subScenario.id);
+      if (existingTab?.id === activeTabId) return;
       if (existingTab) {
         const updatedTabs = currentTabs.map((t) =>
           t.id === activeTabId
@@ -535,6 +564,8 @@ const Flow = ({ scenario, scenarios }: any) => {
                 edges,
                 startNodeId,
                 selectedNodeId,
+                scenario,
+                name: scenario.name || scenario.scenario_nm || "Scenario",
               }
             : t,
         );
@@ -552,7 +583,12 @@ const Flow = ({ scenario, scenarios }: any) => {
       }
 
       try {
-        const data = await fetchScenarioData(backend, subScenario.id);
+        const data = await fetchScenarioData(
+          backend,
+          backend === "firebase"
+            ? { scenarioId: subScenario.id }
+            : subScenario.id,
+        );
         if (data) {
           const updatedTabs = currentTabs.map((t) =>
             t.id === activeTabId
@@ -562,6 +598,8 @@ const Flow = ({ scenario, scenarios }: any) => {
                   edges,
                   startNodeId,
                   selectedNodeId,
+                  scenario,
+                  name: scenario.name || scenario.scenario_nm || "Scenario",
                 }
               : t,
           );
@@ -579,7 +617,16 @@ const Flow = ({ scenario, scenarios }: any) => {
             edges: cleanEdges,
             startNodeId: data.startNodeId ?? null,
             selectedNodeId: null,
-            scenario: data,
+            scenario: {
+              ...subScenario,
+              ...data,
+              id: subScenario.id,
+              name:
+                data.name ||
+                subScenario.name ||
+                subScenario.scenario_nm ||
+                "Sub Scenario",
+            },
           };
 
           setTabs([...updatedTabs, newTab]);
@@ -598,7 +645,7 @@ const Flow = ({ scenario, scenarios }: any) => {
         alert("Failed to load sub scenario");
       }
     },
-    [backend, activeTabId, nodes, edges, startNodeId, selectedNodeId],
+    [backend, activeTabId, nodes, edges, startNodeId, selectedNodeId, scenario],
   );
 
   const handleTabClose = (tabId: string, e: React.MouseEvent) => {
@@ -642,10 +689,18 @@ const Flow = ({ scenario, scenarios }: any) => {
   const canUndo = useBuilderHistoryStore((state) => state.past.length > 0);
   const canRedo = useBuilderHistoryStore((state) => state.future.length > 0);
 
-  const { getNodes, project, setCenter } = useReactFlow();
+  const { getNodes, project, setCenter, zoomIn, zoomOut, fitView } =
+    useReactFlow();
   const reactFlowWrapper = useRef<HTMLDivElement | null>(null);
 
+  const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setEditingNodeId(null);
+  }, [scenario?.id, activeTabId]);
+
   const [toolMode, setToolMode] = useState<ToolMode>("pan");
+  const [isPreviewVisible, setIsPreviewVisible] = useState(true);
   const isPanMode = toolMode === "pan";
   const isSelectMode = toolMode === "select";
 
@@ -682,7 +737,7 @@ const Flow = ({ scenario, scenarios }: any) => {
   const [searchType, setSearchType] = useState<string>("all");
   const [searchKeyword, setSearchKeyword] = useState("");
   // 캔버스 패널 접기/펼치기 상태
-  const [isCanvasPanelCollapsed, setIsCanvasPanelCollapsed] = useState(false);
+  const [isCanvasPanelCollapsed, setIsCanvasPanelCollapsed] = useState(true);
   // 에뮬 실행 데이터 표시 패널 상태 ( 캔버스 패널 height 조정 위해 별도 상태로 분리 )
   const [isSlotDisplayVisible, setIsSlotDisplayVisible] = useState(false);
   const [canvasPanelHeight, setCanvasPanelHeight] = useState(0);
@@ -694,6 +749,7 @@ const Flow = ({ scenario, scenarios }: any) => {
 
   // viewMode 변경 시 node library 접힘/펼침 조절
   const handleViewModeChange = (mode: "flow" | "orkes") => {
+    setEditingNodeId(null);
     setViewMode(mode);
     setIsNodeLibraryCollapsed(mode === "orkes");
   };
@@ -1433,18 +1489,6 @@ const Flow = ({ scenario, scenarios }: any) => {
 
   // const { onLayout } = useAutoLayout();
 
-  const handleAutoLayout = useCallback(() => {
-    const { nodes: layoutedNodes, edges: layoutedEdges } = alignScenarioNodes(
-      nodes as any,
-      edges as any,
-    );
-    setNodes(layoutedNodes as any);
-    setEdges(layoutedEdges as any);
-    useBuilderHistoryStore
-      .getState()
-      .push(makeSnapshot(useBuilderStore.getState()));
-  }, [nodes, edges, setNodes, setEdges]);
-
   const handleNodeDrag = useCallback(
     (_: React.MouseEvent, draggedNode: Node) => {
       const parentNode = draggedNode.parentNode
@@ -2117,9 +2161,9 @@ const Flow = ({ scenario, scenarios }: any) => {
 
     return Boolean(
       isSelectionPane ||
-      target.closest(".react-flow__nodesselection") ||
-      target.closest(".react-flow__nodesselection-rect") ||
-      target.closest(".react-flow__selection"),
+        target.closest(".react-flow__nodesselection") ||
+        target.closest(".react-flow__nodesselection-rect") ||
+        target.closest(".react-flow__selection"),
     );
   }, []);
 
@@ -2611,6 +2655,7 @@ const Flow = ({ scenario, scenarios }: any) => {
   }, [getNodes, selectionGroupLayoutSignature, setEdges, setNodes]);
 
   const handleNodeClick = async (event: any, node: any) => {
+    setEditingNodeId(null);
     // 노드 클릭 시 shift 키로 다중 노드 선택 가능 하도록 수정
     const isShiftPressed = event.shiftKey;
 
@@ -2638,6 +2683,7 @@ const Flow = ({ scenario, scenarios }: any) => {
   };
 
   const handlePaneClick = () => {
+    setEditingNodeId(null);
     setSelectedNodes([]);
     setSelectedNodeId(null);
 
@@ -2647,6 +2693,9 @@ const Flow = ({ scenario, scenarios }: any) => {
 
   const handleSelectionChange = useCallback(
     ({ nodes }: { nodes: Node<any>[] }) => {
+      setEditingNodeId((previous) =>
+        nodes.length === 1 && nodes[0].id === previous ? previous : null,
+      );
       setSelectedNodes(nodes);
       if (nodes.length === 1) {
         setSelectedNodeId(nodes[0].id);
@@ -2655,6 +2704,32 @@ const Flow = ({ scenario, scenarios }: any) => {
       }
     },
     [setSelectedNodeId],
+  );
+
+  const handleEditNode = useCallback(
+    async (nodeId: string) => {
+      const node = useBuilderStore
+        .getState()
+        .nodes.find((item) => item.id === nodeId);
+      if (!node) return;
+      const userInfo = await loadingUserData();
+      if (userInfo.unuseNodes?.includes(node.type || "")) {
+        showAlert(`${t("The node does not have modification privileges")}`);
+        return;
+      }
+      if (!useBuilderStore.getState().nodes.some((item) => item === node))
+        return;
+      setSelectedNodeId(nodeId);
+      setSelectedNodes([node]);
+      setEditingNodeId(nodeId);
+    },
+    [loadingUserData, setSelectedNodeId, showAlert, t],
+  );
+
+  const isNodeEditorVisible = Boolean(
+    editingNodeId &&
+      editingNodeId === selectedNodeId &&
+      nodes.some((node: Node) => node.id === editingNodeId),
   );
 
   const handleDuplicateNode = () => {
@@ -2866,7 +2941,7 @@ const Flow = ({ scenario, scenarios }: any) => {
             },
             data: {
               label: t("Selected Group"),
-              title: t("Selected Group"),
+              title: t("Group"),
               isCollapsed: false,
               entryNodeId: droppedOnNode.id,
               exitNodeIds: [newNodeId],
@@ -3443,21 +3518,428 @@ const Flow = ({ scenario, scenarios }: any) => {
     setSelectedVersion(res);
   };
 
+  const activeTabKind = getScenarioTabKind(scenario || {});
+  const ActiveTabIcon = SCENARIO_TAB_ICONS[activeTabKind];
+
   return (
     <Box
       flex={1}
+      className={styles.editor}
       sx={{ minHeight: 0 }}
       height={"100%"}
       display={"flex"}
       flexDirection={"column"}
-      gap={1.5}
+      gap={0}
     >
+      <header className={styles.editorHeader}>
+        <div className={styles.scenarioIdentity}>
+          <button
+            type="button"
+            className={styles.unitBadge}
+            onClick={(event) => setTabMenuAnchor(event.currentTarget)}
+            title={t("Scenario tabs")}
+            aria-haspopup="menu"
+            aria-expanded={Boolean(tabMenuAnchor)}
+            aria-controls={tabMenuAnchor ? "scenario-tab-menu" : undefined}
+          >
+            <ActiveTabIcon size={11} />
+            {activeTabKind === "unit"
+              ? "Unit"
+              : activeTabKind === "multi"
+                ? "Multi"
+                : "Sub"}
+          </button>
+          <Menu
+            id="scenario-tab-menu"
+            anchorEl={tabMenuAnchor}
+            open={Boolean(tabMenuAnchor)}
+            onClose={() => setTabMenuAnchor(null)}
+            anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+            transformOrigin={{ vertical: "top", horizontal: "left" }}
+            slotProps={{ paper: { className: styles.tabMenuPaper } }}
+            MenuListProps={{ "aria-label": t("Scenario tabs") }}
+            disableScrollLock
+          >
+            {tabs.map((tab) => {
+              const tabScenario =
+                tab.id === activeTabId ? scenario : tab.scenario;
+              const kind = getScenarioTabKind(tabScenario || {});
+              const KindIcon = SCENARIO_TAB_ICONS[kind];
+              const title =
+                tabScenario?.name || tabScenario?.scenario_nm || tab.name;
+              const isActive = tab.id === activeTabId;
+              return (
+                <MenuItem
+                  key={tab.id}
+                  selected={isActive}
+                  aria-current={isActive ? "page" : undefined}
+                  className={styles.tabMenuItem}
+                  onClick={() => {
+                    handleTabSwitch(tab.id);
+                    setTabMenuAnchor(null);
+                  }}
+                >
+                  <span
+                    className={styles.tabKindIcon}
+                    title={kind}
+                    aria-label={kind}
+                  >
+                    <KindIcon size={15} />
+                  </span>
+                  <span className={styles.tabMenuTitle} title={title}>
+                    {title}
+                  </span>
+                  <span className={styles.tabMenuVersion}>
+                    {getScenarioTabVersion(tabScenario || {})}
+                  </span>
+                  {tabs.length > 1 && (
+                    <IconButton
+                      size="small"
+                      className={styles.tabCloseButton}
+                      aria-label={`${t("Close tab")}: ${title}`}
+                      onKeyDown={(event) => event.stopPropagation()}
+                      onClick={(event) => handleTabClose(tab.id, event)}
+                    >
+                      <CloseIcon sx={{ fontSize: 13 }} />
+                    </IconButton>
+                  )}
+                </MenuItem>
+              );
+            })}
+            <Divider />
+            <MenuItem
+              className={styles.tabBackButton}
+              onClick={() => {
+                setTabMenuAnchor(null);
+                goList();
+              }}
+            >
+              <ArrowLeft size={14} />
+              {t("Back list")}
+            </MenuItem>
+          </Menu>
+          <span
+            className={styles.scenarioTitle}
+            title={scenario?.name || scenario?.scenario_nm || ""}
+          >
+            {scenario?.name || scenario?.scenario_nm || t("Scenario")}
+          </span>
+          <span className={styles.statusBadge}>
+            {scenario?.version_yn ? t("Version") : t("Draft")}
+          </span>
+        </div>
+        <div
+          className={styles.headerToolbar}
+          role="toolbar"
+          aria-label={t("Scenario tools")}
+        >
+          <div className={styles.toolRow}>
+            <div
+              className={styles.toolGroup}
+              role="group"
+              aria-label={t("Editing tools")}
+            >
+              <button
+                type="button"
+                onClick={undo}
+                title={`${t("Undo")} (Ctrl/Cmd+Z)`}
+                className={styles.toolButton}
+                disabled={!canUndo}
+              >
+                <Undo size={18} />
+              </button>
+
+              <button
+                type="button"
+                onClick={redo}
+                title={`${t("Redo")} (Ctrl+Y, Cmd+Shift+Z)`}
+                className={styles.toolButton}
+                disabled={!canRedo}
+              >
+                <Redo size={18} />
+              </button>
+
+              <button
+                type="button"
+                onClick={goList}
+                title={t("Back to Scenario List")}
+                className={styles.toolButton}
+              >
+                <ArrowLeft size={18} />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setToolMode("pan")}
+                title={t("Pan mode")}
+                className={`${styles.toolButton} ${isPanMode ? styles.toolButtonActive : ""}`}
+              >
+                <Hand size={18} />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setToolMode("select")}
+                title={t("Select mode")}
+                className={`${styles.toolButton} ${isSelectMode ? styles.toolButtonActive : ""}`}
+              >
+                <MousePointer2 size={18} />
+              </button>
+
+              <button
+                type="button"
+                title={t("canvas add Memo")}
+                onClick={addCanvasMemo}
+                className={styles.toolButton}
+              >
+                <StickyNote size={18} />
+              </button>
+            </div>
+            <div
+              className={styles.toolGroup}
+              role="group"
+              aria-label={t("Scenario and search tools")}
+            >
+              <button
+                type="button"
+                title={t("Show chatbot simulator")}
+                onClick={() => {
+                  setIsSimulatorVisible((visible) => {
+                    if (!visible) {
+                      setSimulatorRunId(getSafeUUID());
+                    }
+                    return !visible;
+                  });
+                }}
+                className={`${styles.toolButton} ${isSimulatorVisible ? styles.toolButtonActive : ""}`}
+              >
+                <Sparkles size={18} />
+              </button>
+
+              <button
+                type="button"
+                title={`${t("log preview")} (${t("DB JSON Edit")})`}
+                onClick={() => setIsLogVisible(true)}
+                className={`${styles.toolButton} ${isMemoVisible ? styles.toolButtonActive : ""}`}
+              >
+                <Activity size={18} />
+              </button>
+
+              <button
+                type="button"
+                title={t("Run from Start to Anchor")}
+                onClick={() => {
+                  setIsSlotDisplayVisible(true);
+                  runBetweenStartAndAnchor();
+                }}
+                className={`${styles.toolButton} ${executionRunning ? styles.toolButtonActive : ""}`}
+                disabled={executionRunning}
+              >
+                <Play size={18} />
+              </button>
+
+              <button
+                type="button"
+                title={t("Stop execution")}
+                onClick={() => stopExecution()}
+                className={styles.toolButton}
+                disabled={!executionRunning}
+              >
+                <Square size={18} />
+              </button>
+
+              <button
+                type="button"
+                title={t("Execution log")}
+                onClick={() => setIsExecutionLogVisible(true)}
+                className={styles.toolButton}
+              >
+                <FileText size={18} />
+              </button>
+
+              <button
+                type="button"
+                title={t("Group Selected Nodes")}
+                onClick={handleGroupSelectedNodes}
+                className={styles.toolButton}
+              >
+                <b>{t("G")}</b>
+              </button>
+
+              {/* Segmented Switch Control for View Mode (Far Right of Toolbar) */}
+              <Box
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  backgroundColor: "#f1f5f9",
+                  borderRadius: "8px",
+                  padding: "2px",
+                  border: "1px solid #cbd5e1",
+                  ml: 0.5,
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => handleViewModeChange("flow")}
+                  style={{
+                    padding: "4px 12px",
+                    borderRadius: "6px",
+                    fontSize: "12px",
+                    fontWeight: viewMode === "flow" ? 700 : 500,
+                    color: viewMode === "flow" ? "#0f172a" : "#64748b",
+                    backgroundColor:
+                      viewMode === "flow" ? "#ffffff" : "transparent",
+                    boxShadow:
+                      viewMode === "flow"
+                        ? "0 1px 3px rgba(0,0,0,0.12)"
+                        : "none",
+                    border: "none",
+                    cursor: "pointer",
+                    transition: "all 0.15s ease",
+                  }}
+                >
+                  Flow
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleViewModeChange("orkes")}
+                  style={{
+                    padding: "4px 12px",
+                    borderRadius: "6px",
+                    fontSize: "12px",
+                    fontWeight: viewMode === "orkes" ? 700 : 500,
+                    color: viewMode === "orkes" ? "#0f172a" : "#64748b",
+                    backgroundColor:
+                      viewMode === "orkes" ? "#ffffff" : "transparent",
+                    boxShadow:
+                      viewMode === "orkes"
+                        ? "0 1px 3px rgba(0,0,0,0.12)"
+                        : "none",
+                    border: "none",
+                    cursor: "pointer",
+                    transition: "all 0.15s ease",
+                  }}
+                >
+                  Orkes
+                </button>
+              </Box>
+              <button
+                type="button"
+                className={`${styles.toolButton} ${!isCanvasPanelCollapsed ? styles.toolButtonActive : ""}`}
+                title={t("Search nodes")}
+                aria-expanded={!isCanvasPanelCollapsed}
+                onClick={() => setIsCanvasPanelCollapsed((prev) => !prev)}
+              >
+                <Search size={16} />
+              </button>
+            </div>
+            {viewMode === "flow" && (
+              <div
+                className={styles.zoomTools}
+                role="group"
+                aria-label={t("Viewport tools")}
+              >
+                <Controls
+                  showZoom={false}
+                  showFitView={false}
+                  className={styles.interactionControl}
+                />
+                <button
+                  type="button"
+                  className={styles.toolButton}
+                  title={t("Zoom out")}
+                  onClick={() => zoomOut()}
+                >
+                  <ZoomOut size={16} />
+                </button>
+                <span className={styles.zoomValue}>
+                  {Math.round(viewport.zoom * 100)}%
+                </span>
+                <button
+                  type="button"
+                  className={styles.toolButton}
+                  title={t("Zoom in")}
+                  onClick={() => zoomIn()}
+                >
+                  <ZoomIn size={16} />
+                </button>
+                <button
+                  type="button"
+                  className={styles.toolButton}
+                  title={t("Fit view")}
+                  onClick={() => fitView({ padding: 0.2, maxZoom: 1.2 })}
+                >
+                  <Maximize size={16} />
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.toolButton} ${isPreviewVisible ? styles.toolButtonActive : ""}`}
+                  title={
+                    isPreviewVisible ? t("Hide preview") : t("Show preview")
+                  }
+                  aria-label={
+                    isPreviewVisible ? t("Hide preview") : t("Show preview")
+                  }
+                  aria-pressed={isPreviewVisible}
+                  onClick={() => setIsPreviewVisible((visible) => !visible)}
+                >
+                  <PanelBottom size={16} />
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+        <div className={styles.headerActions}>
+          <button
+            type="button"
+            onClick={async () => {
+              const confirmed = await showConfirm(
+                `${t("Do you want to save the Scenario?")}`,
+              );
+              if (!confirmed) return;
+              const payload = {
+                ...scenario,
+                version_yn: false,
+              };
+              resetExecution();
+              await saveScenario(payload);
+            }}
+            title={`${t("Commit")} & ${t("Save Scenario")}`}
+            className={styles.headerSave}
+          >
+            <Save size={14} />
+            <span>{t("Save")}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={async () => {
+              const confirmed = await showConfirm(
+                `${t("Do you want to push the Scenario?")}`,
+              );
+              if (!confirmed) return;
+              const payload = {
+                ...scenario,
+                version_yn: true,
+              };
+              resetExecution();
+              await saveScenario(payload);
+            }}
+            title={t("Push Scenario")}
+            className={styles.headerPublish}
+          >
+            <SendIcon size={14} />
+            <span>{t("Publish")}</span>
+          </button>
+        </div>
+      </header>
       <Box
-        border={1}
+        className={styles.editorBody}
+        border={0}
         flexGrow={1}
         height={0}
         minHeight={0}
-        borderRadius={2}
+        borderRadius={0}
         borderColor={COLORS.blueGrey[100]}
         display={"flex"}
         overflow={"hidden"}
@@ -3493,39 +3975,41 @@ const Flow = ({ scenario, scenarios }: any) => {
 
         {/* 좌측 메뉴바 영역 */}
         <NodesTreeUI
+          variant="scenario"
           props={nodeTreeUIOptions}
           onScenarioGroupClick={() => setIsGroupModalOpen(true)}
           onNodesSettingClick={() => setIsNodesSettingModalOpen(true)}
         />
 
         {/* 우측 react flow 영역 */}
-        <div
-          className={styles.mainContent}
-          ref={reactFlowWrapper}
-          onContextMenuCapture={handleSelectionContextMenuCapture}
-        >
-          {/* Current Values */}
-          {isSlotDisplayVisible && (
-            <div
-              className={styles.slotDisplayAnchor}
-              style={{ top: `${canvasPanelHeight + 54}px` }}
-            >
-              <SlotDisplay />
-            </div>
-          )}
+        <NodeEditContext.Provider value={handleEditNode}>
+          <div
+            className={styles.mainContent}
+            ref={reactFlowWrapper}
+            onContextMenuCapture={handleSelectionContextMenuCapture}
+          >
+            {/* Current Values */}
+            {isSlotDisplayVisible && (
+              <div
+                className={styles.slotDisplayAnchor}
+                style={{ top: `${canvasPanelHeight + 54}px` }}
+              >
+                <SlotDisplay />
+              </div>
+            )}
 
-          {/* Memo Pad */}
-          {isMemoVisible && (
-            <div
-              className={styles.memoPadAnchor}
-              style={{ top: `${canvasPanelHeight + 24}px` }}
-            >
-              <MemoPad memos={memos} setMemos={setMemos} />
-            </div>
-          )}
+            {/* Memo Pad */}
+            {isMemoVisible && (
+              <div
+                className={styles.memoPadAnchor}
+                style={{ top: `${canvasPanelHeight + 24}px` }}
+              >
+                <MemoPad memos={memos} setMemos={setMemos} />
+              </div>
+            )}
 
-          <div className={styles.topRightControls}>
-            {/* 우측 상단 버튼 영역
+            <div className={styles.topRightControls}>
+              {/* 우측 상단 버튼 영역
             <div
               onClick={() => {
                 saveScenario(backend, scenario);
@@ -3572,752 +4056,458 @@ const Flow = ({ scenario, scenarios }: any) => {
               />
             </div>
           */}
-          </div>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              flexGrow: 1,
-              height: "100%",
-              width: "100%",
-              minHeight: 0,
-            }}
-          >
-            {tabs.length > 0 && (
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 0.5,
-                  borderBottom: `1px solid ${COLORS.blueGrey[100]}`,
-                  backgroundColor: "#F8FAFC",
-                  padding: "4px 8px 0 8px",
-                  zIndex: 4,
-                  position: "relative",
-                }}
-              >
-                {tabs.map((tab) => {
-                  const isActive = tab.id === activeTabId;
-                  return (
-                    <Box
-                      key={tab.id}
-                      onClick={() => handleTabSwitch(tab.id)}
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1,
-                        padding: "6px 12px",
-                        borderRadius: "8px 8px 0 0",
-                        border: "1px solid",
-                        borderColor: isActive
-                          ? COLORS.blueGrey[100]
-                          : "transparent",
-                        borderBottom: isActive ? "1px solid #ffffff" : "none",
-                        backgroundColor: isActive ? "#ffffff" : "transparent",
-                        color: isActive ? "primary.main" : "text.secondary",
-                        fontWeight: isActive ? 700 : 500,
-                        fontSize: "13px",
-                        cursor: "pointer",
-                        transition: "all 0.2s",
-                        marginBottom: "-1px",
-                        "&:hover": {
-                          backgroundColor: isActive ? "#ffffff" : "#F1F5F9",
-                          color: isActive ? "primary.main" : "text.primary",
-                        },
-                      }}
-                    >
-                      <span>{tab.name}</span>
-                      {tabs.length > 1 && (
-                        <IconButton
-                          size="small"
-                          onClick={(e) => handleTabClose(tab.id, e)}
-                          sx={{
-                            padding: 0.2,
-                            color: isActive ? "primary.main" : "text.secondary",
-                            opacity: 0.7,
-                            "&:hover": {
-                              opacity: 1,
-                              backgroundColor: "rgba(0, 0, 0, 0.05)",
-                            },
-                          }}
-                        >
-                          <CloseIcon sx={{ fontSize: 14 }} />
-                        </IconButton>
-                      )}
-                    </Box>
-                  );
-                })}
-              </Box>
-            )}
+            </div>
             <div
               style={{
-                flexGrow: 1,
-                minHeight: 0,
-                position: "relative",
-                width: "100%",
-                height: "100%",
                 display: "flex",
                 flexDirection: "column",
+                flexGrow: 1,
+                height: "100%",
+                width: "100%",
+                minHeight: 0,
               }}
             >
-              {/* Top Toolbar Overlay - Visible in both Flow and Orkes modes */}
               <div
                 style={{
-                  position: "absolute",
-                  top: 12,
-                  left: 12,
-                  zIndex: 10,
-                  pointerEvents: "none",
+                  flexGrow: 1,
+                  minHeight: 0,
+                  position: "relative",
+                  width: "100%",
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
                 }}
               >
-                <div
-                  ref={searchPanelRef}
-                  style={{ pointerEvents: "auto" }}
-                  className={`${styles.searchPanel} ${
-                    isCanvasPanelCollapsed ? styles.searchPanelCollapsed : ""
-                  }`}
-                >
-                  <div className={styles.searchTopRow}>
-                    <div className={styles.toolRow}>
-                      <button
-                        type="button"
-                        onClick={undo}
-                        title={`${t("Undo")} (Ctrl/Cmd+Z)`}
-                        className={styles.toolButton}
-                        disabled={!canUndo}
-                      >
-                        <Undo size={18} />
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={redo}
-                        title={`${t("Redo")} (Ctrl+Y, Cmd+Shift+Z)`}
-                        className={styles.toolButton}
-                        disabled={!canRedo}
-                      >
-                        <Redo size={18} />
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          const confirmed = await showConfirm(
-                            `${t("Do you want to save the Scenario?")}`,
-                          );
-                          if (!confirmed) return;
-                          const payload = {
-                            ...scenario,
-                            version_yn: false,
-                          };
-                          resetExecution();
-                          await saveScenario(payload);
-                        }}
-                        title={`${t("Commit")} & ${t("Save Scenario")}`}
-                        className={styles.toolButton}
-                      >
-                        <Save size={18} />
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          const confirmed = await showConfirm(
-                            `${t("Do you want to push the Scenario?")}`,
-                          );
-                          if (!confirmed) return;
-                          const payload = {
-                            ...scenario,
-                            version_yn: true,
-                          };
-                          resetExecution();
-                          await saveScenario(payload);
-                        }}
-                        title={t("Push Scenario")}
-                        className={styles.toolButton}
-                      >
-                        <SendIcon size={18} />
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={goList}
-                        title={t("Back to Scenario List")}
-                        className={styles.toolButton}
-                      >
-                        <ArrowLeft size={18} />
-                      </button>
-
-                      <div
-                        style={{
-                          margin: "0 4px",
-                          display: "flex",
-                          alignItems: "center",
-                        }}
-                      >
-                        |
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => setToolMode("pan")}
-                        title={t("Pan mode")}
-                        className={`${styles.toolButton} ${isPanMode ? styles.toolButtonActive : ""}`}
-                      >
-                        <Hand size={18} />
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setToolMode("select")}
-                        title={t("Select mode")}
-                        className={`${styles.toolButton} ${isSelectMode ? styles.toolButtonActive : ""}`}
-                      >
-                        <MousePointer2 size={18} />
-                      </button>
-
-                      <button
-                        type="button"
-                        title={t("canvas add Memo")}
-                        onClick={addCanvasMemo}
-                        className={styles.toolButton}
-                      >
-                        <StickyNote size={18} />
-                      </button>
-
-                      <button
-                        type="button"
-                        title={t("Show chatbot simulator")}
-                        onClick={() => {
-                          setIsSimulatorVisible((visible) => {
-                            if (!visible) {
-                              setSimulatorRunId(getSafeUUID());
-                            }
-                            return !visible;
-                          });
-                        }}
-                        className={`${styles.toolButton} ${isSimulatorVisible ? styles.toolButtonActive : ""}`}
-                      >
-                        <Sparkles size={18} />
-                      </button>
-
-                      <button
-                        type="button"
-                        title={`${t("log preview")} (${t("DB JSON Edit")})`}
-                        onClick={() => setIsLogVisible(true)}
-                        className={`${styles.toolButton} ${isMemoVisible ? styles.toolButtonActive : ""}`}
-                      >
-                        <Activity size={18} />
-                      </button>
-
-                      <div
-                        style={{
-                          margin: "0 4px",
-                          display: "flex",
-                          alignItems: "center",
-                        }}
-                      >
-                        |
-                      </div>
-
-                      <button
-                        type="button"
-                        title={t("Run from Start to Anchor")}
-                        onClick={() => {
-                          setIsSlotDisplayVisible(true);
-                          runBetweenStartAndAnchor();
-                        }}
-                        className={`${styles.toolButton} ${executionRunning ? styles.toolButtonActive : ""}`}
-                        disabled={executionRunning}
-                      >
-                        <Play size={18} />
-                      </button>
-
-                      <button
-                        type="button"
-                        title={t("Stop execution")}
-                        onClick={() => stopExecution()}
-                        className={styles.toolButton}
-                        disabled={!executionRunning}
-                      >
-                        <Square size={18} />
-                      </button>
-
-                      <button
-                        type="button"
-                        title={t("Execution log")}
-                        onClick={() => setIsExecutionLogVisible(true)}
-                        className={styles.toolButton}
-                      >
-                        <FileText size={18} />
-                      </button>
-
-                      <div
-                        style={{
-                          margin: "0 4px",
-                          display: "flex",
-                          alignItems: "center",
-                        }}
-                      >
-                        |
-                      </div>
-
-                      <button
-                        type="button"
-                        title={t("Group Selected Nodes")}
-                        onClick={handleGroupSelectedNodes}
-                        className={styles.toolButton}
-                      >
-                        <b>{t("G")}</b>
-                      </button>
-
-                      <div
-                        style={{
-                          margin: "0 4px",
-                          display: "flex",
-                          alignItems: "center",
-                        }}
-                      >
-                        |
-                      </div>
-
-                      {/* Segmented Switch Control for View Mode (Far Right of Toolbar) */}
-                      <Box
-                        sx={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          backgroundColor: "#f1f5f9",
-                          borderRadius: "8px",
-                          padding: "2px",
-                          border: "1px solid #cbd5e1",
-                          ml: 0.5,
-                        }}
-                      >
-                        <button
-                          type="button"
-                          onClick={() => handleViewModeChange("flow")}
-                          style={{
-                            padding: "4px 12px",
-                            borderRadius: "6px",
-                            fontSize: "12px",
-                            fontWeight: viewMode === "flow" ? 700 : 500,
-                            color: viewMode === "flow" ? "#0f172a" : "#64748b",
-                            backgroundColor:
-                              viewMode === "flow" ? "#ffffff" : "transparent",
-                            boxShadow:
-                              viewMode === "flow"
-                                ? "0 1px 3px rgba(0,0,0,0.12)"
-                                : "none",
-                            border: "none",
-                            cursor: "pointer",
-                            transition: "all 0.15s ease",
-                          }}
-                        >
-                          Flow
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleViewModeChange("orkes")}
-                          style={{
-                            padding: "4px 12px",
-                            borderRadius: "6px",
-                            fontSize: "12px",
-                            fontWeight: viewMode === "orkes" ? 700 : 500,
-                            color: viewMode === "orkes" ? "#0f172a" : "#64748b",
-                            backgroundColor:
-                              viewMode === "orkes" ? "#ffffff" : "transparent",
-                            boxShadow:
-                              viewMode === "orkes"
-                                ? "0 1px 3px rgba(0,0,0,0.12)"
-                                : "none",
-                            border: "none",
-                            cursor: "pointer",
-                            transition: "all 0.15s ease",
-                          }}
-                        >
-                          Orkes
-                        </button>
-                      </Box>
-                    </div>
-
-                    <div className={styles.searchRow}>
-                      <FormControl size="small">
-                        <Select
-                          value={searchType}
-                          onChange={(e) => setSearchType(e.target.value)}
-                          className={styles.searchSelect} // 기존 스타일 유지
-                          sx={{
-                            height: "40px",
-                            backgroundColor: "#fff",
-                            fontSize: "12px",
-                            "& .MuiSelect-select": {
-                              paddingTop: "0px",
-                              paddingBottom: "0px",
-                              display: "flex",
-                              alignItems: "center",
-                            },
-                          }}
-                          // MenuProps를 통해 렌더링 위치를 강제로 body에 고정
-                          MenuProps={{
-                            disablePortal: false,
-                          }}
-                        >
-                          <MenuItem value="all" sx={{ fontSize: "12px" }}>
-                            {t("All")}
-                          </MenuItem>
-                          {MOCK_UP_TREE_DATA[0].children.map(
-                            (item: TreeItem) => (
-                              <MenuItem
-                                key={item.id}
-                                value={item.id}
-                                sx={{ fontSize: "12px" }}
-                              >
-                                {item.id}
-                              </MenuItem>
-                            ),
-                          )}
-                        </Select>
-                      </FormControl>
-
-                      <input
-                        className={styles.searchInput}
-                        type="text"
-                        value={searchKeyword}
-                        onChange={(e) => setSearchKeyword(e.target.value)}
-                        placeholder={t("Search node message text")}
-                        style={{ minWidth: "250px" }}
-                      />
-                    </div>
-
-                    <button
-                      type="button"
-                      title={
-                        isCanvasPanelCollapsed
-                          ? `${t("Show canvas panel")}`
-                          : `${t("Hide canvas panel")}`
-                      }
-                      onClick={() => setIsCanvasPanelCollapsed((prev) => !prev)}
-                      className={`${styles.toolButton} ${styles.panelToggleButton}`}
-                    >
-                      {isCanvasPanelCollapsed ? (
-                        <ChevronRight size={18} />
-                      ) : (
-                        <ChevronLeft size={18} />
-                      )}
-                    </button>
-                  </div>
-
-                  {!isCanvasPanelCollapsed &&
-                    filteredSearchResults.length > 0 && (
-                      <div className={styles.searchResults}>
-                        {filteredSearchResults.map((node: any) => (
-                          <div
-                            key={node.id}
-                            className={styles.searchResultCard}
-                            onClick={() => focusNode(node)}
-                            role="button"
-                            tabIndex={0}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" || e.key === " ") {
-                                focusNode(node);
-                              }
-                            }}
-                          >
-                            <div className={styles.searchResultHeader}>
-                              <div className={styles.searchResultType}>
-                                {nodeLabels[node.type]?.replace("+ ", "") ||
-                                  node.type}
-                              </div>
-                              <div className={styles.searchResultId}>
-                                {node.id}
-                              </div>
-                            </div>
-
-                            <div className={styles.searchResultText}>
-                              {getNodeSearchText(node)
-                                .filter(Boolean)
-                                .join(" ") || "(empty)"}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                </div>
-              </div>
-
-              {viewMode === "flow" ? (
-                <ReactFlow
-                  className={isPanMode ? styles.panCanvas : styles.selectCanvas}
-                  key={scenario?.id}
-                  nodes={visibleNodes}
-                  edges={formattedEdges}
-                  onNodesChange={onNodesChange}
-                  onEdgesChange={onEdgesChange}
-                  onConnect={onConnect}
-                  onNodeDrag={handleNodeDrag}
-                  onNodeDragStop={handleNodeDragStop}
-                  nodeTypes={nodeTypes}
-                  edgeTypes={edgeTypes}
-                  onNodeClick={handleNodeClick}
-                  onKeyDown={handleKeyDown}
-                  onDragOver={onDragOver}
-                  onDrop={onDrop}
-                  fitView
-                  style={{ backgroundColor: "#ffffff" }}
-                  fitViewOptions={{ padding: 0.2, maxZoom: 1.2 }}
-                  onMove={(_, vp) => setViewport(vp)}
-                  defaultViewport={{ x: 100, y: 100, zoom: 0.5 }}
-                  zoomOnScroll
-                  zoomOnPinch
-                  zoomOnDoubleClick={false}
-                  minZoom={0.02}
-                  maxZoom={10}
-                  panOnDrag={isPanMode}
-                  selectionOnDrag={isSelectMode}
-                  selectionMode={SelectionMode.Partial}
-                  multiSelectionKeyCode="Shift"
-                  nodesDraggable={!isSimulatorVisible}
-                  deleteKeyCode="Delete"
-                  defaultEdgeOptions={{
-                    type: "default",
-                    animated: false,
-                    markerEnd: {
-                      type: MarkerType.ArrowClosed,
-                      color: "#cbd5e1",
-                    },
-                    style: {
-                      stroke: "#b8c2cc",
-                      strokeWidth: 1.4,
-                      strokeDasharray: "0",
-                    },
-                  }}
-                  connectionLineStyle={{
-                    stroke: "",
-                    strokeWidth: 1.4,
-                    strokeDasharray: "0",
-                    animation: "none",
-                  }}
-                  onPaneContextMenu={handlePaneContextMenu}
-                  onNodeContextMenu={handleNodeContextMenu}
-                  onEdgeContextMenu={handleEdgeContextMenu}
-                  onPaneClick={handlePaneClick}
-                  onSelectionChange={handleSelectionChange}
-                >
-                  <Controls>
-                    <ControlButton
-                      onClick={handleAutoLayout}
-                      title={t("Align Nodes")}
-                    >
-                      <LayoutGrid size={16} />
-                    </ControlButton>
-                  </Controls>
-                  <MiniMap
-                    nodeColor={(n: unknown) =>
-                      (n as { type: string }).type in nodeColors
-                        ? nodeColors[(n as { type: string }).type]
-                        : "#ddd"
-                    }
-                    nodeStrokeWidth={3}
-                    zoomable
-                    pannable
-                  />
-                </ReactFlow>
-              ) : (
+                {/* Top Toolbar Overlay - Visible in both Flow and Orkes modes */}
                 <div
                   style={{
-                    width: "100%",
-                    height: "100%",
-                    flex: 1,
-                    display: "flex",
-                    flexDirection: "column",
+                    position: "absolute",
+                    top: 12,
+                    left: 12,
+                    zIndex: 10,
+                    pointerEvents: "none",
                   }}
                 >
-                  <FlowCanvas
-                    nodes={nodes}
-                    edges={edges}
-                    selectedNodeId={selectedNodeId}
-                    onSelectNode={(id) => setSelectedNodeId(id)}
-                    onOpenInsert={openActivityPicker}
-                    addCanvasMemo={addCanvasMemo}
-                    saveScenario={saveScenario}
-                  />
+                  <div
+                    ref={searchPanelRef}
+                    style={{ pointerEvents: "auto" }}
+                    className={`${styles.searchPanel} ${
+                      isCanvasPanelCollapsed ? styles.searchPanelCollapsed : ""
+                    }`}
+                  >
+                    <div className={styles.searchTopRow}>
+                      <div className={styles.searchRow}>
+                        <FormControl size="small">
+                          <Select
+                            value={searchType}
+                            onChange={(e) => setSearchType(e.target.value)}
+                            className={styles.searchSelect} // 기존 스타일 유지
+                            sx={{
+                              height: "40px",
+                              backgroundColor: "#fff",
+                              fontSize: "12px",
+                              "& .MuiSelect-select": {
+                                paddingTop: "0px",
+                                paddingBottom: "0px",
+                                display: "flex",
+                                alignItems: "center",
+                              },
+                            }}
+                            // MenuProps를 통해 렌더링 위치를 강제로 body에 고정
+                            MenuProps={{
+                              disablePortal: false,
+                            }}
+                          >
+                            <MenuItem value="all" sx={{ fontSize: "12px" }}>
+                              {t("All")}
+                            </MenuItem>
+                            {MOCK_UP_TREE_DATA[0].children.map(
+                              (item: TreeItem) => (
+                                <MenuItem
+                                  key={item.id}
+                                  value={item.id}
+                                  sx={{ fontSize: "12px" }}
+                                >
+                                  {item.id}
+                                </MenuItem>
+                              ),
+                            )}
+                          </Select>
+                        </FormControl>
+
+                        <input
+                          className={styles.searchInput}
+                          type="text"
+                          value={searchKeyword}
+                          onChange={(e) => setSearchKeyword(e.target.value)}
+                          placeholder={t("Search node message text")}
+                          style={{ minWidth: "250px" }}
+                        />
+                      </div>
+
+                      <button
+                        type="button"
+                        title={
+                          isCanvasPanelCollapsed
+                            ? `${t("Show canvas panel")}`
+                            : `${t("Hide canvas panel")}`
+                        }
+                        onClick={() =>
+                          setIsCanvasPanelCollapsed((prev) => !prev)
+                        }
+                        className={`${styles.toolButton} ${styles.panelToggleButton}`}
+                      >
+                        {isCanvasPanelCollapsed ? (
+                          <ChevronRight size={18} />
+                        ) : (
+                          <ChevronLeft size={18} />
+                        )}
+                      </button>
+                    </div>
+
+                    {!isCanvasPanelCollapsed &&
+                      filteredSearchResults.length > 0 && (
+                        <div className={styles.searchResults}>
+                          {filteredSearchResults.map((node: any) => (
+                            <div
+                              key={node.id}
+                              className={styles.searchResultCard}
+                              onClick={() => focusNode(node)}
+                              role="button"
+                              tabIndex={0}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                  focusNode(node);
+                                }
+                              }}
+                            >
+                              <div className={styles.searchResultHeader}>
+                                <div className={styles.searchResultType}>
+                                  {nodeLabels[node.type]?.replace("+ ", "") ||
+                                    node.type}
+                                </div>
+                                <div className={styles.searchResultId}>
+                                  {node.id}
+                                </div>
+                              </div>
+
+                              <div className={styles.searchResultText}>
+                                {getNodeSearchText(node)
+                                  .filter(Boolean)
+                                  .join(" ") || "(empty)"}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                  </div>
                 </div>
-              )}
+
+                {viewMode === "flow" ? (
+                  <ReactFlow
+                    className={
+                      isPanMode ? styles.panCanvas : styles.selectCanvas
+                    }
+                    key={scenario?.id}
+                    nodes={visibleNodes}
+                    edges={formattedEdges}
+                    onNodesChange={onNodesChange}
+                    onEdgesChange={onEdgesChange}
+                    onConnect={onConnect}
+                    onNodeDrag={handleNodeDrag}
+                    onNodeDragStop={handleNodeDragStop}
+                    nodeTypes={nodeTypes}
+                    edgeTypes={edgeTypes}
+                    onNodeClick={handleNodeClick}
+                    onKeyDown={handleKeyDown}
+                    onDragOver={onDragOver}
+                    onDrop={onDrop}
+                    fitView
+                    style={{ backgroundColor: "#fafafa" }}
+                    fitViewOptions={{ padding: 0.2, maxZoom: 1.2 }}
+                    onMove={(_, vp) => setViewport(vp)}
+                    defaultViewport={{ x: 100, y: 100, zoom: 0.5 }}
+                    zoomOnScroll
+                    zoomOnPinch
+                    zoomOnDoubleClick={false}
+                    minZoom={0.02}
+                    maxZoom={10}
+                    panOnDrag={isPanMode}
+                    selectionOnDrag={isSelectMode}
+                    selectionMode={SelectionMode.Partial}
+                    multiSelectionKeyCode="Shift"
+                    nodesDraggable={!isSimulatorVisible}
+                    deleteKeyCode="Delete"
+                    defaultEdgeOptions={{
+                      type: "default",
+                      animated: false,
+                      markerEnd: {
+                        type: MarkerType.ArrowClosed,
+                        color: "#cbd5e1",
+                      },
+                      style: {
+                        stroke: "#b8c2cc",
+                        strokeWidth: 1.4,
+                        strokeDasharray: "0",
+                      },
+                    }}
+                    connectionLineStyle={{
+                      stroke: "",
+                      strokeWidth: 1.4,
+                      strokeDasharray: "0",
+                      animation: "none",
+                    }}
+                    onPaneContextMenu={handlePaneContextMenu}
+                    onNodeContextMenu={handleNodeContextMenu}
+                    onEdgeContextMenu={handleEdgeContextMenu}
+                    onPaneClick={handlePaneClick}
+                    onSelectionChange={handleSelectionChange}
+                  >
+                    <Background
+                      variant={BackgroundVariant.Dots}
+                      gap={20}
+                      size={1}
+                      color="#c7c7cc"
+                    />
+                    {isPreviewVisible && (
+                      <MiniMap
+                        nodeColor={(n: unknown) =>
+                          (n as { type: string }).type in nodeColors
+                            ? nodeColors[(n as { type: string }).type]
+                            : "#ddd"
+                        }
+                        nodeStrokeWidth={3}
+                        zoomable
+                        pannable
+                      />
+                    )}
+                  </ReactFlow>
+                ) : (
+                  <div
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      flex: 1,
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                  >
+                    <FlowCanvas
+                      nodes={nodes}
+                      edges={edges}
+                      selectedNodeId={selectedNodeId}
+                      onSelectNode={(id) => {
+                        setEditingNodeId(null);
+                        setSelectedNodeId(id);
+                      }}
+                      onOpenInsert={openActivityPicker}
+                      addCanvasMemo={addCanvasMemo}
+                      saveScenario={saveScenario}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
 
-          {/* 캔버스 마우스 우클릭 메뉴 */}
-          {contextMenu.open && contextMenu.target?.type === "pane" && (
-            <div
-              className={styles.layerMenu}
-              style={{ left: contextMenu.x, top: contextMenu.y }}
-            >
-              <button
-                type="button"
-                className={`${styles.layerMenuItem}`}
-                onClick={() => {
-                  const position = contextMenu.flowPosition ?? {
-                    x: 100,
-                    y: 100,
-                  };
-
-                  setActivityInsertPosition(position);
-                  closeContextMenu();
-                  void openActivityPicker({});
-                }}
+            {/* 캔버스 마우스 우클릭 메뉴 */}
+            {contextMenu.open && contextMenu.target?.type === "pane" && (
+              <div
+                className={styles.layerMenu}
+                style={{ left: contextMenu.x, top: contextMenu.y }}
               >
-                <Plus size={16} className={styles.layerMenuIcon} />
-                <span>{t("Add Node")}</span>
-              </button>
+                <button
+                  type="button"
+                  className={`${styles.layerMenuItem}`}
+                  onClick={() => {
+                    const position = contextMenu.flowPosition ?? {
+                      x: 100,
+                      y: 100,
+                    };
 
-              <div className={styles.layerMenuDivider} />
+                    setActivityInsertPosition(position);
+                    closeContextMenu();
+                    void openActivityPicker({});
+                  }}
+                >
+                  <Plus size={16} className={styles.layerMenuIcon} />
+                  <span>{t("Add Node")}</span>
+                </button>
 
-              <button
-                type="button"
-                className={`${styles.layerMenuItem} ${!clipboard ? styles.layerMenuItemDisabled : ""}`}
-                onClick={() =>
-                  handleContextPaste(contextMenu.flowPosition ?? null)
-                }
-                disabled={!clipboard}
+                <div className={styles.layerMenuDivider} />
+
+                <button
+                  type="button"
+                  className={`${styles.layerMenuItem} ${!clipboard ? styles.layerMenuItemDisabled : ""}`}
+                  onClick={() =>
+                    handleContextPaste(contextMenu.flowPosition ?? null)
+                  }
+                  disabled={!clipboard}
+                >
+                  <Clipboard size={16} className={styles.layerMenuIcon} />
+                  <span>{t("Paste")}</span>
+                </button>
+
+                <div className={styles.layerMenuDivider} />
+
+                <button
+                  type="button"
+                  className={styles.layerMenuItem}
+                  onClick={() => setIsMemoVisible((prev) => !prev)}
+                >
+                  <NotebookPen size={16} className={styles.layerMenuIcon} />
+                  {t("memo panel")}
+                </button>
+                <button
+                  type="button"
+                  className={styles.layerMenuItem}
+                  onClick={() => setIsSlotDisplayVisible((prev) => !prev)}
+                >
+                  <Database size={16} className={styles.layerMenuIcon} />
+                  {t("Runtime State")}
+                </button>
+
+                <div className={styles.layerMenuDivider} />
+
+                <button
+                  type="button"
+                  className={styles.layerMenuItem}
+                  onClick={() => {
+                    setContextMenu({ open: false, x: 0, y: 0, target: "pane" });
+                    setToolMode("pan");
+                  }}
+                >
+                  <Hand size={16} className={styles.layerMenuIcon} />
+                  <span>{t("Pan Mode")}</span>
+                </button>
+                <button
+                  type="button"
+                  className={styles.layerMenuItem}
+                  onClick={() => {
+                    setContextMenu({ open: false, x: 0, y: 0, target: "pane" });
+                    setToolMode("select");
+                  }}
+                >
+                  <MousePointer2 size={16} className={styles.layerMenuIcon} />
+                  <span>{t("Select Mode")}</span>
+                </button>
+
+                <div className={styles.layerMenuDivider} />
+
+                <button
+                  type="button"
+                  className={styles.layerMenuItem}
+                  onClick={() => {
+                    setContextMenu({ open: false, x: 0, y: 0, target: "pane" });
+                    addCanvasMemo();
+                  }}
+                >
+                  <StickyNote size={16} className={styles.layerMenuIcon} />
+                  <span>{t("Add Memo")}</span>
+                </button>
+
+                <div className={styles.layerMenuDivider} />
+
+                <button
+                  type="button"
+                  className={styles.layerMenuItem}
+                  onClick={() => {
+                    setContextMenu({ open: false, x: 0, y: 0, target: "pane" });
+                    goList();
+                  }}
+                >
+                  <ArrowLeft size={16} className={styles.layerMenuIcon} />
+                  <span>{t("Exit")}</span>
+                </button>
+              </div>
+            )}
+
+            {/* 노드 우클릭 */}
+            {contextMenu.open && contextMenu.target?.type === "node" && (
+              <div
+                className={styles.layerMenu}
+                style={{ left: contextMenu.x, top: contextMenu.y }}
               >
-                <Clipboard size={16} className={styles.layerMenuIcon} />
-                <span>{t("Paste")}</span>
-              </button>
+                <button
+                  type="button"
+                  className={styles.layerMenuItem}
+                  onClick={() => handleContextCopyNodes(contextMenu.target.id)}
+                >
+                  <Copy size={16} className={styles.layerMenuIcon} />
+                  <span>{t("Copy Node")}</span>
+                </button>
 
-              <div className={styles.layerMenuDivider} />
+                <button
+                  type="button"
+                  className={styles.layerMenuItem}
+                  onClick={() => handleContextCutNodes(contextMenu.target.id)}
+                >
+                  <Scissors size={16} className={styles.layerMenuIcon} />
+                  <span>{t("Cut Node")}</span>
+                </button>
 
-              <button
-                type="button"
-                className={styles.layerMenuItem}
-                onClick={() => setIsMemoVisible((prev) => !prev)}
-              >
-                <NotebookPen size={16} className={styles.layerMenuIcon} />
-                {t("memo panel")}
-              </button>
-              <button
-                type="button"
-                className={styles.layerMenuItem}
-                onClick={() => setIsSlotDisplayVisible((prev) => !prev)}
-              >
-                <Database size={16} className={styles.layerMenuIcon} />
-                {t("Runtime State")}
-              </button>
+                <button
+                  type="button"
+                  className={`${styles.layerMenuItem} ${!clipboard ? styles.layerMenuItemDisabled : ""}`}
+                  onClick={() =>
+                    handleContextPaste(contextMenu.flowPosition ?? null)
+                  }
+                  disabled={!clipboard}
+                >
+                  <Clipboard size={16} className={styles.layerMenuIcon} />
+                  <span>{t("Paste")}</span>
+                </button>
 
-              <div className={styles.layerMenuDivider} />
+                <div className={styles.layerMenuDivider} />
 
-              <button
-                type="button"
-                className={styles.layerMenuItem}
-                onClick={() => {
-                  setContextMenu({ open: false, x: 0, y: 0, target: "pane" });
-                  setToolMode("pan");
-                }}
-              >
-                <Hand size={16} className={styles.layerMenuIcon} />
-                <span>{t("Pan Mode")}</span>
-              </button>
-              <button
-                type="button"
-                className={styles.layerMenuItem}
-                onClick={() => {
-                  setContextMenu({ open: false, x: 0, y: 0, target: "pane" });
-                  setToolMode("select");
-                }}
-              >
-                <MousePointer2 size={16} className={styles.layerMenuIcon} />
-                <span>{t("Select Mode")}</span>
-              </button>
+                {(() => {
+                  const targetNode = nodes.find(
+                    (n: any) => n.id === contextMenu.target.id,
+                  );
+                  if (!targetNode) return null;
 
-              <div className={styles.layerMenuDivider} />
+                  const currentInputPos =
+                    targetNode?.data?.inputPosition ?? "left";
+                  const nextInputPos =
+                    currentInputPos === "left" ? "top" : "left";
 
-              <button
-                type="button"
-                className={styles.layerMenuItem}
-                onClick={() => {
-                  setContextMenu({ open: false, x: 0, y: 0, target: "pane" });
-                  addCanvasMemo();
-                }}
-              >
-                <StickyNote size={16} className={styles.layerMenuIcon} />
-                <span>{t("Add Memo")}</span>
-              </button>
+                  const getOutputsForNode = (node: any) => {
+                    if (node.type === "branch") {
+                      const isConditionType =
+                        node.data?.evaluationType === "CONDITION";
+                      if (isConditionType) {
+                        const conds = node.data?.conditions || [];
+                        const list = conds.map((c: any, idx: number) => ({
+                          id:
+                            node.data?.replies?.[idx]?.value ||
+                            c.id ||
+                            String(idx),
+                          label: `Output ${idx + 1} (${c.slot ? `{${c.slot}}` : "조건 " + (idx + 1)})`,
+                        }));
+                        list.push({
+                          id: "default",
+                          label: "Output Default (기본)",
+                        });
+                        return list;
+                      } else {
+                        const replies = node.data?.replies || [];
+                        return replies.map((r: any, idx: number) => ({
+                          id: r.value,
+                          label: `Output ${idx + 1} (${r.display || r.value})`,
+                        }));
+                      }
+                    }
 
-              <div className={styles.layerMenuDivider} />
+                    if (node.type === "ynBranch") {
+                      return [
+                        { id: "Y", label: "Output Y (Yes)" },
+                        { id: "N", label: "Output N (No)" },
+                      ];
+                    }
 
-              <button
-                type="button"
-                className={styles.layerMenuItem}
-                onClick={() => {
-                  setContextMenu({ open: false, x: 0, y: 0, target: "pane" });
-                  goList();
-                }}
-              >
-                <ArrowLeft size={16} className={styles.layerMenuIcon} />
-                <span>{t("Exit")}</span>
-              </button>
-            </div>
-          )}
-
-          {/* 노드 우클릭 */}
-          {contextMenu.open && contextMenu.target?.type === "node" && (
-            <div
-              className={styles.layerMenu}
-              style={{ left: contextMenu.x, top: contextMenu.y }}
-            >
-              <button
-                type="button"
-                className={styles.layerMenuItem}
-                onClick={() => handleContextCopyNodes(contextMenu.target.id)}
-              >
-                <Copy size={16} className={styles.layerMenuIcon} />
-                <span>{t("Copy Node")}</span>
-              </button>
-
-              <button
-                type="button"
-                className={styles.layerMenuItem}
-                onClick={() => handleContextCutNodes(contextMenu.target.id)}
-              >
-                <Scissors size={16} className={styles.layerMenuIcon} />
-                <span>{t("Cut Node")}</span>
-              </button>
-
-              <button
-                type="button"
-                className={`${styles.layerMenuItem} ${!clipboard ? styles.layerMenuItemDisabled : ""}`}
-                onClick={() =>
-                  handleContextPaste(contextMenu.flowPosition ?? null)
-                }
-                disabled={!clipboard}
-              >
-                <Clipboard size={16} className={styles.layerMenuIcon} />
-                <span>{t("Paste")}</span>
-              </button>
-
-              <div className={styles.layerMenuDivider} />
-
-              {(() => {
-                const targetNode = nodes.find(
-                  (n: any) => n.id === contextMenu.target.id,
-                );
-                if (!targetNode) return null;
-
-                const currentInputPos =
-                  targetNode?.data?.inputPosition ?? "left";
-                const nextInputPos =
-                  currentInputPos === "left" ? "top" : "left";
-
-                const getOutputsForNode = (node: any) => {
-                  if (node.type === "branch") {
-                    const isConditionType =
-                      node.data?.evaluationType === "CONDITION";
-                    if (isConditionType) {
+                    if (node.type === "llm") {
                       const conds = node.data?.conditions || [];
                       const list = conds.map((c: any, idx: number) => ({
-                        id:
-                          node.data?.replies?.[idx]?.value ||
-                          c.id ||
-                          String(idx),
+                        id: c.id || idx,
                         label: `Output ${idx + 1} (${c.slot ? `{${c.slot}}` : "조건 " + (idx + 1)})`,
                       }));
                       list.push({
@@ -4325,327 +4515,301 @@ const Flow = ({ scenario, scenarios }: any) => {
                         label: "Output Default (기본)",
                       });
                       return list;
-                    } else {
+                    }
+
+                    if (node.type === "api") {
+                      return [
+                        { id: "onSuccess", label: "Output Success (성공)" },
+                        { id: "onError", label: "Output Error (오류)" },
+                      ];
+                    }
+
+                    if (node.type === "fixedmenu") {
                       const replies = node.data?.replies || [];
                       return replies.map((r: any, idx: number) => ({
                         id: r.value,
                         label: `Output ${idx + 1} (${r.display || r.value})`,
                       }));
                     }
-                  }
 
-                  if (node.type === "ynBranch") {
-                    return [
-                      { id: "Y", label: "Output Y (Yes)" },
-                      { id: "N", label: "Output N (No)" },
-                    ];
-                  }
+                    return [{ id: "default", label: "Output (출력)" }];
+                  };
 
-                  if (node.type === "llm") {
-                    const conds = node.data?.conditions || [];
-                    const list = conds.map((c: any, idx: number) => ({
-                      id: c.id || idx,
-                      label: `Output ${idx + 1} (${c.slot ? `{${c.slot}}` : "조건 " + (idx + 1)})`,
-                    }));
-                    list.push({
-                      id: "default",
-                      label: "Output Default (기본)",
-                    });
-                    return list;
-                  }
+                  const outputs = getOutputsForNode(targetNode);
 
-                  if (node.type === "api") {
-                    return [
-                      { id: "onSuccess", label: "Output Success (성공)" },
-                      { id: "onError", label: "Output Error (오류)" },
-                    ];
-                  }
-
-                  if (node.type === "fixedmenu") {
-                    const replies = node.data?.replies || [];
-                    return replies.map((r: any, idx: number) => ({
-                      id: r.value,
-                      label: `Output ${idx + 1} (${r.display || r.value})`,
-                    }));
-                  }
-
-                  return [{ id: "default", label: "Output (출력)" }];
-                };
-
-                const outputs = getOutputsForNode(targetNode);
-
-                return (
-                  <>
-                    <button
-                      type="button"
-                      className={styles.layerMenuItem}
-                      onClick={() => {
-                        handleToggleInputPosition(
-                          contextMenu.target.id,
-                          nextInputPos,
-                        );
-                        closeContextMenu();
-                      }}
-                    >
-                      <ArrowLeftToLine
-                        size={16}
-                        className={styles.layerMenuIcon}
-                        style={{
-                          transform:
-                            currentInputPos === "top"
-                              ? "rotate(90deg)"
-                              : "none",
-                        }}
-                      />
-                      <span>
-                        {currentInputPos === "left"
-                          ? t("Input 위치를 Top(상단)으로 변경")
-                          : t("Input 위치를 Left(좌측)로 변경")}
-                      </span>
-                    </button>
-
-                    <div className={styles.layerMenuDivider} />
-
-                    <div style={{ padding: "4px 6px" }}>
-                      <div
-                        style={{
-                          fontSize: "11px",
-                          fontWeight: 700,
-                          color: "#64748b",
-                          marginBottom: "6px",
-                          paddingLeft: "4px",
+                  return (
+                    <>
+                      <button
+                        type="button"
+                        className={styles.layerMenuItem}
+                        onClick={() => {
+                          handleToggleInputPosition(
+                            contextMenu.target.id,
+                            nextInputPos,
+                          );
+                          closeContextMenu();
                         }}
                       >
-                        {t("개별 Output 위치 설정")}
-                      </div>
-                      {outputs.map((out: any) => {
-                        const currentPos =
-                          targetNode.data?.outputPositions?.[out.id] ||
-                          (targetNode.type === "ynBranch" && out.id === "N"
-                            ? "bottom"
-                            : targetNode.type === "api" && out.id === "onError"
+                        <ArrowLeftToLine
+                          size={16}
+                          className={styles.layerMenuIcon}
+                          style={{
+                            transform:
+                              currentInputPos === "top"
+                                ? "rotate(90deg)"
+                                : "none",
+                          }}
+                        />
+                        <span>
+                          {currentInputPos === "left"
+                            ? t("Input 위치를 Top(상단)으로 변경")
+                            : t("Input 위치를 Left(좌측)로 변경")}
+                        </span>
+                      </button>
+
+                      <div className={styles.layerMenuDivider} />
+
+                      <div style={{ padding: "4px 6px" }}>
+                        <div
+                          style={{
+                            fontSize: "11px",
+                            fontWeight: 700,
+                            color: "#64748b",
+                            marginBottom: "6px",
+                            paddingLeft: "4px",
+                          }}
+                        >
+                          {t("개별 Output 위치 설정")}
+                        </div>
+                        {outputs.map((out: any) => {
+                          const currentPos =
+                            targetNode.data?.outputPositions?.[out.id] ||
+                            (targetNode.type === "ynBranch" && out.id === "N"
                               ? "bottom"
-                              : targetNode.data?.outputPosition || "right");
+                              : targetNode.type === "api" &&
+                                  out.id === "onError"
+                                ? "bottom"
+                                : targetNode.data?.outputPosition || "right");
 
-                        return (
-                          <div
-                            key={out.id}
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                              gap: "8px",
-                              padding: "4px 6px",
-                              marginBottom: "4px",
-                              borderRadius: "6px",
-                              backgroundColor: "#f8fafc",
-                              fontSize: "12px",
-                            }}
-                          >
-                            <span
+                          return (
+                            <div
+                              key={out.id}
                               style={{
-                                maxWidth: "120px",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                whiteSpace: "nowrap",
-                                color: "#334155",
-                                fontWeight: 500,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                gap: "8px",
+                                padding: "4px 6px",
+                                marginBottom: "4px",
+                                borderRadius: "6px",
+                                backgroundColor: "#f8fafc",
+                                fontSize: "12px",
                               }}
-                              title={out.label}
                             >
-                              {out.label}
-                            </span>
-                            <div style={{ display: "flex", gap: "3px" }}>
-                              <button
-                                type="button"
+                              <span
                                 style={{
-                                  padding: "2px 6px",
-                                  fontSize: "10px",
-                                  fontWeight: 600,
-                                  borderRadius: "4px",
-                                  border: "1px solid #cbd5e1",
-                                  backgroundColor:
-                                    currentPos === "right"
-                                      ? "#2563eb"
-                                      : "#ffffff",
-                                  color:
-                                    currentPos === "right"
-                                      ? "#ffffff"
-                                      : "#64748b",
-                                  cursor: "pointer",
-                                  width: "auto",
+                                  maxWidth: "120px",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  whiteSpace: "nowrap",
+                                  color: "#334155",
+                                  fontWeight: 500,
                                 }}
-                                onClick={() => {
-                                  handleSetIndividualOutputPosition(
-                                    targetNode.id,
-                                    out.id,
-                                    "right",
-                                  );
-                                  closeContextMenu();
-                                }}
+                                title={out.label}
                               >
-                                Right
-                              </button>
-                              <button
-                                type="button"
-                                style={{
-                                  padding: "2px 6px",
-                                  fontSize: "10px",
-                                  fontWeight: 600,
-                                  borderRadius: "4px",
-                                  border: "1px solid #cbd5e1",
-                                  backgroundColor:
-                                    currentPos === "bottom"
-                                      ? "#2563eb"
-                                      : "#ffffff",
-                                  color:
-                                    currentPos === "bottom"
-                                      ? "#ffffff"
-                                      : "#64748b",
-                                  cursor: "pointer",
-                                  width: "auto",
-                                }}
-                                onClick={() => {
-                                  handleSetIndividualOutputPosition(
-                                    targetNode.id,
-                                    out.id,
-                                    "bottom",
-                                  );
-                                  closeContextMenu();
-                                }}
-                              >
-                                Bottom
-                              </button>
+                                {out.label}
+                              </span>
+                              <div style={{ display: "flex", gap: "3px" }}>
+                                <button
+                                  type="button"
+                                  style={{
+                                    padding: "2px 6px",
+                                    fontSize: "10px",
+                                    fontWeight: 600,
+                                    borderRadius: "4px",
+                                    border: "1px solid #cbd5e1",
+                                    backgroundColor:
+                                      currentPos === "right"
+                                        ? "#2563eb"
+                                        : "#ffffff",
+                                    color:
+                                      currentPos === "right"
+                                        ? "#ffffff"
+                                        : "#64748b",
+                                    cursor: "pointer",
+                                    width: "auto",
+                                  }}
+                                  onClick={() => {
+                                    handleSetIndividualOutputPosition(
+                                      targetNode.id,
+                                      out.id,
+                                      "right",
+                                    );
+                                    closeContextMenu();
+                                  }}
+                                >
+                                  Right
+                                </button>
+                                <button
+                                  type="button"
+                                  style={{
+                                    padding: "2px 6px",
+                                    fontSize: "10px",
+                                    fontWeight: 600,
+                                    borderRadius: "4px",
+                                    border: "1px solid #cbd5e1",
+                                    backgroundColor:
+                                      currentPos === "bottom"
+                                        ? "#2563eb"
+                                        : "#ffffff",
+                                    color:
+                                      currentPos === "bottom"
+                                        ? "#ffffff"
+                                        : "#64748b",
+                                    cursor: "pointer",
+                                    width: "auto",
+                                  }}
+                                  onClick={() => {
+                                    handleSetIndividualOutputPosition(
+                                      targetNode.id,
+                                      out.id,
+                                      "bottom",
+                                    );
+                                    closeContextMenu();
+                                  }}
+                                >
+                                  Bottom
+                                </button>
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </>
-                );
-              })()}
+                          );
+                        })}
+                      </div>
+                    </>
+                  );
+                })()}
 
-              <div className={styles.layerMenuDivider} />
+                <div className={styles.layerMenuDivider} />
 
-              <button
-                type="button"
-                className={styles.layerMenuItem}
-                onClick={() => {
-                  deleteNode(contextMenu.target.id);
-                  closeContextMenu();
-                }}
+                <button
+                  type="button"
+                  className={styles.layerMenuItem}
+                  onClick={() => {
+                    deleteNode(contextMenu.target.id);
+                    closeContextMenu();
+                  }}
+                >
+                  <Trash size={16} className={styles.layerMenuIcon} />
+                  <span>{t("Delete Node")}</span>
+                </button>
+              </div>
+            )}
+
+            {/* 엣지 우클릭 */}
+            {contextMenu.open && contextMenu.target?.type === "edge" && (
+              <div
+                className={styles.layerMenu}
+                style={{ left: contextMenu.x, top: contextMenu.y }}
               >
-                <Trash size={16} className={styles.layerMenuIcon} />
-                <span>{t("Delete Node")}</span>
-              </button>
-            </div>
-          )}
+                <button
+                  type="button"
+                  className={styles.layerMenuItem}
+                  onClick={() => {
+                    handleAddYNBranchNode(contextMenu.target.id);
+                    closeContextMenu();
+                  }}
+                >
+                  <GitFork size={16} className={styles.layerMenuIcon} />
+                  <span>{t("Y/N 분기 노드 추가")}</span>
+                </button>
 
-          {/* 엣지 우클릭 */}
-          {contextMenu.open && contextMenu.target?.type === "edge" && (
-            <div
-              className={styles.layerMenu}
-              style={{ left: contextMenu.x, top: contextMenu.y }}
-            >
-              <button
-                type="button"
-                className={styles.layerMenuItem}
-                onClick={() => {
-                  handleAddYNBranchNode(contextMenu.target.id);
-                  closeContextMenu();
-                }}
+                <div className={styles.layerMenuDivider} />
+
+                <button
+                  type="button"
+                  className={styles.layerMenuItem}
+                  onClick={() => {
+                    deleteEdge(contextMenu.target.id);
+                    closeContextMenu();
+                  }}
+                >
+                  <Trash2 size={16} className={styles.layerMenuIcon} />
+                  <span>{t("Delete Edge")}</span>
+                </button>
+              </div>
+            )}
+
+            {/* select 영역 */}
+            {contextMenu.open && contextMenu.target?.type === "selection" && (
+              <div
+                className={styles.layerMenu}
+                style={{ left: contextMenu.x, top: contextMenu.y }}
               >
-                <GitFork size={16} className={styles.layerMenuIcon} />
-                <span>{t("Y/N 분기 노드 추가")}</span>
-              </button>
+                <button
+                  type="button"
+                  className={styles.layerMenuItem}
+                  onClick={() => {
+                    copySelection({
+                      nodes,
+                      edges,
+                      selectedNodeIds: contextMenu.target.ids,
+                    });
+                    closeContextMenu();
+                  }}
+                >
+                  <Copy size={16} className={styles.layerMenuIcon} />
+                  <span>{t("Copy Selected Nodes")}</span>
+                </button>
 
-              <div className={styles.layerMenuDivider} />
+                <button
+                  type="button"
+                  className={styles.layerMenuItem}
+                  onClick={() => {
+                    cutSelection({
+                      nodes,
+                      edges,
+                      selectedNodeIds: contextMenu.target.ids,
+                      deleteNodesByIds,
+                    });
+                    closeContextMenu();
+                  }}
+                >
+                  <Scissors size={16} className={styles.layerMenuIcon} />
+                  <span>{t("Cut Selected Nodes")}</span>
+                </button>
 
-              <button
-                type="button"
-                className={styles.layerMenuItem}
-                onClick={() => {
-                  deleteEdge(contextMenu.target.id);
-                  closeContextMenu();
-                }}
-              >
-                <Trash2 size={16} className={styles.layerMenuIcon} />
-                <span>{t("Delete Edge")}</span>
-              </button>
-            </div>
-          )}
+                <button
+                  type="button"
+                  className={`${styles.layerMenuItem} ${!clipboard ? styles.layerMenuItemDisabled : ""}`}
+                  onClick={() => {
+                    handleContextPaste(contextMenu.flowPosition ?? null);
+                  }}
+                  disabled={!clipboard}
+                >
+                  <Clipboard size={16} className={styles.layerMenuIcon} />
+                  <span>{t("Paste")}</span>
+                </button>
+              </div>
+            )}
 
-          {/* select 영역 */}
-          {contextMenu.open && contextMenu.target?.type === "selection" && (
-            <div
-              className={styles.layerMenu}
-              style={{ left: contextMenu.x, top: contextMenu.y }}
-            >
-              <button
-                type="button"
-                className={styles.layerMenuItem}
-                onClick={() => {
-                  copySelection({
-                    nodes,
-                    edges,
-                    selectedNodeIds: contextMenu.target.ids,
-                  });
-                  closeContextMenu();
-                }}
-              >
-                <Copy size={16} className={styles.layerMenuIcon} />
-                <span>{t("Copy Selected Nodes")}</span>
-              </button>
-
-              <button
-                type="button"
-                className={styles.layerMenuItem}
-                onClick={() => {
-                  cutSelection({
-                    nodes,
-                    edges,
-                    selectedNodeIds: contextMenu.target.ids,
-                    deleteNodesByIds,
-                  });
-                  closeContextMenu();
-                }}
-              >
-                <Scissors size={16} className={styles.layerMenuIcon} />
-                <span>{t("Cut Selected Nodes")}</span>
-              </button>
-
-              <button
-                type="button"
-                className={`${styles.layerMenuItem} ${!clipboard ? styles.layerMenuItemDisabled : ""}`}
-                onClick={() => {
-                  handleContextPaste(contextMenu.flowPosition ?? null);
-                }}
-                disabled={!clipboard}
-              >
-                <Clipboard size={16} className={styles.layerMenuIcon} />
-                <span>{t("Paste")}</span>
-              </button>
-            </div>
-          )}
-
-          {/* Canvas Memo Layer */}
-          <CanvasMemoLayer
-            memoNodes={memoNodes}
-            selectedMemoId={selectedMemoId}
-            viewport={viewport}
-            onSelect={setSelectedMemoId}
-            onUpdate={updateMemoNode}
-            onRemove={removeMemoNode}
-            onToggleCollapse={toggleMemoCollapsed}
-            onDragStart={handleMemoPointerDown}
-            onResizeStart={handleMemoResizeStart}
-          />
-        </div>
-
+            {/* Canvas Memo Layer */}
+            <CanvasMemoLayer
+              memoNodes={memoNodes}
+              selectedMemoId={selectedMemoId}
+              viewport={viewport}
+              onSelect={setSelectedMemoId}
+              onUpdate={updateMemoNode}
+              onRemove={removeMemoNode}
+              onToggleCollapse={toggleMemoCollapsed}
+              onDragStart={handleMemoPointerDown}
+              onResizeStart={handleMemoResizeStart}
+            />
+          </div>
+        </NodeEditContext.Provider>
         <div
-          className={`${styles.controllerPanel} ${selectedNodeId ? styles.visible : ""}`}
+          className={`${styles.controllerPanel} ${isNodeEditorVisible ? styles.visible : ""}`}
         >
-          <NodeController />
+          {isNodeEditorVisible && <NodeController />}
         </div>
       </Box>
 

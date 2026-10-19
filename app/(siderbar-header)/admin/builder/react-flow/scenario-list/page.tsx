@@ -13,6 +13,8 @@ import { format } from "date-fns";
 import { useBuilderStore } from "../../store/index";
 import { Scenario } from "../../types/types";
 import { ScenarioCard } from "../../components/ScenarioCard";
+import { ScenarioTypeSelector } from "../../components/ScenarioType";
+import { getScenarioType } from "../../utils/scenarioTypes";
 
 import { COLORS } from "@/lib/constants/color";
 import SelectWithLabel from "@/components/common/Select";
@@ -203,6 +205,7 @@ const ScenarioList = () => {
       id: "",
       name: "",
       description: "",
+      scenario_type: "sub",
       created_at: "",
       updated_at: "",
       last_used_at: "",
@@ -225,6 +228,7 @@ const ScenarioList = () => {
             id: scenarioData.id,
             name: scenarioData.name,
             description: scenarioData.description,
+            scenario_type: getScenarioType(scenarioData),
             created_at: formatDateTime(
               scenarioData.created_at || scenarioData.createdAt,
             ),
@@ -251,6 +255,7 @@ const ScenarioList = () => {
         id: createData[0]?.id ?? "",
         name: createData[0]?.name ?? "",
         description: createData[0]?.description ?? "",
+        scenario_type: getScenarioType(createData[0]),
         created_at: formatDateTime(createData[0]?.created_at) ?? "",
         updated_at: formatDateTime(createData[0]?.updated_at) ?? "",
         last_used_at: formatDateTime(createData[0]?.updated_at) ?? "",
@@ -274,6 +279,7 @@ const ScenarioList = () => {
       id: "",
       name: "",
       description: "",
+      scenario_type: "sub",
       created_at: "",
       updated_at: "",
       last_used_at: "",
@@ -282,6 +288,7 @@ const ScenarioList = () => {
     const data: Scenario = {
       name: "",
       description: "",
+      scenario_type: "sub",
     };
     await setScenarios([data, ...scenarios]);
 
@@ -334,6 +341,7 @@ const ScenarioList = () => {
   const handleSaveScenario = async () => {
     const payload = {
       ...getValues(),
+      scenario_type: getScenarioType(getValues()),
       id: scenario.id,
     };
     // console.log('==========================> save : ', mode, payload);
@@ -726,6 +734,19 @@ const ScenarioList = () => {
                           onChange={(e: any) => {
                             field.onChange(e);
                             handleDataChange("description", e.target.value);
+                          }}
+                        />
+                      )}
+                    />
+                    <Controller
+                      name="scenario_type"
+                      control={control}
+                      render={({ field }) => (
+                        <ScenarioTypeSelector
+                          value={field.value}
+                          onChange={(value) => {
+                            field.onChange(value);
+                            handleDataChange("scenario_type", value);
                           }}
                         />
                       )}

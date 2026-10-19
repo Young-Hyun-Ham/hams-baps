@@ -24,6 +24,7 @@ import leftPanelCloseIcon from "@/assets/icon-left-panel-close.svg";
 // - 역할: 좌측 카테고리 메뉴 트리 렌더링.
 function NodesTreeUI({
   props,
+  variant,
   onScenarioGroupClick,
   onNodesSettingClick,
 }: any) {
@@ -34,6 +35,89 @@ function NodesTreeUI({
     props?.isCollapsed !== undefined
       ? props.isCollapsed
       : Boolean(props?.isMenuView) || isUserCollapsed;
+
+  if (variant === "scenario") {
+    return (
+      <Box
+        aria-label="Nodes Tree"
+        aria-expanded={!isMenuCollapsed}
+        sx={{
+          width: isMenuCollapsed ? 40 : 218,
+          flexShrink: 0,
+          minHeight: 0,
+          display: "flex",
+          flexDirection: "column",
+          bgcolor: "#fff",
+          borderRight: "1px solid #e5e5e5",
+          overflow: "hidden",
+        }}
+      >
+        <Box
+          sx={{
+            height: 38,
+            px: 1.25,
+            display: "flex",
+            alignItems: "center",
+            borderBottom: "1px solid #e5e5e5",
+            flexShrink: 0,
+          }}
+        >
+          {!isMenuCollapsed && (
+            <Typography sx={{ flex: 1, fontSize: 12, fontWeight: 500 }}>
+              {t("Node type")}
+            </Typography>
+          )}
+          <IconButton
+            size="small"
+            aria-label={
+              isMenuCollapsed ? "Expand Nodes Tree" : "Collapse Nodes Tree"
+            }
+            onClick={() =>
+              props?.onToggleCollapse
+                ? props.onToggleCollapse(!isMenuCollapsed)
+                : setIsUserCollapsed((prev) => !prev)
+            }
+          >
+            <Image
+              src={isMenuCollapsed ? leftPanelOpenIcon : leftPanelCloseIcon}
+              alt=""
+              width={14}
+              height={14}
+            />
+          </IconButton>
+        </Box>
+        <Box
+          hidden={isMenuCollapsed}
+          sx={{ flex: 1, minHeight: 0, overflowY: "auto", width: 217 }}
+        >
+          <NodesTree
+            variant="scenario"
+            data={MOCK_UP_TREE_DATA}
+            isDragMode={isDragMode}
+            onScenarioGroupClick={onScenarioGroupClick}
+            onNodesSettingClick={onNodesSettingClick}
+          />
+          <FormControlLabel
+            sx={{
+              mx: 1,
+              "& .MuiFormControlLabel-label": {
+                fontSize: 11,
+                color: "#737373",
+              },
+            }}
+            control={
+              <Switch
+                size="small"
+                checked={isDragMode}
+                onChange={(_, checked) => setIsDragMode(checked)}
+              />
+            }
+            label={t("Drag & Drop")}
+          />
+        </Box>
+      </Box>
+    );
+  }
 
   return (
     <Box

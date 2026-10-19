@@ -94,7 +94,7 @@ export function createGroupActionStore(
         position: { x: minX - PADDING_X, y: minY - PADDING_Y },
         data: {
           label: groupLabel,
-          title: groupLabel,
+          title: "Group",
           isCollapsed: false,
           entryNodeId,
           exitNodeIds,

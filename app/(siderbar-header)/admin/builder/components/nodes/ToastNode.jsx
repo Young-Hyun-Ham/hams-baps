@@ -1,8 +1,8 @@
 // (Handle, Position 임포트 제거)
 import styles from "./ChatNodes.module.css";
 import { useBuilderStore } from "../../store/index";
-import { ToastIcon } from "../icons/Icons";
 import NodeWrapper from "./NodeWrapper";
+import NodeTypeIcon from "../icons/NodeTypeIcon";
 import { useTranslation } from "react-i18next";
 
 function ToastNode({ id, data }) {
@@ -18,7 +18,7 @@ function ToastNode({ id, data }) {
     <NodeWrapper
       id={id}
       typeLabel="Toast"
-      icon={<ToastIcon />} // 5. 아이콘 전달
+      icon={<NodeTypeIcon type="toast" />}
       nodeColor={nodeColor}
       textColor={textColor}
     >

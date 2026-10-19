@@ -1,4 +1,5 @@
-import { useLayoutEffect, useState } from "react";
+import { useId, useLayoutEffect, useState } from "react";
+import { Popover } from "@mui/material";
 import { Handle, Position, useUpdateNodeInternals } from "reactflow";
 
 import styles from "./ChatNodes.module.css";
@@ -6,8 +7,18 @@ import { useBuilderStore } from "../../store/index";
 import { builderExecutionStore } from "../../store/builderExecutionStore";
 import { AnchorIcon, StartNodeIcon } from "../icons/Icons";
 
-import { Loader2, CheckCircle2, ChevronUp, ChevronDown } from "lucide-react";
+import {
+  Loader2,
+  CheckCircle2,
+  ChevronUp,
+  ChevronDown,
+  Ellipsis,
+  Pencil,
+  X,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
+import NodeEditButton from "./NodeEditButton";
+import NodeTitle from "./NodeTitle";
 /**
  * 모든 노드에서 공통으로 사용되는 래퍼 컴포넌트입니다.
  * 헤더, 버튼(시작, 앵커, 삭제), 공통 스타일, 기본 핸들을 관리합니다.
@@ -40,6 +51,9 @@ function NodeWrapper({
 }) {
   const { t } = useTranslation();
   const [isBodyCollapsed, setIsBodyCollapsed] = useState(true);
+  const [actionsAnchor, setActionsAnchor] = useState(null);
+  const actionsId = useId();
+  const areActionsOpen = Boolean(actionsAnchor);
   const deleteNode = useBuilderStore((state) => state.deleteNode);
   const anchorNodeId = useBuilderStore((state) => state.anchorNodeId);
   const setAnchorNodeId = useBuilderStore((state) => state.setAnchorNodeId);
@@ -133,22 +147,6 @@ function NodeWrapper({
       {/* 2. 공통 헤더 */}
       <div className={styles.nodeHeader}>
         <div className={styles.headerLeft}>
-          {icon && (
-            <span
-              className={styles.headerIcon}
-              style={{ backgroundColor: nodeColor, color: textColor }}
-            >
-              {icon}
-            </span>
-          )}
-          {!icon && (
-            <span
-              className={styles.headerColorIndicator}
-              style={{ backgroundColor: nodeColor }}
-              aria-hidden="true"
-            />
-          )}
-          <span className={styles.headerTextContent}>{typeLabel}</span>
           {!hideBody && (
             <button
               type="button"
@@ -168,39 +166,115 @@ function NodeWrapper({
               )}
             </button>
           )}
+          {icon && (
+            <span
+              className={styles.headerIcon}
+              style={{ backgroundColor: nodeColor, color: textColor }}
+            >
+              {icon}
+            </span>
+          )}
+          {!icon && (
+            <span
+              className={styles.headerColorIndicator}
+              style={{ backgroundColor: nodeColor }}
+              aria-hidden="true"
+            />
+          )}
+          <NodeTitle id={id} typeLabel={typeLabel} />
         </div>
         <div className={styles.headerButtons}>
+          <span className={styles.nodeTypeLabel} title={typeLabel}>
+            {typeLabel}
+          </span>
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setStartNodeId(id);
+            type="button"
+            className={`nodrag nopan ${styles.headerMoreButton}`}
+            title={t("Node actions")}
+            aria-label={t("Node actions")}
+            aria-haspopup="dialog"
+            aria-expanded={areActionsOpen}
+            aria-controls={areActionsOpen ? actionsId : undefined}
+            onPointerDown={(event) => event.stopPropagation()}
+            onKeyDown={(event) => event.stopPropagation()}
+            onDoubleClick={(event) => event.stopPropagation()}
+            onClick={(event) => {
+              event.stopPropagation();
+              const target = event.currentTarget;
+              setActionsAnchor((anchor) => (anchor ? null : target));
             }}
-            className={`${styles.startNodeButton} ${isStartNode ? styles.active : ""}`}
-            title={t("Set as Start Node")}
           >
-            <StartNodeIcon />
+            <Ellipsis size={18} />
           </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setAnchorNodeId(id);
+          <Popover
+            id={actionsId}
+            open={areActionsOpen}
+            anchorEl={actionsAnchor}
+            onClose={() => setActionsAnchor(null)}
+            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+            transformOrigin={{ vertical: "top", horizontal: "right" }}
+            disableScrollLock
+            onClick={(event) => event.stopPropagation()}
+            onPointerDown={(event) => event.stopPropagation()}
+            slotProps={{
+              paper: {
+                role: "dialog",
+                "aria-label": t("Node actions"),
+                className: styles.headerActionsPaper,
+              },
             }}
-            className={`${styles.anchorButton} ${isAnchored ? styles.active : ""}`}
-            title={t("Set as anchor")}
           >
-            <AnchorIcon />
-          </button>
-          {/* 2a. (선택) 추가 헤더 버튼 */}
-          {headerButtons}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              deleteNode(id);
-            }}
-            className={styles.deleteButton}
-          >
-            X
-          </button>
+            <div
+              className={`nodrag nopan nowheel ${styles.headerActionsPalette}`}
+              role="toolbar"
+              aria-label={t("Node actions")}
+              onKeyDown={(event) => {
+                if (event.key !== "Escape") event.stopPropagation();
+              }}
+              onClickCapture={(event) => {
+                const button = event.target.closest("button");
+                if (button && !button.disabled) {
+                  // Let the original action receive its click before unmounting.
+                  window.setTimeout(() => setActionsAnchor(null), 0);
+                }
+              }}
+            >
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setStartNodeId(id);
+                }}
+                className={`${styles.startNodeButton} ${isStartNode ? styles.active : ""}`}
+                title={t("Set as Start Node")}
+              >
+                <StartNodeIcon />
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setAnchorNodeId(id);
+                }}
+                className={`${styles.anchorButton} ${isAnchored ? styles.active : ""}`}
+                title={t("Set as anchor")}
+              >
+                <AnchorIcon />
+              </button>
+              {/* 2a. (선택) 추가 헤더 버튼 */}
+              {headerButtons}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deleteNode(id);
+                }}
+                className={styles.deleteButton}
+              >
+                <X />
+              </button>
+            </div>
+          </Popover>
         </div>
       </div>
 
@@ -211,6 +285,7 @@ function NodeWrapper({
           style={isBodyCollapsed ? { display: "none" } : undefined}
         >
           {children}
+          <NodeEditButton id={id} />
         </div>
       )}
 

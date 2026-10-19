@@ -112,6 +112,8 @@ import type { Edge, Node } from "reactflow";
 import { useModal } from "@/providers/ModalProvider";
 import { COLORS } from "@/lib/constants/color";
 
+import { useStore } from "@/store";
+
 const nodeTypes = {
   message: MessageNode,
   branch: BranchNode,
@@ -231,6 +233,11 @@ const Flow = ({ scenario, scenarios }: any) => {
   // 에뮬 실행 데이터 표시 패널 상태 ( 캔버스 패널 height 조정 위해 별도 상태로 분리 )
   const [isSlotDisplayVisible, setIsSlotDisplayVisible] = useState(false);
   const [canvasPanelHeight, setCanvasPanelHeight] = useState(0);
+
+  const setAdminSidebarCollapsed = useStore(
+    (s: any) => s.setAdminSidebarCollapsed,
+  );
+
   const searchPanelRef = useRef<HTMLDivElement | null>(null);
   // 좌측 노드 패널 옵션
   // isMenuView - 노드가 없을 경우 노드 패널 활설화(새로생성), 상세보기 노드 패널 숨김.
@@ -241,6 +248,9 @@ const Flow = ({ scenario, scenarios }: any) => {
   }, [nodes, isSimulatorVisible]);
 
   useEffect(() => {
+    // admin sidebar를 닫는 로직 추가
+    setAdminSidebarCollapsed(true);
+    
     const onload = async () => {
       if (scenario) {
         const payload = {

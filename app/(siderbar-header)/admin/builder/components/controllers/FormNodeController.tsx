@@ -77,6 +77,11 @@ function FormNodeController({ localNode, setLocalNode }: any) {
     return unsubscribe;
   }, [setLocalNode]);
 
+  useEffect(() => {
+    const nextTitle = localNode.data.title || "";
+    if (useFormEditorStore.getState().title !== nextTitle) setTitle(nextTitle);
+  }, [localNode.data.title, setTitle]);
+
   const isFullFormData = (obj: Partial<FormDataJson>): obj is FormDataJson => {
     return (
       obj !== null &&

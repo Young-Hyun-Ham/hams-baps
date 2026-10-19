@@ -3,11 +3,14 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { Box } from "@mui/material";
+import NodeTypeIcon from "./icons/NodeTypeIcon";
+import paletteStyles from "../react-flow/scenario-flow/ScenarioFlow.module.css";
 
 import { TreeItem } from "../types/types";
 import { useBuilderStore } from "../store/index";
 
 type Props = {
+  variant?: "scenario";
   data: TreeItem[];
   isDragMode?: boolean;
   onScenarioGroupClick?: () => void;
@@ -15,6 +18,7 @@ type Props = {
 };
 
 export default function NodesTree({
+  variant,
   data,
   isDragMode,
   onScenarioGroupClick,
@@ -101,6 +105,97 @@ export default function NodesTree({
         }
     }
   };
+
+  if (variant === "scenario") {
+    const items = sections.flatMap((section: TreeItem) =>
+      section.children
+        .slice()
+        .sort((a, b) => a.index - b.index)
+        .map((item) => ({ section, item })),
+    );
+    const groups = [
+      { label: "Chat", types: ["message", "form"] },
+      { label: "Flow control", types: ["branch", "link", "ynBranch", "delay"] },
+      { label: "Data", types: ["setSlot", "api", "slotfilling"] },
+      { label: "Embed", types: ["iframe"] },
+      { label: "Reuse", types: ["scenarioGroup", "scenario"] },
+      { label: "More", types: [] as string[] },
+    ];
+    const knownTypes = groups.flatMap((group) => group.types);
+    const visuals: Record<string, { color: string; label?: string }> = {
+      message: { color: "#ee9900" },
+      form: { color: "#f16b6b" },
+      branch: { color: "#6288f6", label: "Branch" },
+      link: { color: "#00a9d1" },
+      setSlot: { color: "#00b9bc" },
+      api: { color: "#65ad55" },
+      iframe: { color: "#9767ef", label: "Iframe" },
+      scenarioGroup: { color: "#cf69ba", label: "Sub Agent" },
+      settingNodes: { color: "#8b8b8b" },
+    };
+    return (
+      <div className={paletteStyles.palette}>
+        {groups.map((group) => {
+          const children = items.filter(({ item }: { item: TreeItem }) =>
+            group.label === "More"
+              ? !knownTypes.includes(item.type || "")
+              : group.types.includes(item.type || ""),
+          );
+          if (!children.length) return null;
+          return (
+            <section key={group.label} className={paletteStyles.paletteGroup}>
+              <h3>{group.label}</h3>
+              <div className={paletteStyles.paletteGrid}>
+                {children.map(
+                  ({
+                    section,
+                    item,
+                  }: {
+                    section: TreeItem;
+                    item: TreeItem;
+                  }) => {
+                    const visual = visuals[item.type || ""] || {
+                      color: "#8b8b8b",
+                    };
+                    return (
+                      <Box
+                        key={`${section.id}-${item.id}`}
+                        role="button"
+                        tabIndex={0}
+                        title={item.label}
+                        draggable={isDragMode}
+                        onDragStart={(e: React.DragEvent<HTMLDivElement>) =>
+                          addNodeEvent(e, section, item)
+                        }
+                        onClick={(e: React.MouseEvent<HTMLDivElement>) =>
+                          addNodeEvent(e, section, item)
+                        }
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            e.currentTarget.click();
+                          }
+                        }}
+                        className={paletteStyles.paletteItem}
+                        style={
+                          {
+                            "--node-accent": visual.color,
+                          } as React.CSSProperties
+                        }
+                      >
+                        <NodeTypeIcon type={item.type || ""} size={17} />
+                        <span>{visual.label || item.label}</span>
+                      </Box>
+                    );
+                  },
+                )}
+              </div>
+            </section>
+          );
+        })}
+      </div>
+    );
+  }
 
   return (
     <Box

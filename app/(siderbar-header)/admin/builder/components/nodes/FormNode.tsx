@@ -5,6 +5,7 @@ import { FormElement } from "../../form-builder/type";
 import { useBuilderStore } from "../../store/index";
 import styles from "./ChatNodes.module.css";
 import NodeWrapper from "./NodeWrapper";
+import NodeTypeIcon from "../icons/NodeTypeIcon";
 
 type FormNodeProps = {
   id: string;
@@ -25,7 +26,7 @@ function FormNode({ id, data }: FormNodeProps) {
     <NodeWrapper
       id={id}
       typeLabel="Form"
-      icon={null}
+      icon={<NodeTypeIcon type="form" />}
       nodeColor={nodeColor}
       textColor={textColor}
       customClassName={styles.formNodeWrapper}

@@ -1,6 +1,8 @@
 import { Timestamp } from "next/dist/server/lib/cache-handlers/types";
 import { Node } from "reactflow";
 
+export type ScenarioType = "unit" | "multi" | "sub";
+
 type Scenario = {
   id?: string;
   category_id?: string;
@@ -10,6 +12,7 @@ type Scenario = {
   name: string;
   startNodeId?: string;
   description: string;
+  scenario_type?: ScenarioType;
   version_yn?: boolean;
   ltst_ver_id?: any;
   depn_ver_id?: any;
@@ -49,10 +52,14 @@ type AddNodeData = {
   onAdd: (target: InsertTarget) => void;
 };
 
-type BuilderNodeData = {
+export type NodeTitleData = {
+  /** Persisted canvas title; optional for legacy scenarios, defaulting to the type label. */
+  title?: string;
+};
+
+type BuilderNodeData = NodeTitleData & {
   id?: string;
   label?: string;
-  title?: string;
   content?: string;
   replies?: Array<{ display?: string; value?: string }>;
   conditions?: Array<any>;

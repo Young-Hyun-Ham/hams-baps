@@ -1,5 +1,8 @@
+import { getNodeTypeLabel } from "./nodeTitles";
+
 export const createNodeData = (type) => {
   const baseData = {
+    title: getNodeTypeLabel(type),
     id: `${type}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
   };
 
@@ -51,7 +54,6 @@ export const createNodeData = (type) => {
     case "form":
       return {
         ...baseData,
-        title: "new form",
         elements: [],
         dataSourceType: "json",
         dataSource: "",

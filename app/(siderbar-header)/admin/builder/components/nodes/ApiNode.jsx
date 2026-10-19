@@ -7,6 +7,7 @@ import { useBuilderStore } from "../../store/index";
 import { PlayIcon } from "../icons/Icons";
 import * as backendService from "../../services/backendService";
 import NodeWrapper from "./NodeWrapper";
+import NodeTypeIcon from "../icons/NodeTypeIcon";
 
 import { useTranslation } from "react-i18next";
 
@@ -147,7 +148,7 @@ function ApiNode({ id, data }) {
     <NodeWrapper
       id={id}
       typeLabel={isMulti ? `API (${apiCount} calls)` : "API"}
-      icon={null} // (ApiNode는 아이콘이 없었음)
+      icon={<NodeTypeIcon type="api" />}
       nodeColor={nodeColor}
       textColor={textColor}
       headerButtons={extraHeaderButtons} // 추가 버튼 전달

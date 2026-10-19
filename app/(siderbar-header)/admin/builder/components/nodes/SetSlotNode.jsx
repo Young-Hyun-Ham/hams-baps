@@ -2,8 +2,8 @@
 import styles from "./ChatNodes.module.css";
 import { useBuilderStore } from "../../store/index";
 // (AnchorIcon, StartNodeIcon 임포트 제거)
-import { SetSlotIcon } from "../icons/Icons";
 import NodeWrapper from "./NodeWrapper";
+import NodeTypeIcon from "../icons/NodeTypeIcon";
 import { useTranslation } from "react-i18next";
 
 function SetSlotNode({ id, data }) {
@@ -21,7 +21,7 @@ function SetSlotNode({ id, data }) {
     <NodeWrapper
       id={id}
       typeLabel="Set Slot"
-      icon={<SetSlotIcon />} // 5. 아이콘 전달
+      icon={<NodeTypeIcon type="setSlot" />}
       nodeColor={nodeColor}
       textColor={textColor}
     >

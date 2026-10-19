@@ -2,7 +2,8 @@ import { Handle, Position } from "reactflow";
 import styles from "./ChatNodes.module.css";
 import { useBuilderStore } from "../../store/index";
 // (AnchorIcon, StartNodeIcon 임포트 제거)
-import NodeWrapper from "./NodeWrapper"; // 1. Wrapper 임포트
+import NodeWrapper from "./NodeWrapper";
+import NodeTypeIcon from "../icons/NodeTypeIcon"; // 1. Wrapper 임포트
 import { useTranslation } from "react-i18next";
 
 function LlmNode({ id, data }) {
@@ -57,7 +58,7 @@ function LlmNode({ id, data }) {
     <NodeWrapper
       id={id}
       typeLabel="LLM"
-      icon={null} // (LlmNode는 아이콘이 없었음)
+      icon={<NodeTypeIcon type="llm" />}
       nodeColor={nodeColor}
       textColor={textColor}
       handles={customHandles} // 커스텀 핸들 전달

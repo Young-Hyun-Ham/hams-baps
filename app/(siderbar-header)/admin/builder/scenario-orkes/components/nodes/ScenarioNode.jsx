@@ -1,3 +1,5 @@
+import NodeTitle from "../../../components/nodes/NodeTitle";
+import NodeEditButton from "../../../components/nodes/NodeEditButton";
 import { Handle, Position } from "reactflow";
 import styles from "./ChatNodes.module.css";
 import { useBuilderStore } from "../../../store";
@@ -40,9 +42,7 @@ function ScenarioNode({ id, data }) {
         className={styles.nodeHeader}
         style={{ backgroundColor: nodeColor, color: textColor }}
       >
-        <span className={styles.headerTextContent}>
-          {t("Scenario")}: {data.label}
-        </span>
+        <NodeTitle id={id} typeLabel={t("Scenario")} />
         <div className={styles.headerButtons}>
           <button
             onClick={(e) => {
@@ -76,6 +76,7 @@ function ScenarioNode({ id, data }) {
       </div>
       {!isCollapsed && <div className={styles.nodeBody} />}
       <Handle type="source" position={Position.Bottom} />
+      <NodeEditButton id={id} />
     </div>
   );
 }

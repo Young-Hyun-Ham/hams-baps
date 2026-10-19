@@ -1,6 +1,9 @@
 import React, { memo, useLayoutEffect } from "react";
 import { Handle, Position, NodeProps, useUpdateNodeInternals } from "reactflow";
 import { Box, Typography } from "@mui/material";
+import NodeEditButton from "./NodeEditButton";
+import NodeTitle from "./NodeTitle";
+import titleStyles from "./ChatNodes.module.css";
 
 function formatDuration(ms) {
   if (!ms || ms <= 0) return "0s";
@@ -92,6 +95,10 @@ const DelayNode = ({ id, data, selected }) => {
           ...(outputPos === Position.Bottom ? { bottom: -4 } : { right: -4 }),
         }}
       />
+      <div className={titleStyles.compactNodeTitle}>
+        <NodeTitle id={id} typeLabel="Delay" />
+      </div>
+      <NodeEditButton id={id} floating />
     </Box>
   );
 };
