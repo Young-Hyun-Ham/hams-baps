@@ -1,5 +1,6 @@
 import { getScenarioType } from "../utils/scenarioTypes";
 import { db } from "@/lib/firebase";
+import { resolveScenarioRef } from "@/lib/firebaseScenarioRef";
 import { v4 as uuidv4 } from "uuid";
 import {
   collection,
@@ -8,7 +9,6 @@ import {
   getDoc,
   setDoc,
   deleteDoc,
-  writeBatch,
   addDoc,
   updateDoc,
   runTransaction,
@@ -24,12 +24,12 @@ export const fetchScenarios = async () => {
   return querySnapshot.docs.map((doc) => {
     const data = doc.data();
     return {
-      id: doc.id,
       name: data.name || doc.id,
       description: data.description || "",
       updatedAt: data.updatedAt || null,
       lastUsedAt: data.lastUsedAt || null,
       ...data,
+      id: doc.id,
       scenario_type: getScenarioType(data),
     };
   });
@@ -60,7 +60,7 @@ export const createScenario = async ({
     startNodeId: null,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
-    lastUsedAt: null,
+    lastUsedAt: serverTimestamp(),
   };
   await setDoc(newScenarioRef, newScenarioData);
   return {
@@ -68,7 +68,7 @@ export const createScenario = async ({
     ...newScenarioData,
     createdAt: new Date(),
     updatedAt: new Date(),
-    lastUsedAt: null,
+    lastUsedAt: new Date(),
   };
 };
 
@@ -78,38 +78,7 @@ export const renameScenario = async ({
   job,
   description,
 }: any) => {
-  const oldDocRef = doc(db, "scenarios", oldScenario.id);
-
-  if (oldScenario.name !== newName) {
-    const newDocRef = doc(db, "scenarios", newName);
-    const newDocSnap = await getDoc(newDocRef);
-    if (newDocSnap.exists()) {
-      throw new Error("A scenario with that name already exists.");
-    }
-
-    const oldDocSnap = await getDoc(oldDocRef);
-    if (oldDocSnap.exists()) {
-      const batch = writeBatch(db);
-      const newData = {
-        ...oldDocSnap.data(),
-        name: newName,
-        job,
-        description,
-        updatedAt: serverTimestamp(),
-      };
-      batch.set(newDocRef, newData);
-      batch.delete(oldDocRef);
-      await batch.commit();
-    } else {
-      throw new Error("Original scenario not found.");
-    }
-  } else {
-    await updateDoc(oldDocRef, {
-      job,
-      description,
-      updatedAt: serverTimestamp(),
-    });
-  }
+  return patchScenario({ id: oldScenario.id, name: newName, job, description });
 };
 
 export const patchScenario = async ({
@@ -122,6 +91,8 @@ export const patchScenario = async ({
   if (!id) {
     throw new Error("Scenario ID is required.");
   }
+  const scenarioName = name === undefined ? undefined : String(name).trim();
+  if (scenarioName === "") throw new Error("Scenario name is required.");
 
   const scenarioRef = doc(db, "scenarios", id);
   const scenarioSnapshot = await getDoc(scenarioRef);
@@ -131,7 +102,7 @@ export const patchScenario = async ({
   }
 
   const updateData = {
-    ...(name !== undefined && { name }),
+    ...(scenarioName !== undefined && { name: scenarioName }),
     ...(job !== undefined && { job }),
     ...(description !== undefined && { description }),
     ...(scenario_type !== undefined && {
@@ -143,9 +114,9 @@ export const patchScenario = async ({
   await updateDoc(scenarioRef, updateData);
 
   return {
-    id,
     ...scenarioSnapshot.data(),
     ...updateData,
+    id,
     updatedAt: new Date(),
   };
 };
@@ -194,12 +165,13 @@ export const cloneScenario = async ({ scenarioToClone, newName }: any) => {
 export const fetchScenarioData = async ({ scenarioId }: any) => {
   if (!scenarioId)
     return { nodes: [], edges: [], startNodeId: null, description: "" };
-  const scenarioDocRef = doc(db, "scenarios", scenarioId);
+  const scenarioDocRef = await resolveScenarioRef(scenarioId);
   const docSnap = await getDoc(scenarioDocRef);
   if (docSnap.exists()) {
     const data = docSnap.data();
     return {
       ...data,
+      id: docSnap.id,
       scenario_type: getScenarioType(data),
       startNodeId: data.startNodeId || null,
       description: data.description || "",
@@ -307,9 +279,10 @@ export const getScenarioVersion = async ({ scenario_id, version_id }: any) => {
     throw new Error("Scenario ID is required.");
   }
 
+  const scenarioRef = await resolveScenarioRef(scenario_id);
   const targetRef = version_id
-    ? doc(db, "scenarios", scenario_id, "versions", String(version_id))
-    : doc(db, "scenarios", scenario_id);
+    ? doc(scenarioRef, "versions", String(version_id))
+    : scenarioRef;
   const snapshot = await getDoc(targetRef);
 
   if (!snapshot.exists()) {

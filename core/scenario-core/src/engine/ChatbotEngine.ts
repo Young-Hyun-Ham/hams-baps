@@ -1,4 +1,5 @@
 import { ScenarioData, ScenarioNode } from "../types/index";
+import { resolveGroupApiNextNode } from "./groupApiRouting";
 
 export interface EngineCallbacks {
   onMessage?: (node: ScenarioNode, updatedSlots: Record<string, any>) => void;
@@ -199,6 +200,10 @@ export class ChatbotEngine {
     // 그룹/시나리오 내부 마지막 노드에서 edge가 없을 때 바로 종료하지 않고,
     // 부모 컨테이너(selectionGroup/scenario)의 다음 edge로 흐름을 이어간다.
     const sourceNode = this.getNodeById(currentNodeId);
+    const groupApiNext = resolveGroupApiNextNode(this.scenario, currentNodeId, sourceHandle);
+    if (groupApiNext !== undefined) {
+      return groupApiNext ?? this.getNextNode(sourceNode!.parentNode!, null, slots);
+    }
     const outgoingEdges = edges.filter((e) => e.source === currentNodeId);
     if (outgoingEdges.length === 0) {
       if (sourceNode?.parentNode) {

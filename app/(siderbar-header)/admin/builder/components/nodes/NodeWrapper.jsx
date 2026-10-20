@@ -46,11 +46,14 @@ function NodeWrapper({
   headerButtons = null,
   nodeChrome = null,
   hideBody = false,
+  bodyCollapsed,
+  onToggleBody,
   customClassName = "",
   style = {},
 }) {
   const { t } = useTranslation();
-  const [isBodyCollapsed, setIsBodyCollapsed] = useState(true);
+  const [localBodyCollapsed, setIsBodyCollapsed] = useState(true);
+  const isBodyCollapsed = bodyCollapsed ?? localBodyCollapsed;
   const [actionsAnchor, setActionsAnchor] = useState(null);
   const actionsId = useId();
   const areActionsOpen = Boolean(actionsAnchor);
@@ -89,6 +92,15 @@ function NodeWrapper({
       "selectionGroup"
     );
   });
+  const isStandaloneRegularNode = useBuilderStore((state) => {
+    const node = state.nodes.find((item) => item.id === id);
+    return Boolean(
+      node &&
+        !node.parentNode &&
+        node.type !== "selectionGroup" &&
+        node.type !== "scenario",
+    );
+  });
   const inputPos =
     storeNodeData?.inputPosition === "top" ? Position.Top : Position.Left;
   const outputPos =
@@ -99,13 +111,25 @@ function NodeWrapper({
 
   useLayoutEffect(() => {
     updateNodeInternals(id);
-  }, [id, inputPos, outputPos, hideBody, isBodyCollapsed, updateNodeInternals]);
+  }, [
+    id,
+    inputPos,
+    outputPos,
+    hideBody,
+    isBodyCollapsed,
+    isStandaloneRegularNode,
+    isSelectionGroupChild,
+    updateNodeInternals,
+  ]);
 
   return (
     <div
       className={`${styles.nodeWrapper} ${isAnchored ? styles.anchored : ""} ${isStartNode ? styles.startNode : ""} ${customClassName}`}
       style={{
         ...style,
+        ...(isStandaloneRegularNode
+          ? { width: isBodyCollapsed ? 250 : 420, boxSizing: "border-box" }
+          : {}),
         ...(isSelectionGroupChild
           ? { width: "100%", boxSizing: "border-box" }
           : {}),
@@ -147,7 +171,7 @@ function NodeWrapper({
       {/* 2. 공통 헤더 */}
       <div className={styles.nodeHeader}>
         <div className={styles.headerLeft}>
-          {!hideBody && (
+          {(!hideBody || onToggleBody) && (
             <button
               type="button"
               className={`nodrag nopan ${styles.bodyToggleButton}`}
@@ -156,7 +180,8 @@ function NodeWrapper({
               aria-expanded={!isBodyCollapsed}
               onClick={(event) => {
                 event.stopPropagation();
-                setIsBodyCollapsed((collapsed) => !collapsed);
+                if (onToggleBody) onToggleBody();
+                else setIsBodyCollapsed((collapsed) => !collapsed);
               }}
             >
               {isBodyCollapsed ? (

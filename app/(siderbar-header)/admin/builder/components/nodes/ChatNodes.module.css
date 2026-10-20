@@ -82,15 +82,17 @@
 
 .groupNodeWrapper .nodeBody {
   height: calc(100% - 42px);
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  column-gap: 12px;
   padding: 10px 12px;
   background: transparent;
 }
 
 .groupNodeDescription {
   margin: 0;
+  line-height: 24px;
   font-size: 0.8rem;
   color: #475569;
   font-style: italic;
@@ -813,4 +815,11 @@
   border-radius: 4px;
   background: #fff;
   color: #38383d;
+}
+
+.groupNodeWrapper .nodeBody > .nodeEditFooter {
+  min-height: 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
 }

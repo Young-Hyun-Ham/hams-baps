@@ -1,12 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChatbotEngine = void 0;
+const groupApiRouting_1 = require("./groupApiRouting");
 class ChatbotEngine {
     constructor(scenario) {
         this.scenario = scenario;
     }
     getNodeById(nodeId) {
-        return this.scenario.nodes.find(n => n.id === nodeId);
+        return this.scenario.nodes.find((n) => n.id === nodeId);
     }
     // ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
     // header(배열키, 컬럼키) 패턴 추가: {{header(key, columnId)}} - hyh
@@ -18,9 +19,7 @@ class ChatbotEngine {
             const field = headerMatch[2].trim();
             const arr = this.getDeepValue(slots, arrayPath);
             if (Array.isArray(arr)) {
-                return JSON.stringify(arr
-                    .map(row => row?.[field])
-                    .filter(v => v !== undefined));
+                return JSON.stringify(arr.map((row) => row?.[field]).filter((v) => v !== undefined));
             }
             return null;
         }
@@ -29,8 +28,8 @@ class ChatbotEngine {
     }
     // ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
     interpolateMessage(message, slots) {
-        if (typeof message !== 'string')
-            return String(message ?? '');
+        if (typeof message !== "string")
+            return String(message ?? "");
         return message.replace(/\{\{([^}]+)\}\}/g, (_, path) => {
             // ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
             // 커스텀 문법 처리 추가 - hyh
@@ -40,21 +39,50 @@ class ChatbotEngine {
                 return special;
             // ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
             const val = this.getDeepValue(slots, path.trim());
-            return val !== undefined && val !== null ? String(val) : `{{${path}}}`;
+            if (val === undefined || val === null)
+                return `{{${path}}}`;
+            if (typeof val === "object") {
+                try {
+                    return JSON.stringify(val);
+                }
+                catch {
+                    return String(val);
+                }
+            }
+            return String(val);
         });
     }
     getDeepValue(obj, path) {
-        if (!path || typeof path !== 'string')
+        if (!path || typeof path !== "string")
             return undefined;
         // Try direct lookup first (if key exists as-is)
-        if (obj && typeof obj === 'object' && path in obj) {
-            return obj[path];
+        if (obj && typeof obj === "object" && path in obj) {
+            const val = obj[path];
+            if (val && typeof val === "object" && "value" in val) {
+                return val.value;
+            }
+            return val;
         }
         // Normalize [0] to .0 and handle leading dot
-        const normalizedPath = path.replace(/\[(\s*['"]?(\w+)['"]?\s*)\]/g, '.$2').replace(/^\./, '');
-        const keys = normalizedPath.split('.').filter(k => k.trim() !== '').map(k => k.trim());
+        const normalizedPath = path
+            .replace(/\[(\s*['"]?(\w+)['"]?\s*)\]/g, ".$2")
+            .replace(/^\./, "");
+        const keys = normalizedPath
+            .split(".")
+            .filter((k) => k.trim() !== "")
+            .map((k) => k.trim());
         let current = obj;
         for (const key of keys) {
+            if (current === null || current === undefined) {
+                return undefined;
+            }
+            // Auto-unwrap element wrapper if key is not a metadata key
+            if (current &&
+                typeof current === "object" &&
+                "value" in current &&
+                !(key in current)) {
+                current = current.value;
+            }
             if (current === null || current === undefined) {
                 return undefined;
             }
@@ -66,63 +94,97 @@ class ChatbotEngine {
                 current = current[key];
             }
         }
+        if (current && typeof current === "object" && "value" in current) {
+            return current.value;
+        }
         return current;
     }
     evaluateCondition(slotValue, operator, conditionValue) {
-        const lowerCaseConditionValue = String(conditionValue ?? '').toLowerCase();
-        const boolConditionValue = lowerCaseConditionValue === 'true';
-        const boolSlotValue = String(slotValue ?? '').toLowerCase() === 'true';
-        if (lowerCaseConditionValue === 'true' || lowerCaseConditionValue === 'false') {
+        const lowerCaseConditionValue = String(conditionValue ?? "").toLowerCase();
+        const boolConditionValue = lowerCaseConditionValue === "true";
+        const boolSlotValue = String(slotValue ?? "").toLowerCase() === "true";
+        if (lowerCaseConditionValue === "true" ||
+            lowerCaseConditionValue === "false") {
             switch (operator) {
-                case '==': return boolSlotValue === boolConditionValue;
-                case '!=': return boolSlotValue !== boolConditionValue;
-                default: return false;
+                case "==":
+                    return boolSlotValue === boolConditionValue;
+                case "!=":
+                    return boolSlotValue !== boolConditionValue;
+                default:
+                    return false;
             }
         }
-        const numSlotValue = slotValue !== null && slotValue !== undefined && slotValue !== '' ? parseFloat(slotValue) : NaN;
-        const numConditionValue = conditionValue !== null && conditionValue !== undefined && conditionValue !== '' ? parseFloat(conditionValue) : NaN;
+        const numSlotValue = slotValue !== null && slotValue !== undefined && slotValue !== ""
+            ? parseFloat(slotValue)
+            : NaN;
+        const numConditionValue = conditionValue !== null &&
+            conditionValue !== undefined &&
+            conditionValue !== ""
+            ? parseFloat(conditionValue)
+            : NaN;
         const bothAreNumbers = !isNaN(numSlotValue) && !isNaN(numConditionValue);
         switch (operator) {
-            case '==': return String(slotValue ?? '') == String(conditionValue ?? '');
-            case '!=': return String(slotValue ?? '') != String(conditionValue ?? '');
-            case '>': return bothAreNumbers && numSlotValue > numConditionValue;
-            case '<': return bothAreNumbers && numSlotValue < numConditionValue;
-            case '>=': return bothAreNumbers && numSlotValue >= numConditionValue;
-            case '<=': return bothAreNumbers && numSlotValue <= numConditionValue;
-            case 'contains': return slotValue != null && String(slotValue).includes(String(conditionValue ?? ''));
-            case '!contains': return slotValue == null || !String(slotValue).includes(String(conditionValue ?? ''));
+            case "==":
+                return String(slotValue ?? "") == String(conditionValue ?? "");
+            case "!=":
+                return String(slotValue ?? "") != String(conditionValue ?? "");
+            case ">":
+                return bothAreNumbers && numSlotValue > numConditionValue;
+            case "<":
+                return bothAreNumbers && numSlotValue < numConditionValue;
+            case ">=":
+                return bothAreNumbers && numSlotValue >= numConditionValue;
+            case "<=":
+                return bothAreNumbers && numSlotValue <= numConditionValue;
+            case "contains":
+                return (slotValue != null &&
+                    String(slotValue).includes(String(conditionValue ?? "")));
+            case "!contains":
+                return (slotValue == null ||
+                    !String(slotValue).includes(String(conditionValue ?? "")));
             default:
                 console.warn(`Unsupported operator used in condition: ${operator}`);
                 return false;
         }
     }
-    getNextNode(currentNodeId, sourceHandle = null, slots = {}, anchorNodeId = null) {
-        // Anchor Node Check - If we've reached the anchor node, we pause execution and return active status
-        if (anchorNodeId && currentNodeId === anchorNodeId) {
+    getNextNode(currentNodeId, sourceHandle = null, slots = {}) {
+        const { nodes, edges } = this.scenario;
+        // ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ - 20260709
+        // 그룹/시나리오 내부 마지막 노드에서 edge가 없을 때 바로 종료하지 않고,
+        // 부모 컨테이너(selectionGroup/scenario)의 다음 edge로 흐름을 이어간다.
+        const sourceNode = this.getNodeById(currentNodeId);
+        const groupApiNext = (0, groupApiRouting_1.resolveGroupApiNextNode)(this.scenario, currentNodeId, sourceHandle);
+        if (groupApiNext !== undefined) {
+            return groupApiNext ?? this.getNextNode(sourceNode.parentNode, null, slots);
+        }
+        const outgoingEdges = edges.filter((e) => e.source === currentNodeId);
+        if (outgoingEdges.length === 0) {
+            if (sourceNode?.parentNode) {
+                return this.getNextNode(sourceNode.parentNode, sourceHandle, slots);
+            }
             return null;
         }
-        const { nodes, edges } = this.scenario;
-        const outgoingEdges = edges.filter(e => e.source === currentNodeId);
-        if (outgoingEdges.length === 0)
-            return null;
-        const sourceNode = this.getNodeById(currentNodeId);
+        // ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
         // Branch node with CONDITION evaluation
-        if (sourceNode?.type === 'branch' && sourceNode.data?.evaluationType === 'CONDITION') {
+        if (sourceNode?.type === "branch" &&
+            sourceNode.data?.evaluationType === "CONDITION") {
             const conditions = sourceNode.data.conditions || [];
             for (const condition of conditions) {
                 const slotValue = this.getDeepValue(slots, condition.slot);
-                const valueToCompare = condition.valueType === 'slot' ? this.getDeepValue(slots, condition.value) : condition.value;
+                const valueToCompare = condition.valueType === "slot"
+                    ? this.getDeepValue(slots, condition.value)
+                    : condition.value;
                 if (this.evaluateCondition(slotValue, condition.operator, valueToCompare)) {
                     const condIdx = conditions.indexOf(condition);
                     const handleId = sourceNode.data.replies?.[condIdx]?.value;
                     if (handleId) {
-                        const edge = outgoingEdges.find(e => e.sourceHandle === handleId);
+                        const edge = outgoingEdges.find((e) => e.sourceHandle === handleId);
                         if (edge)
                             return this.getNodeById(edge.target) || null;
                     }
                 }
             }
-            const defaultEdge = outgoingEdges.find(e => e.sourceHandle === 'default');
+            const defaultEdge = outgoingEdges.find((e) => e.sourceHandle === "default");
             if (defaultEdge)
                 return this.getNodeById(defaultEdge.target) || null;
         }
@@ -132,7 +194,7 @@ class ChatbotEngine {
         }
         // Explicit sourceHandle case
         if (sourceHandle) {
-            const selectedEdge = outgoingEdges.find(e => e.sourceHandle === sourceHandle);
+            const selectedEdge = outgoingEdges.find((e) => e.sourceHandle === sourceHandle);
             if (selectedEdge)
                 return this.getNodeById(selectedEdge.target) || null;
         }
@@ -142,49 +204,58 @@ class ChatbotEngine {
         }
         // [New] Bubble up to parent node if current node is in a group and has no outgoing edges
         if (sourceNode?.parentNode) {
-            return this.getNextNode(sourceNode.parentNode, sourceHandle, slots, anchorNodeId);
+            return this.getNextNode(sourceNode.parentNode, sourceHandle, slots);
         }
         return null;
     }
     isInteractiveNode(node) {
         if (!node)
             return false;
-        if (node.type === 'message') {
+        if (node.type === "message") {
             return !!(node.data?.replies && node.data.replies.length > 0);
         }
-        if (node.type === 'form')
+        if (node.type === "form")
             return true;
-        if (node.type === 'branch') {
+        if (node.type === "branch") {
             const evalType = node.data?.evaluationType;
-            return evalType === 'BUTTON' || evalType === 'BUTTON_CLICK';
+            return evalType === "BUTTON" || evalType === "BUTTON_CLICK";
         }
-        if (node.type === 'fixedmenu')
+        if (node.type === "fixedmenu")
             return true;
-        return node.type === 'slotfilling';
+        return node.type === "slotfilling";
     }
     isAutoPassthroughNode(node) {
         if (!node)
             return false;
-        return ['setSlot', 'set-slot', 'delay', 'api', 'llm', 'toast', 'link'].includes(node.type);
+        return [
+            "setSlot",
+            "set-slot",
+            "delay",
+            "api",
+            "llm",
+            "toast",
+            "link",
+        ].includes(node.type);
     }
     applySetSlot(node, slots) {
         const newSlots = { ...slots };
         const assignments = node?.data?.assignments || [];
         for (const assignment of assignments) {
             if (assignment.key) {
-                let interpolatedValue = this.interpolateMessage(assignment.value, newSlots);
+                const interpolatedValue = this.interpolateMessage(assignment.value, newSlots);
                 try {
                     const trimmedValue = interpolatedValue.trim();
-                    if ((trimmedValue.startsWith('{') && trimmedValue.endsWith('}')) || (trimmedValue.startsWith('[') && trimmedValue.endsWith(']'))) {
+                    if ((trimmedValue.startsWith("{") && trimmedValue.endsWith("}")) ||
+                        (trimmedValue.startsWith("[") && trimmedValue.endsWith("]"))) {
                         newSlots[assignment.key] = JSON.parse(trimmedValue);
                     }
-                    else if (trimmedValue.toLowerCase() === 'true') {
+                    else if (trimmedValue.toLowerCase() === "true") {
                         newSlots[assignment.key] = true;
                     }
-                    else if (trimmedValue.toLowerCase() === 'false') {
+                    else if (trimmedValue.toLowerCase() === "false") {
                         newSlots[assignment.key] = false;
                     }
-                    else if (!isNaN(Number(trimmedValue)) && trimmedValue !== '') {
+                    else if (!isNaN(Number(trimmedValue)) && trimmedValue !== "") {
                         newSlots[assignment.key] = Number(trimmedValue);
                     }
                     else {
@@ -198,109 +269,115 @@ class ChatbotEngine {
         }
         return newSlots;
     }
-    async run(startNodeId, currentSlots, callbacks = {}, { anchorNodeId }) {
-        let currentNode = startNodeId ? this.getNodeById(startNodeId) : null;
+    async run(startNodeId, currentSlots, callbacks = {}) {
+        let currentNode = startNodeId
+            ? this.getNodeById(startNodeId)
+            : null;
         let slots = { ...currentSlots };
-        let isLoopActive = !!currentNode;
+        const isLoopActive = !!currentNode;
         let loopCount = 0;
         const MAX_LOOP_ITERATIONS = 100;
         while (isLoopActive && currentNode && loopCount < MAX_LOOP_ITERATIONS) {
             if (loopCount > 0) {
-                await new Promise(resolve => setTimeout(resolve, 500));
+                await new Promise((resolve) => setTimeout(resolve, 500));
             }
             loopCount++;
             if (this.isInteractiveNode(currentNode)) {
-                return { status: 'active', currentNodeId: currentNode.id, slots };
+                return { status: "active", currentNodeId: currentNode.id, slots };
             }
-            if (currentNode.id === 'end' || currentNode.type === 'end') {
+            if (currentNode.id === "end" || currentNode.type === "end") {
                 break;
             }
-            if (currentNode.type === 'delay') {
+            if (currentNode.type === "delay") {
                 if (callbacks.onDelay)
                     await callbacks.onDelay(currentNode);
-                currentNode = this.getNextNode(currentNode.id, null, slots, anchorNodeId);
+                currentNode = this.getNextNode(currentNode.id, null, slots);
             }
-            else if (currentNode.type === 'api') {
+            else if (currentNode.type === "api") {
                 const currentId = currentNode.id;
                 if (callbacks.onApi) {
                     try {
                         const result = await callbacks.onApi(currentNode, slots);
                         slots = result.newSlots || slots;
-                        currentNode = this.getNextNode(currentId, result.success ? 'onSuccess' : 'onError', slots, anchorNodeId);
+                        currentNode = this.getNextNode(currentId, result.success ? "onSuccess" : "onError", slots);
                     }
                     catch (e) {
                         if (callbacks.onError)
                             callbacks.onError(e);
-                        currentNode = this.getNextNode(currentId, 'onError', slots, anchorNodeId);
+                        currentNode = this.getNextNode(currentId, "onError", slots);
                     }
                 }
                 else {
-                    currentNode = this.getNextNode(currentId, 'onError', slots, anchorNodeId);
+                    currentNode = this.getNextNode(currentId, "onError", slots);
                 }
             }
-            else if (currentNode.type === 'llm') {
+            else if (currentNode.type === "llm") {
                 const currentId = currentNode.id;
                 if (callbacks.onLlm) {
                     try {
                         const result = await callbacks.onLlm(currentNode, slots);
                         slots = result.newSlots || slots;
-                        currentNode = this.getNextNode(currentId, result.success ? 'onSuccess' : 'onError', slots, anchorNodeId);
+                        currentNode = this.getNextNode(currentId, result.success ? "onSuccess" : "onError", slots);
                     }
                     catch (e) {
                         if (callbacks.onError)
                             callbacks.onError(e);
-                        currentNode = this.getNextNode(currentId, 'onError', slots, anchorNodeId);
+                        currentNode = this.getNextNode(currentId, "onError", slots);
                     }
                 }
                 else {
-                    currentNode = this.getNextNode(currentId, null, slots, anchorNodeId);
+                    currentNode = this.getNextNode(currentId, null, slots);
                 }
             }
-            else if (currentNode.type === 'setSlot' || currentNode.type === 'set-slot') {
+            else if (currentNode.type === "setSlot" ||
+                currentNode.type === "set-slot") {
                 slots = this.applySetSlot(currentNode, slots);
-                currentNode = this.getNextNode(currentNode.id, null, slots, anchorNodeId);
+                currentNode = this.getNextNode(currentNode.id, null, slots);
             }
-            else if (currentNode.type === 'scenario') {
-                const childNodes = this.scenario.nodes.filter(n => n.parentNode === currentNode?.id);
-                const childNodeIds = new Set(childNodes.map(n => n.id));
-                const innerStartNode = childNodes.find(n => !this.scenario.edges.some(e => e.target === n.id && childNodeIds.has(e.source)));
+            else if (currentNode.type === "scenario") {
+                const childNodes = this.scenario.nodes.filter((n) => n.parentNode === currentNode?.id);
+                const childNodeIds = new Set(childNodes.map((n) => n.id));
+                const innerStartNode = childNodes.find((n) => !this.scenario.edges.some((e) => e.target === n.id && childNodeIds.has(e.source)));
                 if (innerStartNode) {
                     currentNode = innerStartNode;
                 }
                 else {
-                    currentNode = this.getNextNode(currentNode.id, null, slots, anchorNodeId);
+                    currentNode = this.getNextNode(currentNode.id, null, slots);
                 }
             }
-            else if (currentNode.type === 'branch') {
-                currentNode = this.getNextNode(currentNode.id, null, slots, anchorNodeId);
+            else if (currentNode.type === "branch") {
+                currentNode = this.getNextNode(currentNode.id, null, slots);
             }
-            else if (currentNode.type === 'toast') {
+            else if (currentNode.type === "toast") {
                 if (callbacks.onToast)
                     callbacks.onToast(currentNode, slots);
-                currentNode = this.getNextNode(currentNode.id, null, slots, anchorNodeId);
+                currentNode = this.getNextNode(currentNode.id, null, slots);
             }
-            else if (currentNode.type === 'link') {
+            else if (currentNode.type === "link") {
                 if (callbacks.onLink)
                     callbacks.onLink(currentNode, slots);
-                currentNode = this.getNextNode(currentNode.id, null, slots, anchorNodeId);
+                currentNode = this.getNextNode(currentNode.id, null, slots);
                 // ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
                 // selectionGroup 처리 추가 - hyh
             }
-            else if (currentNode.type === 'selectionGroup') {
-                const childNodes = this.scenario.nodes.filter(n => n.parentNode === currentNode?.id);
-                const childNodeIds = new Set(childNodes.map(n => n.id));
+            else if (currentNode.type === "selectionGroup") {
+                const childNodes = this.scenario.nodes.filter((n) => n.parentNode === currentNode?.id);
+                const childNodeIds = new Set(childNodes.map((n) => n.id));
                 let startNode = null;
                 if (currentNode.data?.entryNodeId) {
-                    startNode = childNodes.find(n => n.id === currentNode?.data.entryNodeId) || null;
+                    startNode =
+                        childNodes.find((n) => n.id === currentNode?.data.entryNodeId) ||
+                            null;
                 }
                 if (!startNode) {
-                    startNode = childNodes.find(n => !this.scenario.edges.some(e => e.target === n.id && childNodeIds.has(e.source))) || null;
+                    startNode =
+                        childNodes.find((n) => !this.scenario.edges.some((e) => e.target === n.id && childNodeIds.has(e.source))) || null;
                 }
                 if (startNode) {
                     currentNode = startNode;
                 }
                 else {
-                    currentNode = this.getNextNode(currentNode.id, null, slots, anchorNodeId);
+                    currentNode = this.getNextNode(currentNode.id, null, slots);
                 }
                 // ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
             }
@@ -308,27 +385,27 @@ class ChatbotEngine {
                 // Link, Message (non-interactive), Toast etc.
                 if (callbacks.onMessage)
                     callbacks.onMessage(currentNode, slots);
-                currentNode = this.getNextNode(currentNode.id, null, slots, anchorNodeId);
+                currentNode = this.getNextNode(currentNode.id, null, slots);
             }
         }
         // Termination Sequence
         if (callbacks.onMessage || callbacks.onEnd) {
             // 1000ms delay before end message
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise((resolve) => setTimeout(resolve, 500));
             if (callbacks.onMessage) {
                 callbacks.onMessage({
-                    id: 'system-termination',
-                    type: 'message',
-                    data: { content: '시나리오가 종료되었습니다.', isSystem: true }
+                    id: "system-termination",
+                    type: "message",
+                    data: { content: "시나리오가 종료되었습니다.", isSystem: true },
                 }, slots);
             }
             // Another 1000ms delay before final onEnd callback
             if (callbacks.onEnd) {
-                await new Promise(resolve => setTimeout(resolve, 500));
+                await new Promise((resolve) => setTimeout(resolve, 500));
                 callbacks.onEnd(slots);
             }
         }
-        return { status: 'completed', currentNodeId: null, slots };
+        return { status: "completed", currentNodeId: null, slots };
     }
 }
 exports.ChatbotEngine = ChatbotEngine;

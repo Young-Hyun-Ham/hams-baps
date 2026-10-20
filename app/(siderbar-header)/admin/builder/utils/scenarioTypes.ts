@@ -1,7 +1,7 @@
 import type { ScenarioType } from "../types/types";
 
 export const SCENARIO_TYPE_OPTIONS = [
-  { value: "unit", label: "Unit" },
+  { value: "agent", label: "Agent" },
   { value: "multi", label: "Multi" },
   { value: "sub", label: "Sub" },
 ] as const;
@@ -14,5 +14,5 @@ export function getScenarioType(
   )
     .trim()
     .toLowerCase();
-  return value === "unit" || value === "multi" ? value : "sub";
+  return value === "agent" || value === "multi" ? value : "sub";
 }

@@ -1,19 +1,80 @@
-import React, { memo, useLayoutEffect } from "react";
-import { Handle, Position, NodeProps, useUpdateNodeInternals } from "reactflow";
-import { Box, Typography } from "@mui/material";
-import NodeEditButton from "./NodeEditButton";
-import NodeTitle from "./NodeTitle";
-import titleStyles from "./ChatNodes.module.css";
-
-function formatDuration(ms) {
-  if (!ms || ms <= 0) return "0s";
-  if (ms < 1000) return `${ms}ms`;
-  const sec = ms / 1000;
-  return Number.isInteger(sec) ? `${sec}s` : `${sec.toFixed(1)}s`;
-}
+import React, { memo, useLayoutEffect, useState } from "react";
+import { Handle, Position, useUpdateNodeInternals } from "reactflow";
+import {
+  Box,
+  Button,
+  MenuItem,
+  Popover,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { useBuilderStore } from "../../store";
+import { useModal } from "@/providers/ModalProvider";
+import { useTranslation } from "react-i18next";
+import {
+  DELAY_UNITS,
+  getDelayUnit,
+  parseDelayDuration,
+  formatDelayDuration,
+} from "../../utils/delayDuration";
 
 const DelayNode = ({ id, data, selected }) => {
   const updateNodeInternals = useUpdateNodeInternals();
+  const { t } = useTranslation();
+  const { showAlert } = useModal();
+  const updateNodeData = useBuilderStore((state) => state.updateNodeData);
+  const loadingUserData = useBuilderStore((state) => state.loadingUserData);
+  const [anchor, setAnchor] = useState(null);
+  const [amount, setAmount] = useState("");
+  const [unit, setUnit] = useState("S");
+  const [touched, setTouched] = useState(false);
+  const parsed = parseDelayDuration(amount, unit);
+  const unitLabels = { S: t("seconds"), M: t("minutes"), H: t("hours") };
+  const errors = {
+    digits: t("Enter a value of 9999 or less."),
+    positive: t("Enter a number greater than 0."),
+    minimum: t("Enter a duration of at least 1 millisecond."),
+    maximum: t("Enter a duration of 24.8 days or less."),
+  };
+
+  const openEditor = async (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const element = event.currentTarget;
+    const userInfo = await loadingUserData();
+    const node = useBuilderStore
+      .getState()
+      .nodes.find((item) => item.id === id);
+    if (!node || !element.isConnected) return;
+    if (userInfo?.unuseNodes?.includes("delay")) {
+      showAlert(t("The node does not have modification privileges"));
+      return;
+    }
+    const savedUnit = getDelayUnit(node.data?.durationUnit);
+    setAmount(
+      String((Number(node.data?.duration) || 0) / DELAY_UNITS[savedUnit]),
+    );
+    setUnit(savedUnit);
+    setTouched(false);
+    setAnchor(element);
+  };
+
+  const applyDuration = () => {
+    setTouched(true);
+    if (parsed.error) return;
+    const node = useBuilderStore
+      .getState()
+      .nodes.find((item) => item.id === id);
+    if (
+      node &&
+      (node.data?.duration !== parsed.duration ||
+        node.data?.durationUnit !== unit)
+    ) {
+      updateNodeData(id, { duration: parsed.duration, durationUnit: unit });
+    }
+    setAnchor(null);
+  };
 
   const inputPos = data?.inputPosition === "top" ? Position.Top : Position.Left;
   const outputPos =
@@ -26,80 +87,192 @@ const DelayNode = ({ id, data, selected }) => {
     updateNodeInternals(id);
   }, [id, inputPos, outputPos, updateNodeInternals]);
 
-  const displayTime = formatDuration(data?.duration);
+  const displayTime = formatDelayDuration(
+    Number(data?.duration),
+    getDelayUnit(data?.durationUnit),
+  );
 
   return (
-    <Box
-      sx={{
-        width: 36,
-        height: 36,
-        borderRadius: "50%",
-        bgcolor: "#ffffff",
-        border: selected ? "2px solid #f59e0b" : "2px solid #d97706",
-        boxShadow: selected
-          ? "0 0 0 3px rgba(245, 158, 11, 0.25), 0 4px 10px rgba(0,0,0,0.15)"
-          : "0 2px 6px rgba(0,0,0,0.12)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        position: "relative",
-        cursor: "pointer",
-        transition: "all 0.15s ease",
-        "&:hover": {
-          transform: "scale(1.1)",
-          borderColor: "#f59e0b",
-        },
-      }}
-    >
-      {/* Target handle */}
-      <Handle
-        type="target"
-        position={inputPos}
-        id={inputPos === Position.Top ? "input-top" : "input"}
-        style={{
-          width: 8,
-          height: 8,
-          background: "#d97706",
-          border: "1.5px solid #ffffff",
-          zIndex: 10,
-          ...(inputPos === Position.Top ? { top: -4 } : { left: -4 }),
-        }}
-      />
-
-      {/* Time Label inside node */}
-      <Typography
-        variant="caption"
+    <>
+      <Box
+        onDoubleClick={openEditor}
+        title={t("Double-click to edit delay")}
         sx={{
-          fontSize: "10px",
-          fontWeight: 800,
-          color: "#92400e",
-          userSelect: "none",
-          letterSpacing: "-0.3px",
-          lineHeight: 1,
+          width: 36,
+          height: 36,
+          borderRadius: "50%",
+          bgcolor: "#ffffff",
+          border: selected ? "2px solid #f59e0b" : "2px solid #d97706",
+          boxShadow: selected
+            ? "0 0 0 3px rgba(245, 158, 11, 0.25), 0 4px 10px rgba(0,0,0,0.15)"
+            : "0 2px 6px rgba(0,0,0,0.12)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          position: "relative",
+          cursor: "pointer",
+          transition: "all 0.15s ease",
+          "&:hover": {
+            transform: "scale(1.1)",
+            borderColor: "#f59e0b",
+          },
         }}
       >
-        {displayTime}
-      </Typography>
+        {/* Target handle */}
+        <Handle
+          type="target"
+          position={inputPos}
+          id={inputPos === Position.Top ? "input-top" : "input"}
+          style={{
+            width: 8,
+            height: 8,
+            background: "#d97706",
+            border: "1.5px solid #ffffff",
+            zIndex: 10,
+            ...(inputPos === Position.Top ? { top: -4 } : { left: -4 }),
+          }}
+        />
 
-      {/* Source handle */}
-      <Handle
-        type="source"
-        position={outputPos}
-        id={outputPos === Position.Bottom ? "output-bottom" : "default"}
-        style={{
-          width: 8,
-          height: 8,
-          background: "#d97706",
-          border: "1.5px solid #ffffff",
-          zIndex: 10,
-          ...(outputPos === Position.Bottom ? { bottom: -4 } : { right: -4 }),
+        {/* Time Label inside node */}
+        <Typography
+          variant="caption"
+          sx={{
+            fontSize: "10px",
+            fontWeight: 800,
+            color: "#92400e",
+            userSelect: "none",
+            letterSpacing: "-0.3px",
+            lineHeight: 1,
+          }}
+        >
+          {displayTime}
+        </Typography>
+
+        {/* Source handle */}
+        <Handle
+          type="source"
+          position={outputPos}
+          id={outputPos === Position.Bottom ? "output-bottom" : "default"}
+          style={{
+            width: 8,
+            height: 8,
+            background: "#d97706",
+            border: "1.5px solid #ffffff",
+            zIndex: 10,
+            ...(outputPos === Position.Bottom ? { bottom: -4 } : { right: -4 }),
+          }}
+        />
+      </Box>
+      <Popover
+        open={Boolean(anchor)}
+        anchorEl={anchor}
+        onClose={() => setAnchor(null)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        transformOrigin={{ vertical: "top", horizontal: "center" }}
+        disableScrollLock
+        onPointerDown={(event) => event.stopPropagation()}
+        onClick={(event) => event.stopPropagation()}
+        onDoubleClick={(event) => event.stopPropagation()}
+        onKeyDown={(event) => {
+          event.stopPropagation();
+          if (event.nativeEvent.isComposing) return;
+          if (event.target.closest('[role="listbox"]')) return;
+          if (event.key === "Enter" && event.target.closest('[role="combobox"]'))
+            return;
+          if (event.key === "Escape") {
+            event.preventDefault();
+            setAnchor(null);
+          } else if (
+            event.key === "Enter" &&
+            event.target.tagName === "INPUT"
+          ) {
+            event.preventDefault();
+            applyDuration();
+          }
         }}
-      />
-      <div className={titleStyles.compactNodeTitle}>
-        <NodeTitle id={id} typeLabel="Delay" />
-      </div>
-      <NodeEditButton id={id} floating />
-    </Box>
+      >
+        <Box
+          className="nodrag nopan nowheel"
+          sx={{
+            p: 2,
+            width: 300,
+            maxWidth: "calc(100vw - 32px)",
+            boxSizing: "border-box",
+          }}
+        >
+          <Typography variant="subtitle2" sx={{ mb: 1.5 }}>
+            {t("Delay Duration")}
+          </Typography>
+          <Stack direction="row" spacing={1} alignItems="flex-start">
+            <TextField
+              autoFocus
+              type="number"
+              size="small"
+              label={t("Value")}
+              value={amount}
+              error={touched && Boolean(parsed.error)}
+              helperText={
+                touched && parsed.error ? errors[parsed.error] : undefined
+              }
+              inputProps={{ min: 0, max: 9999, step: "any" }}
+              onFocus={(event) => event.target.select()}
+              onBlur={() => setTouched(true)}
+              onChange={(event) => {
+                const value = event.target.value;
+                if (!/^\d{0,4}(\.\d*)?$/.test(value) || Number(value) > 9999) return;
+                setAmount(value);
+                setTouched(true);
+              }}
+              onKeyDown={(event) => {
+                if (["e", "E", "+", "-"].includes(event.key)) event.preventDefault();
+              }}
+              sx={{ flex: "0 1 88px", minWidth: 0 }}
+            />
+            <TextField
+              select
+              size="small"
+              label={t("Unit")}
+              value={unit}
+              onChange={(event) => setUnit(event.target.value)}
+              sx={{ flex: "1 0 156px", minWidth: 0 }}
+            >
+              {Object.keys(DELAY_UNITS).map((key) => (
+                <MenuItem key={key} value={key}>
+                  {key} ({unitLabels[key]})
+                </MenuItem>
+              ))}
+            </TextField>
+          </Stack>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ display: "block", mt: 1 }}
+          >
+            {!parsed.error
+              ? `${t("Total delay")}: ${amount} ${unitLabels[unit]}`
+              : "\u00a0"}
+          </Typography>
+          <Stack
+            direction="row"
+            spacing={1}
+            justifyContent="flex-end"
+            sx={{ mt: 1.5 }}
+          >
+            <Button size="small" onClick={() => setAnchor(null)}>
+              {t("Cancel")}
+            </Button>
+            <Button
+              size="small"
+              variant="contained"
+              disabled={Boolean(parsed.error)}
+              onClick={applyDuration}
+            >
+              {t("Apply")}
+            </Button>
+          </Stack>
+        </Box>
+      </Popover>
+    </>
   );
 };
 

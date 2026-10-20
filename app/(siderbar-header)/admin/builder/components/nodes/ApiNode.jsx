@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Handle, Position } from "reactflow";
+import React, { useLayoutEffect, useState } from "react";
+import { Handle, Position, useUpdateNodeInternals } from "reactflow";
 import { useModal } from "@/providers/ModalProvider";
 import styles from "./ChatNodes.module.css";
 import { useBuilderStore } from "../../store/index";
@@ -60,8 +60,19 @@ function ApiNode({ id, data }) {
     </button>
   ) : null;
 
-  const posSuccess = data?.outputPositions?.["onSuccess"] || "right";
-  const posError = data?.outputPositions?.["onError"] || "bottom";
+  const isGroupChild = useBuilderStore((state) => {
+    const node = state.nodes.find((item) => item.id === id);
+    return state.nodes.some(
+      (item) => item.id === node?.parentNode && item.type === "selectionGroup",
+    );
+  });
+
+  const posSuccess = isGroupChild ? "bottom" : data?.outputPositions?.["onSuccess"] || "right";
+  const posError = isGroupChild ? "right" : data?.outputPositions?.["onError"] || "bottom";
+  const updateNodeInternals = useUpdateNodeInternals();
+  useLayoutEffect(() => {
+    updateNodeInternals(id);
+  }, [id, posSuccess, posError, updateNodeInternals]);
 
   const isSuccessBottom = posSuccess === "bottom";
   const isErrorBottom = posError === "bottom";

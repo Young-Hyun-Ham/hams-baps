@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next";
 import type { ScenarioType } from "../types/types";
 import { getScenarioType, SCENARIO_TYPE_OPTIONS } from "../utils/scenarioTypes";
 
-const ICONS = { unit: Square, multi: Layers, sub: Workflow };
+const ICONS = { agent: Square, multi: Layers, sub: Workflow };
 
 export function ScenarioTypeBadge({
   scenario,

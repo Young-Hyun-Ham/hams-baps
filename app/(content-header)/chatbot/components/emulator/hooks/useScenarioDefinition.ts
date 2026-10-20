@@ -46,7 +46,9 @@ export function useScenarioDefinition(
         if (!versionId) {
           const scenarios: any[] = await backendService.fetchScenarios(backend);
           const scenario = (Array.isArray(scenarios) ? scenarios : []).find(
-            (item) => String(item?.id ?? item?.snro_id) === String(scenarioKey),
+            (item) =>
+              String(item?.id ?? item?.snro_id) === String(scenarioKey) ||
+              (backend === "firebase" && item?.scenarioId === scenarioKey),
           );
           versionId = scenario?.depn_ver_id;
         }

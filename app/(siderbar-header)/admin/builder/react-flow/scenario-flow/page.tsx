@@ -86,6 +86,7 @@ import {
   Maximize,
   Layers,
   Workflow,
+  Timer,
 } from "lucide-react";
 
 import useBuilderHistoryStore from "../../store/historyStore";
@@ -378,6 +379,7 @@ const Flow = ({ scenario, scenarios }: any) => {
         // Group children are ordered by their vertical position. Their edges
         // remain in state for execution, but the sequence line is not rendered.
         return !(
+          edge.sourceHandle !== "onError" &&
           sharedParentId &&
           sharedParentId === targetNode?.parentNode &&
           nodeById.get(sharedParentId)?.type === "selectionGroup"
@@ -1225,9 +1227,97 @@ const Flow = ({ scenario, scenarios }: any) => {
     target: null,
   });
 
+  const contextMenuRef = useRef<HTMLDivElement | null>(null);
+
+  useLayoutEffect(() => {
+    const menu = contextMenuRef.current;
+    if (!contextMenu.open || !menu) return;
+
+    const positionMenu = () => {
+      const gap = 8;
+      const { width, height } = menu.getBoundingClientRect();
+      const viewportWidth = document.documentElement.clientWidth;
+      const viewportHeight = window.innerHeight;
+      const preferredX = contextMenu.x + width + gap > viewportWidth
+        ? contextMenu.x - width
+        : contextMenu.x;
+      const preferredY = contextMenu.y + height + gap > viewportHeight
+        ? contextMenu.y - height
+        : contextMenu.y;
+      menu.style.left = `${Math.max(gap, Math.min(preferredX, viewportWidth - width - gap))}px`;
+      menu.style.top = `${Math.max(gap, Math.min(preferredY, viewportHeight - height - gap))}px`;
+    };
+
+    positionMenu();
+    const observer = new ResizeObserver(positionMenu);
+    observer.observe(menu);
+    window.addEventListener("resize", positionMenu);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", positionMenu);
+    };
+  }, [contextMenu]);
+
   const deleteEdge = (edgeId: string) => {
     const updateEdges = edges.filter((edge: any) => edge.id !== edgeId);
     setEdges(updateEdges);
+  };
+
+  const handleAddDelayNode = (edgeId: string) => {
+    const edge = edges.find((item: Edge) => item.id === edgeId);
+    if (!edge) return;
+    const source = nodes.find((node: Node) => node.id === edge.source);
+    const target = nodes.find((node: Node) => node.id === edge.target);
+    if (!source || !target) return;
+
+    const parent = source.parentNode && source.parentNode === target.parentNode &&
+      edge.sourceHandle !== "onError"
+      ? nodes.find((node: Node) => node.id === source.parentNode)
+      : null;
+    const sourcePosition = getAbsoluteNodePosition(source, nodes);
+    const targetPosition = getAbsoluteNodePosition(target, nodes);
+    const position = contextMenu.flowPosition ?? {
+      x: (sourcePosition.x + targetPosition.x) / 2,
+      y: (sourcePosition.y + targetPosition.y) / 2,
+    };
+    const data = createNodeData("delay");
+    const nodeId = data.id || `delay-${getSafeUUID()}`;
+    const delayNode: Node = {
+      id: nodeId,
+      type: "delay",
+      parentNode: parent?.id,
+      position: parent ? {
+        x: source.position.x,
+        y: (source.position.y + target.position.y) / 2,
+      } : { x: position.x - 18, y: position.y - 18 },
+      selected: true,
+      data: {
+        ...data,
+        id: nodeId,
+        ...(parent ? { inputPosition: "top", outputPosition: "bottom" } : {}),
+      },
+    };
+    const incoming: Edge = {
+      ...edge,
+      id: `edge-${getSafeUUID()}`,
+      target: nodeId,
+      targetHandle: parent ? "input-top" : "input",
+      selected: false,
+      data: { ...edge.data, points: undefined },
+    };
+    const outgoing: Edge = {
+      ...createWorkflowEdge({
+        source: nodeId,
+        target: edge.target,
+        sourceHandle: parent ? "output-bottom" : "default",
+      }),
+      targetHandle: edge.targetHandle,
+    };
+
+    useBuilderHistoryStore.getState().push(makeSnapshot(useBuilderStore.getState()));
+    setNodes([...nodes.map((node: Node) => ({ ...node, selected: false })), delayNode]);
+    setEdges([...edges.filter((item: Edge) => item.id !== edgeId), incoming, outgoing]);
+    setSelectedNodeId(nodeId);
   };
 
   const handleAddYNBranchNode = (edgeId: string) => {
@@ -1916,7 +2006,7 @@ const Flow = ({ scenario, scenarios }: any) => {
         const nonSequenceEdges = edges
           .filter(
             (edge: Edge) =>
-              !(childIds.has(edge.source) && childIds.has(edge.target)),
+              !(edge.sourceHandle !== "onError" && childIds.has(edge.source) && childIds.has(edge.target)),
           )
           .map((edge: Edge) => {
             if (
@@ -2176,40 +2266,6 @@ const Flow = ({ scenario, scenarios }: any) => {
     });
   };
 
-  const MENU_WIDTH = 220;
-  const MENU_HEIGHTS = {
-    pane: 350,
-    node: 56,
-    edge: 56,
-  } as const;
-  const MENU_GAP = 8;
-
-  const getSafeMenuPosition = (
-    clientX: number,
-    clientY: number,
-    menuType: "pane" | "node" | "edge",
-  ) => {
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    const menuHeight = MENU_HEIGHTS[menuType];
-
-    let x = clientX;
-    let y = clientY;
-
-    if (x + MENU_WIDTH + MENU_GAP > viewportWidth) {
-      x = viewportWidth - MENU_WIDTH - MENU_GAP;
-    }
-
-    if (y + menuHeight + MENU_GAP > viewportHeight) {
-      y = viewportHeight - menuHeight - MENU_GAP;
-    }
-
-    x = Math.max(MENU_GAP, x);
-    y = Math.max(MENU_GAP, y);
-
-    return { x, y };
-  };
-
   const handlePaneContextMenu = (event: React.MouseEvent) => {
     event.preventDefault();
 
@@ -2218,7 +2274,7 @@ const Flow = ({ scenario, scenarios }: any) => {
       selected: false,
     }));
 
-    const { x, y } = getSafeMenuPosition(event.clientX, event.clientY, "pane");
+    const { clientX: x, clientY: y } = event;
     const bounds = reactFlowWrapper.current?.getBoundingClientRect();
     const flowPosition = bounds
       ? project({
@@ -2248,7 +2304,7 @@ const Flow = ({ scenario, scenarios }: any) => {
       selected: false,
     }));
 
-    const { x, y } = getSafeMenuPosition(event.clientX, event.clientY, "node");
+    const { clientX: x, clientY: y } = event;
     const bounds = reactFlowWrapper.current?.getBoundingClientRect();
     const flowPosition = bounds
       ? project({
@@ -2278,7 +2334,7 @@ const Flow = ({ scenario, scenarios }: any) => {
       selected: item.id === edge.id,
     }));
 
-    const { x, y } = getSafeMenuPosition(event.clientX, event.clientY, "edge");
+    const { clientX: x, clientY: y } = event;
     const bounds = reactFlowWrapper.current?.getBoundingClientRect();
     const flowPosition = bounds
       ? project({
@@ -2310,11 +2366,7 @@ const Flow = ({ scenario, scenarios }: any) => {
       event.preventDefault();
       event.stopPropagation();
 
-      const { x, y } = getSafeMenuPosition(
-        event.clientX,
-        event.clientY,
-        "node",
-      );
+      const { clientX: x, clientY: y } = event;
       const bounds = reactFlowWrapper.current?.getBoundingClientRect();
       const flowPosition = bounds
         ? project({
@@ -2455,11 +2507,16 @@ const Flow = ({ scenario, scenarios }: any) => {
     );
 
     return nodes
-      .filter((node: any) => node.parentNode && groupIds.has(node.parentNode))
+      .filter(
+        (node: any) =>
+          groupIds.has(node.id) ||
+          (node.parentNode && groupIds.has(node.parentNode)),
+      )
       .map((node: any) =>
         [
           node.parentNode,
           node.id,
+          node.type === "selectionGroup" ? Boolean(node.data?.isCollapsed) : "",
           node.height || node.measured?.height || 0,
           node.width || node.measured?.width || 0,
         ].join(":"),
@@ -2517,14 +2574,24 @@ const Flow = ({ scenario, scenarios }: any) => {
           extent: undefined,
           position: { x: GROUP_CHILD_X, y: nextY },
           style: { ...child.style, width: GROUP_CHILD_WIDTH },
-          data: { ...child.data, groupOrder: index + 1 },
+          data: {
+            ...child.data,
+            groupOrder: index + 1,
+            ...(child.type === "api" ? {
+              outputPositions: { ...child.data?.outputPositions, onSuccess: "bottom", onError: "right" },
+            } : {}),
+          },
         };
         if (
           child.position.x !== nextChild.position.x ||
           child.position.y !== nextChild.position.y ||
           child.extent !== undefined ||
           Number(child.style?.width) !== GROUP_CHILD_WIDTH ||
-          child.data?.groupOrder !== index + 1
+          child.data?.groupOrder !== index + 1 ||
+          (child.type === "api" && (
+            child.data?.outputPositions?.onSuccess !== "bottom" ||
+            child.data?.outputPositions?.onError !== "right"
+          ))
         ) {
           hasNodeChanges = true;
         }
@@ -2576,18 +2643,19 @@ const Flow = ({ scenario, scenarios }: any) => {
     orderedChildrenByGroup.forEach((children, groupId) => {
       const desiredPairs = children
         .slice(0, -1)
-        .map((child, index) => `${child.id}>${children[index + 1].id}`)
+        .map((child, index) => `${child.id}:${child.type === "api" ? "onSuccess" : ""}>${children[index + 1].id}`)
         .sort();
       const actualPairs = currentEdges
         .filter((edge: any) => {
           const sourceNode: any = currentNodeById.get(edge.source);
           const targetNode: any = currentNodeById.get(edge.target);
           return (
+            edge.sourceHandle !== "onError" &&
             sourceNode?.parentNode === groupId &&
             targetNode?.parentNode === groupId
           );
         })
-        .map((edge: any) => `${edge.source}>${edge.target}`)
+        .map((edge: any) => `${edge.source}:${(currentNodeById.get(edge.source) as any)?.type === "api" ? edge.sourceHandle : ""}>${edge.target}`)
         .sort();
 
       if (desiredPairs.join("|") !== actualPairs.join("|")) {
@@ -2595,7 +2663,7 @@ const Flow = ({ scenario, scenarios }: any) => {
       }
     });
 
-    let hasEdgeChanges = false;
+    let hasEdgeChanges = groupsToReconnect.size > 0;
     const nextEdges = currentEdges.flatMap((edge: any) => {
       const sourceNode: any = currentNodeById.get(edge.source);
       const targetNode: any = currentNodeById.get(edge.target);
@@ -2604,7 +2672,7 @@ const Flow = ({ scenario, scenarios }: any) => {
         sourceNode.parentNode === targetNode?.parentNode
           ? sourceNode.parentNode
           : null;
-      if (internalGroupId && groupsToReconnect.has(internalGroupId)) {
+      if (edge.sourceHandle !== "onError" && internalGroupId && groupsToReconnect.has(internalGroupId)) {
         hasEdgeChanges = true;
         return [];
       }
@@ -2652,7 +2720,7 @@ const Flow = ({ scenario, scenarios }: any) => {
       });
     });
     if (hasEdgeChanges) setEdges(nextEdges);
-  }, [getNodes, selectionGroupLayoutSignature, setEdges, setNodes]);
+  }, [edges, getNodes, selectionGroupLayoutSignature, setEdges, setNodes]);
 
   const handleNodeClick = async (event: any, node: any) => {
     setEditingNodeId(null);
@@ -3071,24 +3139,7 @@ const Flow = ({ scenario, scenarios }: any) => {
 
   // 그룹노드 핸들 함수
   const handleGroupSelectedNodes = () => {
-    console.log("[DEBUG G Button Clicked]", {
-      selectedNodes,
-      nodesSelectedFilter: nodes.filter((node: any) => node.selected),
-      edges,
-    });
-    const activeSelectedNodes =
-      selectedNodes.length >= 2
-        ? selectedNodes
-        : nodes.filter((node: any) => node.selected);
-
-    console.log("[DEBUG activeSelectedNodes]", activeSelectedNodes);
-
-    if (activeSelectedNodes.length < 2) {
-      showAlert(
-        `${t("To group, you must select at least 2 top-level nodes.")}`,
-      );
-      return;
-    }
+    const activeSelectedNodes = nodes.filter((node: any) => node.selected);
 
     const selectedIds = new Set(activeSelectedNodes.map((n: any) => n.id));
     const syncedNodes = nodes.map((node: any) => ({
@@ -4312,7 +4363,8 @@ const Flow = ({ scenario, scenarios }: any) => {
             {/* 캔버스 마우스 우클릭 메뉴 */}
             {contextMenu.open && contextMenu.target?.type === "pane" && (
               <div
-                className={styles.layerMenu}
+                ref={contextMenuRef}
+                className={`${styles.layerMenu} ${pageStyles.canvasContextMenu}`}
                 style={{ left: contextMenu.x, top: contextMenu.y }}
               >
                 <button
@@ -4424,7 +4476,8 @@ const Flow = ({ scenario, scenarios }: any) => {
             {/* 노드 우클릭 */}
             {contextMenu.open && contextMenu.target?.type === "node" && (
               <div
-                className={styles.layerMenu}
+                ref={contextMenuRef}
+                className={`${styles.layerMenu} ${pageStyles.canvasContextMenu}`}
                 style={{ left: contextMenu.x, top: contextMenu.y }}
               >
                 <button
@@ -4463,7 +4516,7 @@ const Flow = ({ scenario, scenarios }: any) => {
                   const targetNode = nodes.find(
                     (n: any) => n.id === contextMenu.target.id,
                   );
-                  if (!targetNode) return null;
+                  if (!targetNode || targetNode.parentNode) return null;
 
                   const currentInputPos =
                     targetNode?.data?.inputPosition ?? "left";
@@ -4708,9 +4761,22 @@ const Flow = ({ scenario, scenarios }: any) => {
             {/* 엣지 우클릭 */}
             {contextMenu.open && contextMenu.target?.type === "edge" && (
               <div
-                className={styles.layerMenu}
+                ref={contextMenuRef}
+                className={`${styles.layerMenu} ${pageStyles.canvasContextMenu}`}
                 style={{ left: contextMenu.x, top: contextMenu.y }}
               >
+                <button
+                  type="button"
+                  className={styles.layerMenuItem}
+                  onClick={() => {
+                    handleAddDelayNode(contextMenu.target.id);
+                    closeContextMenu();
+                  }}
+                >
+                  <Timer size={16} className={styles.layerMenuIcon} />
+                  <span>{t("Add Delay Node")}</span>
+                </button>
+
                 <button
                   type="button"
                   className={styles.layerMenuItem}
@@ -4742,7 +4808,8 @@ const Flow = ({ scenario, scenarios }: any) => {
             {/* select 영역 */}
             {contextMenu.open && contextMenu.target?.type === "selection" && (
               <div
-                className={styles.layerMenu}
+                ref={contextMenuRef}
+                className={`${styles.layerMenu} ${pageStyles.canvasContextMenu}`}
                 style={{ left: contextMenu.x, top: contextMenu.y }}
               >
                 <button

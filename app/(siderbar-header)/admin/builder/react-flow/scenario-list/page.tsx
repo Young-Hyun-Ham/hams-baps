@@ -2,18 +2,28 @@
 
 import { Fragment, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { AddCircle } from "@mui/icons-material";
-import { Box, Button, IconButton, Typography, Dialog } from "@mui/material";
+import {
+  Box,
+  Button,
+  IconButton,
+  Typography,
+  Dialog,
+  Tooltip,
+} from "@mui/material";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import BuildIcon from "@mui/icons-material/Build";
+import AppRegistrationIcon from "@mui/icons-material/AppRegistration";
+import CloseIcon from "@mui/icons-material/Close";
 import { format } from "date-fns";
 
 import { useBuilderStore } from "../../store/index";
 import { Scenario } from "../../types/types";
+import { ScenarioThumbnail } from "../../components/ScenarioThumbnail";
 import { ScenarioCard } from "../../components/ScenarioCard";
-import { ScenarioTypeSelector } from "../../components/ScenarioType";
+import { ScenarioTypeBadge, ScenarioTypeSelector } from "../../components/ScenarioType";
 import { getScenarioType } from "../../utils/scenarioTypes";
 
 import { COLORS } from "@/lib/constants/color";
@@ -37,6 +47,17 @@ type SearchFilter = {
 
 type MODE = "create" | "edit" | null;
 
+function getLastUsedTime(scenario: Scenario): number {
+  const value = scenario.lastUsedAt ?? scenario.last_used_at;
+  if (value == null) return 0;
+  const time = typeof value.toMillis === "function"
+    ? value.toMillis()
+    : typeof value.seconds === "number"
+      ? value.seconds * 1000 + (value.nanoseconds ?? 0) / 1000000
+      : new Date(value).getTime();
+  return Number.isFinite(time) ? time : 0;
+}
+
 // ===========================================
 type ScenarioItem = Scenario & {
   groupId?: string;
@@ -51,6 +72,7 @@ const ScenarioList = () => {
   const { showAlert } = useModal();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [scenarioDetail, setScenarioDetail] = useState<Scenario | null>(null);
   const [mode, setMode] = useState<MODE>(null);
   const [selectedScenario, setSelectedScenario] = useState(false);
   const [selectedScenarioId, setSelectedScenarioId] = useState("");
@@ -86,7 +108,7 @@ const ScenarioList = () => {
       name: "",
       deployment: "all",
       period: "all",
-      sortOrder: "updated",
+      sortOrder: "lastUsed",
     },
   });
   const onSubmit = (data?: SearchFilter, keepEditorOpen?: boolean) => {
@@ -115,11 +137,15 @@ const ScenarioList = () => {
         }
         const data: any = await fetchScenarios(filters);
         // console.log('==========================> fetchData : ', data, );
-        // Sort based on sortOrder (default: 'updated')
-        const sortOrder = filters?.sortOrder || "updated";
+        // Default to most recently used, including Firebase Timestamp values.
+        const sortOrder = filters?.sortOrder || "lastUsed";
         let sortedData = [...data];
 
-        if (sortOrder === "name") {
+        if (sortOrder === "lastUsed") {
+          sortedData.sort((a: Scenario, b: Scenario) =>
+            getLastUsedTime(b) - getLastUsedTime(a),
+          );
+        } else if (sortOrder === "name") {
           // Sort alphabetically by name (A-Z)
           sortedData.sort((a: any, b: any) => {
             const nameA = a.name || "";
@@ -194,7 +220,6 @@ const ScenarioList = () => {
   }, []);
 
   const {
-    register: formRegister,
     handleSubmit: handleFormSubmit,
     reset: formReset,
     control,
@@ -215,15 +240,35 @@ const ScenarioList = () => {
     console.log(data);
   };
 
+  const [headerName, headerType] = useWatch({
+    control,
+    name: ["name", "scenario_type"],
+  });
+  const headerVersion = mode === "edit"
+    ? (scenarioDetail?.ltst_ver_id ?? scenario?.ltst_ver_id)
+    : null;
+
+  const handleCloseScenario = () => {
+    if (mode === "create") {
+      setScenarios(scenarios.filter((item: Scenario) => Boolean(item.id)));
+    }
+    setMode(null);
+    setSelectedScenario(false);
+    setSelectedScenarioId("");
+  };
+
   useEffect(() => {
+    let cancelled = false;
     const getScenario = async () => {
       try {
         setLoading(true);
         setSelectedScenario(true);
 
         const [scenarioData] = await Promise.all([fetchScenario(scenario?.id)]);
+        if (cancelled) return;
         // console.log('==========================> 재조회 scenarioData : ', scenario);
         if (scenarioData) {
+          setScenarioDetail({ ...scenarioData, id: scenario.id });
           formReset({
             id: scenarioData.id,
             name: scenarioData.name,
@@ -243,13 +288,15 @@ const ScenarioList = () => {
       } catch (e: any) {
         console.error(e);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
+    setScenarioDetail(null);
     if (mode === "edit") {
       getScenario();
     } else {
+      setLoading(false);
       const createData: any[] = scenarios.filter((item: any) => !item.id);
       formReset({
         id: createData[0]?.id ?? "",
@@ -261,6 +308,9 @@ const ScenarioList = () => {
         last_used_at: formatDateTime(createData[0]?.updated_at) ?? "",
       });
     }
+    return () => {
+      cancelled = true;
+    };
   }, [mode, scenario?.id, formReset]);
 
   const handleSelectScenario = async (data?: Scenario) => {
@@ -300,7 +350,6 @@ const ScenarioList = () => {
 
   const handleMoveScenario = async (data?: Scenario) => {
     if (data?.id) {
-      setMode(null);
       setScenario(data);
       router.push(`/admin/builder/react-flow/scenario-flow`);
     }
@@ -308,14 +357,12 @@ const ScenarioList = () => {
 
   const handleMoveTempScenario = async (data?: Scenario) => {
     if (data?.id) {
-      setMode(null);
       setScenario(data);
       router.push(`/admin/builder/react-flow/scenario-flow`);
     }
   };
   const handleVersionViewScenario = async (data?: Scenario) => {
     if (data?.id) {
-      setMode(null);
       setScenario(data);
       setEdges([]);
       setStartNodeId(null);
@@ -339,16 +386,23 @@ const ScenarioList = () => {
   };
 
   const handleSaveScenario = async () => {
+    const name = String(getValues("name") ?? "").trim();
+    if (!name) {
+      await showAlert(t("Please enter a scenario name."));
+      return;
+    }
     const payload = {
       ...getValues(),
+      name,
       scenario_type: getScenarioType(getValues()),
       id: scenario.id,
     };
     // console.log('==========================> save : ', mode, payload);
     let res: any = null;
     if (mode === "edit") {
-      const { name, nodes, edges, start_node_id, ...patchData } = payload;
+      const { nodes, edges, start_node_id, ...patchData } = payload;
       res = await patchScenario(patchData);
+      if (res) setScenario({ ...scenario, ...res, id: scenario.id, name });
     } else {
       res = await createScenario(payload);
       if (res) {
@@ -421,8 +475,9 @@ const ScenarioList = () => {
                   label={t("Sort Order")}
                   size="small"
                   sx={{ minWidth: 160 }}
-                  defaultValue={"updated"}
+                  defaultValue={"lastUsed"}
                   options={[
+                    { label: t("Last Used Date"), value: "lastUsed" },
                     { label: t("Last Updated"), value: "updated" },
                     { label: t("Name"), value: "name" },
                     { label: t("Last Deployed"), value: "deployed" },
@@ -603,10 +658,8 @@ const ScenarioList = () => {
             {/* 2. 편집 화면 영역 (selectedScenario가 true일 때만 모달 팝업으로 렌더링) */}
             <Dialog
               open={selectedScenario}
-              onClose={() => {
-                setMode(null);
-                setSelectedScenario(false);
-              }}
+              onClose={handleCloseScenario}
+              aria-labelledby="scenario-editor-title"
               maxWidth="sm"
               fullWidth
               PaperProps={{
@@ -615,6 +668,10 @@ const ScenarioList = () => {
                   border: 2,
                   borderColor: "primary.main",
                   overflow: "hidden",
+                  ...(mode === "edit" && {
+                    height: "814px",
+                    maxHeight: "calc(100dvh - 51px)",
+                  }),
                 },
               }}
             >
@@ -635,49 +692,186 @@ const ScenarioList = () => {
                     alignItems="center"
                     mb={1}
                   >
-                    <Typography
-                      fontSize={16}
-                      fontWeight={700}
-                      color="text.primary"
-                    >
-                      {t("Edit Scenario")}
-                    </Typography>
-
-                    <Box display="flex" gap={1}>
-                      {/* <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={() => {
-                          handleMoveUIPathScenario(scenario);
-                        }}
+                    <Box display="flex" alignItems="center" gap={1} sx={{ minWidth: 0 }}>
+                      <ScenarioTypeBadge scenario={{ scenario_type: headerType }} />
+                      <Typography
+                        id="scenario-editor-title"
+                        component="h2"
+                        fontSize={16}
+                        fontWeight={700}
+                        color="text.primary"
+                        noWrap
+                        title={headerName || scenario?.name || t("New Job")}
+                        sx={{ minWidth: 0 }}
                       >
-                        {t('UIPath')}
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={() => {
-                          handleMoveScenario(scenario);
-                        }}
+                        {headerName || scenario?.name || t("New Job")}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ flexShrink: 0 }}
                       >
-                        {t('Edit')}
-                      </Button> */}
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={() => {
-                          handleMoveTempScenario(scenario);
-
-                          // admin sidebar를 닫는 로직 추가
-                          setAdminSidebarCollapsed(true);
-                        }}
-                      >
-                        {t("Edit")}
-                      </Button>
+                        {headerVersion !== undefined && headerVersion !== null && String(headerVersion).trim() !== ""
+                          ? `v.${String(headerVersion).replace(/^v[.\s]*/i, "")}`
+                          : t("Draft")}
+                      </Typography>
                     </Box>
+                    <Tooltip title={t("Close")} arrow>
+                      <IconButton
+                        type="button"
+                        size="small"
+                        aria-label={t("Close")}
+                        onClick={handleCloseScenario}
+                        sx={{ ml: 1, flexShrink: 0 }}
+                      >
+                        <CloseIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
                   </Box>
+                  {mode === "edit" && (
+                    <Box
+                      sx={{
+                        p: 2,
+                        mb: 1,
+                        border: 1,
+                        borderColor: "divider",
+                        borderRadius: 1.5,
+                        bgcolor: "background.paper",
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          display: "grid",
+                          gridTemplateColumns: {
+                            xs: "1fr",
+                            sm: "minmax(0, 1fr) minmax(0, 1.2fr)",
+                          },
+                          gap: 2,
+                        }}
+                      >
+                        <ScenarioThumbnail
+                          nodes={scenarioDetail?.nodes ?? []}
+                          edges={scenarioDetail?.edges ?? []}
+                          emptyLabel={t(
+                            loading ? "Loading..." : "No scenario nodes",
+                          )}
+                        />
+                        <Box
+                          component="dl"
+                          sx={{
+                            m: 0,
+                            display: "grid",
+                            gridTemplateColumns: "auto minmax(0, 1fr)",
+                            alignContent: "center",
+                            alignItems: "center",
+                            columnGap: 1.5,
+                            rowGap: 1,
+                          }}
+                        >
+                          {[
+                            [
+                              t("Last Used Date"),
+                              scenarioDetail?.last_used_at ||
+                              scenarioDetail?.lastUsedAt
+                                ? formatDateTime(
+                                    scenarioDetail.last_used_at ||
+                                      scenarioDetail.lastUsedAt,
+                                  )
+                                : "-",
+                            ],
+                            [
+                              t("Last Editor"),
+                              scenarioDetail?.upd_user_id ??
+                                scenarioDetail?.updated_by ??
+                                scenarioDetail?.updatedBy ??
+                                "-",
+                            ],
+                            [
+                              t("Latest Version"),
+                              scenarioDetail?.ltst_ver_id ?? "-",
+                            ],
+                            [
+                              t("Deploy Version"),
+                              scenarioDetail?.depn_ver_id ?? "-",
+                            ],
+                          ].map(([label, value]) => (
+                            <Fragment key={label}>
+                              <Typography
+                                component="dt"
+                                variant="caption"
+                                color="text.secondary"
+                              >
+                                {label}
+                              </Typography>
+                              <Typography
+                                component="dd"
+                                variant="caption"
+                                sx={{ m: 0, overflowWrap: "anywhere" }}
+                              >
+                                {String(value ?? "-")}
+                              </Typography>
+                            </Fragment>
+                          ))}
+                          <Box
+                            sx={{
+                              gridColumn: "1 / -1",
+                              display: "flex",
+                              justifyContent: "flex-end",
+                            }}
+                          >
+                            <Tooltip title={t("View scenario versions")} arrow>
+                              <span>
+                                <IconButton
+                                  size="small"
+                                  color="primary"
+                                  aria-label={t("View scenario versions")}
+                                  disabled={!scenarioDetail?.ltst_ver_id}
+                                  onClick={() =>
+                                    handleVersionViewScenario({
+                                      ...scenario,
+                                      ...scenarioDetail,
+                                    })
+                                  }
+                                  sx={{
+                                    border: 1,
+                                    borderColor: "divider",
+                                    borderRadius: 1,
+                                  }}
+                                >
+                                  <BuildIcon fontSize="small" />
+                                </IconButton>
+                              </span>
+                            </Tooltip>
+                            <Tooltip title={t("Flow edit")} arrow>
+                              <span>
+                                <IconButton
+                                  size="small"
+                                  color="primary"
+                                  aria-label={t("Flow edit")}
+                                  disabled={!scenarioDetail}
+                                  onClick={() => {
+                                    handleMoveTempScenario({
+                                      ...scenario,
+                                      ...scenarioDetail,
+                                    });
+                                    setAdminSidebarCollapsed(true);
+                                  }}
+                                  sx={{
+                                    border: 1,
+                                    borderColor: "divider",
+                                    borderRadius: 1,
+                                  }}
+                                >
+                                  <AppRegistrationIcon fontSize="small" />
+                                </IconButton>
+                              </span>
+                            </Tooltip>
+                          </Box>
+                        </Box>
+                      </Box>
+                    </Box>
+                  )}
 
-                  {/* 편집 필드 컨테이너 */}
                   <Box
                     display={"flex"}
                     flexDirection={"column"}
@@ -698,7 +892,6 @@ const ScenarioList = () => {
                         <InputWithLabel
                           {...field}
                           fullWidth
-                          disabled={mode === "create" ? false : true}
                           label={`${t("Name")} *`}
                           size="medium"
                           placeholder={t(
@@ -707,7 +900,6 @@ const ScenarioList = () => {
                           sx={{ mb: 2 }}
                           onChange={(e: any) => {
                             field.onChange(e);
-                            handleDataChange("name", e.target.value);
                           }}
                         />
                       )}
@@ -751,97 +943,6 @@ const ScenarioList = () => {
                         />
                       )}
                     />
-                    {scenario?.id && (
-                      <>
-                        <InputWithLabel
-                          label={t("Last Used Date")}
-                          InputProps={{
-                            readOnly: true,
-                          }}
-                          sx={{ mb: 2 }}
-                          {...formRegister("last_used_at")}
-                        />
-
-                        <Box
-                          display="flex"
-                          alignItems="flex-end"
-                          gap={2}
-                          sx={{ mb: 2 }}
-                        >
-                          <Box flex={1}>
-                            <Typography
-                              fontSize={14}
-                              fontWeight={700}
-                              color="text.primary"
-                              mb={0.5}
-                            >
-                              {t("Latest Version")}
-                            </Typography>
-                            <Box
-                              display="flex"
-                              alignItems="center"
-                              justifyContent="center"
-                              height={40}
-                              border="1px solid #000"
-                              borderRadius="8px"
-                              bgcolor="#fff"
-                            >
-                              <Typography
-                                fontSize={18}
-                                fontWeight={700}
-                                color="text.disabled"
-                              >
-                                {scenario.ltst_ver_id}
-                              </Typography>
-                            </Box>
-                          </Box>
-
-                          <Box flex={1}>
-                            <Typography
-                              fontSize={14}
-                              fontWeight={700}
-                              color="text.primary"
-                              mb={0.5}
-                            >
-                              {t("Deploy Version")}
-                            </Typography>
-                            <Box
-                              display="flex"
-                              alignItems="center"
-                              justifyContent="center"
-                              height={40}
-                              border="1px solid #000"
-                              borderRadius="8px"
-                              bgcolor="#fff"
-                            >
-                              <Typography
-                                fontSize={18}
-                                fontWeight={700}
-                                color="text.disabled"
-                              >
-                                {scenario.depn_ver_id}
-                              </Typography>
-                            </Box>
-                          </Box>
-
-                          {scenario.ltst_ver_id && (
-                            <Button
-                              variant="contained"
-                              onClick={() =>
-                                handleVersionViewScenario(scenario)
-                              }
-                              sx={{
-                                minWidth: 40,
-                                height: 32,
-                                mb: 0.25,
-                              }}
-                            >
-                              <BuildIcon />
-                            </Button>
-                          )}
-                        </Box>
-                      </>
-                    )}
                   </Box>
                 </Box>
 
@@ -876,10 +977,7 @@ const ScenarioList = () => {
                       type="button"
                       variant="contained"
                       color="inherit"
-                      onClick={() => {
-                        setMode(null);
-                        setSelectedScenario(false);
-                      }}
+                      onClick={handleCloseScenario}
                     >
                       {t("CLOSE")}
                     </Button>

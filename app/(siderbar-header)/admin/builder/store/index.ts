@@ -773,7 +773,15 @@ export const useBuilderStore = create<StoreState>((set, get) => ({
             nextStyle.height = 50;
           } else {
             const children = state.nodes.filter((c) => c.parentNode === nodeId);
-            if (children.length) {
+            if (n.type === "selectionGroup") {
+              nextStyle.width = 640;
+              nextStyle.height = Math.max(
+                260,
+                ...children.map((child) =>
+                  child.position.y + (child.height || Number(child.style?.height) || 150) + 60,
+                ),
+              );
+            } else if (children.length) {
               let minX = Infinity,
                 minY = Infinity,
                 maxX = 0,

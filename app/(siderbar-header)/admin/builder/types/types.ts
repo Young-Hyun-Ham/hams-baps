@@ -1,7 +1,7 @@
 import { Timestamp } from "next/dist/server/lib/cache-handlers/types";
 import { Node } from "reactflow";
 
-export type ScenarioType = "unit" | "multi" | "sub";
+export type ScenarioType = "agent" | "multi" | "sub";
 
 type Scenario = {
   id?: string;

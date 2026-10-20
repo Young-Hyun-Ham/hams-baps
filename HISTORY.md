@@ -19,6 +19,29 @@ HAMS-BAPS의 사용자 동작, API, 데이터 구조, 설정, 운영 문서 변�
 
 ### Changed
 
+- 2026-10-20: Limited Delay Value to four integer digits (maximum 9999, decimals retained), narrowed its input and widened Unit to avoid clipping. Targeted lint, diff checks and six duration tests passed. Browser visual validation and full build were not repeated for this input/layout adjustment.
+
+- 2026-10-20: Delay nodes now open a numeric S/M/H duration editor on double-click, with preview, validation, Apply/Cancel, Enter/Escape and undo/redo. Millisecond execution values remain compatible; the selected display unit is retained. Lint, diff checks and five conversion/validation tests passed. Full build compiled successfully but type checking failed on the existing scenarioTabs.ts:7 mismatch. Browser interaction and live database writes were not verified. See [work log](docs/job/20261020/delay-duration-editor.md).
+
+- 2026-10-20: Canvas context menus now use measured dimensions and open upward with the pointer at their bottom when space below is insufficient. Right-side overflow opens left; an 8px viewport margin and internal scrolling keep menus accessible on small screens. Applied to canvas, node, edge and selection menus, including resize/content-size updates. Targeted lint and diff checks passed. Browser validation and full build were not repeated for this positioning change.
+
+- 2026-10-20: Added Add Delay Node to the edge context menu. It inserts a default 1-second Delay between the original endpoints, preserving handles and group sequence membership, with undo history. Increased edge-menu boundary spacing. Targeted lint and diff checks passed; TypeScript reported only the existing scenarioTabs.ts:7 mismatch. Browser interaction and full build were not repeated.
+
+- 2026-10-20: Removed canvas titles, title editing and floating Edit buttons from Y/N Branch and Delay nodes. Y/N, slot badges, duration labels and connection handles remain. Browser validation and full build were not repeated for this display-only change.
+
+- 2026-10-20: Group API success handles now use Bottom and error handles Right. Failure follows an explicit error edge or continues to the next child when unconnected; success continues below. Internal error edges survive sequence rebuilding and remain visible. Child-node context menus hide input/output position controls. Lint, core build and seven routing tests passed. Full build compilation passed; type checking remains blocked by the existing scenarioTabs.ts:7 mismatch. Browser interaction was not verified. See [work log](docs/job/20261020/group-api-routing.md).
+
+- 2026-10-20: Aligned group Edit with the description row. Standalone regular nodes now use 250px when collapsed and 420px when expanded, preserving group child sizes. Lint and diff checks passed. Browser visual validation and full build were not repeated for this layout change.
+
+- 2026-10-20: G now creates an empty expanded selection group without a minimum selection count. Group Edit is right-aligned; the header toggle collapses the body, children and canvas area together, and manual resizing is removed. Lint and diff checks passed. Build compilation passed, but type checking failed on the existing scenarioTabs.ts:7 ScenarioType/ScenarioTabKind mismatch. Browser interaction was not verified.
+
+- 2026-10-20: 시나리오 목록의 기본 정렬을 `lastUsedAt` 내림차순으로 변경했습니다. Firebase Timestamp와 API의 `last_used_at`을 처리하고 최근 사용일이 없는 항목은 뒤에 배치합니다. 정렬 선택 기본값도 Last Used Date로 변경했으며 브라우저 검증과 전체 빌드는 반복하지 않았습니다.
+- 2026-10-20: Firebase 시나리오 최초 생성 시 `lastUsedAt`을 서버 저장 시각으로 초기화하고 생성 응답에도 시각을 포함하도록 변경했습니다. 생성 경로와 diff를 확인했으며, 소규모 초기값 변경으로 전체 빌드와 실제 DB 쓰기 검증은 반복하지 않았습니다.
+- 2026-10-20: 시나리오 모달 헤더에 타입 배지·이름·최신 버전을 표시하고 오른쪽 X 닫기 버튼을 추가했습니다. 이름·타입은 폼 변경을 반영하며 X·CLOSE·ESC·배경 닫기는 공통 처리로 임시 생성 항목을 정리합니다. 브라우저 시각 검증과 전체 빌드는 이 헤더 변경에서 반복하지 않았습니다.
+- 2026-10-20: Flow edit 및 버전 조회로 이동하는 동안 편집 모달의 모드를 유지해 생성 폼으로 바뀌는 현상을 수정했습니다. 이동 함수의 상태 변경과 diff를 확인했으며, 브라우저 검증과 전체 빌드는 수행하지 않았습니다.
+- 2026-10-20: Firebase 시나리오 20개의 기존 문서 키를 UUID로 이전하고 이전 키를 `scenarioId`에 보존했습니다. 백업 후 하위 문서·연결 참조를 포함한 48개 문서와 기존 문서 삭제를 검증했습니다. 편집 모달에서 Name을 변경할 수 있으며 문서 ID와 버전 이력을 유지합니다. 테스트 5개와 lint는 통과했으며 빌드·타입 검사는 기존 `scenarioTabs.ts:7` 타입 불일치로 실패했습니다. [작업 및 검증 기록](docs/job/20261020/scenario-uuid-migration.md).
+- 2026-10-20: 시나리오 편집 모달 상단에 실제 노드·연결선 기반 흐름 섬네일과 최근 사용일, 변경 사용자 ID, 최신·배포 버전, 버전 조회 및 Flow edit 버튼을 배치했습니다. 변경 사용자 정보가 응답에 없으면 `-`로 표시합니다. lint와 빌드 컴파일은 통과했으며 타입 검사와 빌드의 타입 검증은 기존 `scenarioTabs.ts:7`의 `agent`/`ScenarioTabKind` 불일치로 실패했습니다. 브라우저 시각 검증은 수행하지 않았습니다.
+
 - 2026-10-19: Added Unit/Multi/Sub selection below Description in the New Job/edit dialog, defaulting legacy and new scenarios to Sub. Cards show the type at the upper left; creation, metadata edits, and definition-save payloads retain scenario_type. Live backend validation limits are recorded in the work log.
 
 - 2026-10-19: Moved scenario tabs into the top-left scenario menu with a Sub default icon, title/version rows, tab close controls, and a bottom Back list action. Switching restores cached graphs and preserves current scenario metadata; Firebase sub-scenario loading now receives its expected identifier shape.

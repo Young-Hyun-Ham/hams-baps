@@ -1,9 +1,6 @@
 import React, { memo, useLayoutEffect } from "react";
 import { Handle, Position, NodeProps, useUpdateNodeInternals } from "reactflow";
 import { Box, Typography } from "@mui/material";
-import NodeEditButton from "./NodeEditButton";
-import NodeTitle from "./NodeTitle";
-import titleStyles from "./ChatNodes.module.css";
 
 export interface YnBranchNodeData {
   id?: string;
@@ -199,10 +196,6 @@ const YnBranchNode = ({ id, data, selected }: NodeProps<YnBranchNodeData>) => {
           </>
         );
       })()}
-      <div className={titleStyles.compactNodeTitle}>
-        <NodeTitle id={id} typeLabel="Y/N Branch" />
-      </div>
-      <NodeEditButton id={id} floating />
     </Box>
   );
 };

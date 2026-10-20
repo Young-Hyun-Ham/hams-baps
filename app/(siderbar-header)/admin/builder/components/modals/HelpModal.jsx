@@ -1,7 +1,7 @@
 import { useState } from "react";
 import styles from "./HelpModal.module.css";
 
-// --- 👇 [수정] Delay Node 추가 및 Slot 구문 설명 수정 ---
+// --- Delay Node 추가 및 Slot 구문 설명 수정 ---
 const HelpManual = () => (
   <>
     <h2>1. Getting Started</h2>
@@ -51,14 +51,14 @@ const HelpManual = () => (
         <strong>Select Scenario</strong>: Click on a scenario name in the list
         to navigate to that scenario's editing screen.
       </li>
-      {/* --- 👇 [수정] Clone 기능 추가 --- */}
+      {/* --- Clone 기능 추가 --- */}
       <li>
         <strong>Edit/Clone/Delete Scenario</strong>: Use the <code>Edit</code>{" "}
         icon to change the name or job type, the <code>Clone</code> icon to
         duplicate the scenario with a new name, or the <code>Delete</code> icon
         to permanently remove the scenario.
       </li>
-      {/* --- 👆 [수정 끝] --- */}
+      {/* --- [끝] --- */}
     </ul>
 
     <h2>3. Board Usage</h2>
@@ -178,7 +178,7 @@ const HelpManual = () => (
             and JSON object/array types.
           </td>
         </tr>
-        {/* --- 👇 [추가] Delay Node --- */}
+        {/* --- Delay Node --- */}
         <tr>
           <td>
             <strong>Delay</strong>
@@ -189,7 +189,7 @@ const HelpManual = () => (
             any message to the user during the delay.
           </td>
         </tr>
-        {/* --- 👆 [추가 끝] --- */}
+        {/* --- [끝] --- */}
         <tr>
           <td>
             <strong>Link</strong>
@@ -241,7 +241,7 @@ const HelpManual = () => (
       You can store user input, data from API responses, LLM outputs, selected
       grid rows, or set them directly.
     </p>
-    {/* --- 👇 [수정] Slot 구문 설명 통일 --- */}
+    {/* --- Slot 구문 설명 통일 --- */}
     <p>
       To use a stored slot value within node content (like messages, prompts,
       URLs, API bodies, etc.), use the <strong>curly brace notation</strong>:{" "}
@@ -254,7 +254,7 @@ const HelpManual = () => (
       (top-left of the canvas) shows the current values of all slots during
       simulation.
     </p>
-    {/* --- 👆 [수정 끝] --- */}
+    {/* --- [끝] --- */}
 
     <h4>6.2.1. Dynamic Options/Data (Slot Binding)</h4>
     <p>
@@ -280,7 +280,7 @@ const HelpManual = () => (
             the name of the slot holding the array (e.g., <code>user_list</code>
             ).
           </li>
-          {/* --- 💡 [수정] Grid 'Display Labels' 설명 변경 --- */}
+          {/* --- Grid 'Display Labels' 설명 변경 --- */}
           <li>
             (Grid specific) Optionally specify 'Display Labels' using{" "}
             <code>key(Label)</code> syntax (e.g.,{" "}
@@ -288,7 +288,7 @@ const HelpManual = () => (
             omitted, the key is used as the label. You can also check 'Hide
             Columns with Null Values'.
           </li>
-          {/* --- 💡 [수정 끝] --- */}
+          {/* --- [끝] --- */}
           <li>
             Fallback options/data entered manually will be used if the slot is
             empty or invalid.
@@ -319,13 +319,13 @@ const HelpManual = () => (
         call. The node proceeds to 'On Success' only if *all* calls succeed,
         otherwise to 'On Error'.
       </li>
-      {/* --- 👇 [수정] Slot 구문 설명 수정 --- */}
+      {/* --- Slot 구문 설명 수정 --- */}
       <li>
         <strong>Dynamic Requests</strong>: Use slots (e.g.,{" "}
         <code>{`{{userId}}`}</code>) in the URL, Headers (JSON string values),
         or Body (JSON string values) fields to make dynamic API calls.
       </li>
-      {/* --- 👆 [수정 끝] --- */}
+      {/* --- [끝] --- */}
       <li>
         <strong>Response Mapping</strong>: Extract values from the JSON response
         using JSON Path (e.g., <code>data.user.name</code>,{" "}
@@ -403,7 +403,7 @@ const HelpManual = () => (
       </li>
     </ul>
 
-    {/* --- 👇 [추가] chainNext 기능 설명 --- */}
+    {/* --- chainNext 기능 설명 --- */}
     <h3>6.8. Chaining Bubbles (No New Bubble)</h3>
     <ul>
       <li>
@@ -428,9 +428,9 @@ const HelpManual = () => (
         (like Form, SlotFilling, or Button Branch) is reached.
       </li>
     </ul>
-    {/* --- 👆 [추가 끝] --- */}
+    {/* --- [끝] --- */}
 
-    {/* --- 👇 [수정] 섹션 번호 변경 6.8 -> 6.9 --- */}
+    {/* --- 섹션 번호 변경 6.8 -> 6.9 --- */}
     <h3>6.9. Setting the Start Node</h3>
     <ul>
       <li>
@@ -452,9 +452,9 @@ const HelpManual = () => (
         The currently set Start Node ID is saved along with the scenario data.
       </li>
     </ul>
-    {/* --- 👆 [수정 끝] --- */}
+    {/* --- [끝] --- */}
 
-    {/* --- 👇 [수정] 섹션 번호 변경 6.9 -> 6.10 --- */}
+    {/* --- 섹션 번호 변경 6.9 -> 6.10 --- */}
     <h3>6.10. Save and Test</h3>
     <ul>
       <li>
@@ -469,7 +469,7 @@ const HelpManual = () => (
         node).
       </li>
     </ul>
-    {/* --- 👆 [수정 끝] --- */}
+    {/* --- [끝] --- */}
   </>
 );
 
@@ -516,14 +516,14 @@ const HelpManual_ko = () => (
         <strong>시나리오 선택</strong>: 목록에서 시나리오 이름을 클릭하면 해당
         시나리오의 편집 화면으로 이동합니다.
       </li>
-      {/* --- 👇 [수정] Clone 기능 추가 --- */}
+      {/* --- Clone 기능 추가 --- */}
       <li>
         <strong>시나리오 수정/복제/삭제</strong>: 각 항목 옆의 <code>수정</code>{" "}
         아이콘으로 이름이나 Job 타입을 변경하고, <code>복제</code> 아이콘으로
         시나리오를 새 이름으로 복제하며, <code>삭제</code> 아이콘으로 시나리오를
         영구적으로 제거합니다.
       </li>
-      {/* --- 👆 [수정 끝] --- */}
+      {/* --- [끝] --- */}
     </ul>
 
     <h2>3. 게시판 사용법</h2>
@@ -656,7 +656,7 @@ const HelpManual_ko = () => (
             지원합니다.
           </td>
         </tr>
-        {/* --- 👇 [추가] Delay Node --- */}
+        {/* --- Delay Node --- */}
         <tr>
           <td>
             <strong>딜레이</strong>
@@ -667,7 +667,7 @@ const HelpManual_ko = () => (
             않습니다.
           </td>
         </tr>
-        {/* --- 👆 [추가 끝] --- */}
+        {/* --- [끝] --- */}
         <tr>
           <td>
             <strong>링크</strong>
@@ -718,7 +718,7 @@ const HelpManual_ko = () => (
       입력, API 응답, LLM 출력, 선택된 그리드 행 데이터 등을 저장하거나 직접
       설정할 수 있습니다.
     </p>
-    {/* --- 👇 [수정] Slot 구문 설명 통일 --- */}
+    {/* --- Slot 구문 설명 통일 --- */}
     <p>
       노드 내용(메시지, 프롬프트, URL, API 본문 등) 안에서 저장된 슬롯 값을
       사용하려면 <strong>이중 중괄호 표기법</strong>:{" "}
@@ -730,7 +730,7 @@ const HelpManual_ko = () => (
       과 같이 사용할 수 있습니다. 캔버스 좌측 상단의 슬롯 표시 패널은 시뮬레이션
       중 현재 모든 슬롯의 값을 보여줍니다.
     </p>
-    {/* --- 👆 [수정 끝] --- */}
+    {/* --- [끝] --- */}
 
     <h4>6.2.1. 동적 옵션/데이터 (슬롯 바인딩)</h4>
     <p>
@@ -752,14 +752,14 @@ const HelpManual_ko = () => (
             'Options Slot'(Dropbox) 또는 'Data Slot'(Grid) 필드에 배열을 담고
             있는 슬롯 이름을 입력합니다(예: <code>user_list</code>).
           </li>
-          {/* --- 💡 [수정] Grid 'Display Labels' 설명 변경 --- */}
+          {/* --- Grid 'Display Labels' 설명 변경 --- */}
           <li>
             (Grid 전용) 선택적으로 <code>key(Label)</code> 형식(예:{" "}
             <code>name(내 이름),email</code>)을 사용하여 'Display Labels'를
             지정할 수 있습니다. <code>(Label)</code>을 생략하면 키 값이 레이블로
             사용됩니다. 'Hide Columns with Null Values'도 체크할 수 있습니다.
           </li>
-          {/* --- 💡 [수정 끝] --- */}
+          {/* --- [끝] --- */}
           <li>
             슬롯이 비어있거나 유효하지 않으면 수동으로 입력된 대체(Fallback)
             옵션/데이터가 사용됩니다.
@@ -790,13 +790,13 @@ const HelpManual_ko = () => (
         개별적으로 설정합니다. *모든* 호출이 성공해야 'On Success'로 진행되며,
         하나라도 실패하면 'On Error'로 진행됩니다.
       </li>
-      {/* --- 👇 [수정] Slot 구문 설명 수정 --- */}
+      {/* --- Slot 구문 설명 수정 --- */}
       <li>
         <strong>동적 요청</strong>: URL, Headers(JSON 문자열 값), Body(JSON
         문자열 값) 필드에 슬롯(예: <code>{`{{userId}}`}</code>)을 사용하여
         동적인 API를 호출할 수 있습니다.
       </li>
-      {/* --- 👆 [수정 끝] --- */}
+      {/* --- [끝] --- */}
       <li>
         <strong>응답 매핑</strong>: JSON Path(예: <code>data.user.name</code>,{" "}
         <code>data.items[0].product</code>)를 사용하여 JSON 응답에서 값을
@@ -871,7 +871,7 @@ const HelpManual_ko = () => (
       </li>
     </ul>
 
-    {/* --- 👇 [추가] chainNext 기능 설명 --- */}
+    {/* --- chainNext 기능 설명 --- */}
     <h3>6.8. 말풍선 묶기 (No New Bubble)</h3>
     <ul>
       <li>
@@ -894,9 +894,9 @@ const HelpManual_ko = () => (
         만나면 중단되고 새 말풍선이 시작됩니다.
       </li>
     </ul>
-    {/* --- 👆 [추가 끝] --- */}
+    {/* --- [끝] --- */}
 
-    {/* --- 👇 [수정] 섹션 번호 변경 6.8 -> 6.9 --- */}
+    {/* --- 섹션 번호 변경 6.8 -> 6.9 --- */}
     <h3>6.9. 시작 노드 설정</h3>
     <ul>
       <li>
@@ -913,9 +913,9 @@ const HelpManual_ko = () => (
       </li>
       <li>현재 설정된 시작 노드 ID는 시나리오 데이터와 함께 저장됩니다.</li>
     </ul>
-    {/* --- 👆 [수정 끝] --- */}
+    {/* --- [끝] --- */}
 
-    {/* --- 👇 [수정] 섹션 번호 변경 6.9 -> 6.10 --- */}
+    {/* --- 섹션 번호 변경 6.9 -> 6.10 --- */}
     <h3>6.10. 저장 및 테스트</h3>
     <ul>
       <li>
@@ -929,11 +929,11 @@ const HelpManual_ko = () => (
         노드(또는 추론된 시작 노드)부터 테스트를 시작합니다.
       </li>
     </ul>
-    {/* --- 👆 [수정 끝] --- */}
+    {/* --- [끝] --- */}
   </>
 );
 
-// --- 👇 [수정] 베트남어 번역 (Delay Node 추가, Slot 구문 수정, Start Node 설명 추가 등) ---
+// --- 베트남어 번역 (Delay Node 추가, Slot 구문 수정, Start Node 설명 추가 등) ---
 const HelpManual_vi = () => (
   <>
     <h2>1. Bắt đầu</h2>
@@ -1210,14 +1210,14 @@ const HelpManual_vi = () => (
             Trong trường 'Options Slot' (Dropbox) hoặc 'Data Slot' (Lưới), nhập
             tên của slot chứa mảng (ví dụ: <code>user_list</code>).
           </li>
-          {/* --- 💡 [수정] Grid 'Display Labels' 설명 변경 --- */}
+          {/* --- Grid 'Display Labels' 설명 변경 --- */}
           <li>
             (Chỉ Lưới) Tùy chọn chỉ định 'Display Labels' bằng cú pháp{" "}
             <code>key(Label)</code> (ví dụ: <code>name(Tên tôi),email</code>).
             Nếu <code>(Label)</code> bị bỏ qua, khóa sẽ được sử dụng làm nhãn.
             Bạn cũng có thể chọn 'Hide Columns with Null Values'.
           </li>
-          {/* --- 💡 [수정 끝] --- */}
+          {/* --- [끝] --- */}
           <li>
             Các tùy chọn/dữ liệu dự phòng được nhập thủ công sẽ được sử dụng nếu
             slot trống hoặc không hợp lệ.
@@ -1337,7 +1337,7 @@ const HelpManual_vi = () => (
       </li>
     </ul>
 
-    {/* --- 👇 [추가] chainNext 기능 설명 --- */}
+    {/* --- chainNext 기능 설명 --- */}
     <h3>6.8. Nối chuỗi bong bóng (No New Bubble)</h3>
     <ul>
       <li>
@@ -1363,9 +1363,9 @@ const HelpManual_vi = () => (
         bấm).
       </li>
     </ul>
-    {/* --- 👆 [추가 끝] --- */}
+    {/* --- [끝] --- */}
 
-    {/* --- 👇 [수정] 섹션 번호 변경 6.8 -> 6.9 --- */}
+    {/* --- 섹션 번호 변경 6.8 -> 6.9 --- */}
     <h3>6.9. Thiết lập Node Bắt đầu</h3>
     <ul>
       <li>
@@ -1387,9 +1387,9 @@ const HelpManual_vi = () => (
         ID Node Bắt đầu hiện được đặt sẽ được lưu cùng với dữ liệu kịch bản.
       </li>
     </ul>
-    {/* --- 👆 [수정 끝] --- */}
+    {/* --- [끝] --- */}
 
-    {/* --- 👇 [수정] 섹션 번호 변경 6.9 -> 6.10 --- */}
+    {/* --- 섹션 번호 변경 6.9 -> 6.10 --- */}
     <h3>6.10. Lưu và Kiểm tra</h3>
     <ul>
       <li>
@@ -1404,10 +1404,10 @@ const HelpManual_vi = () => (
         bắt đầu được suy ra).
       </li>
     </ul>
-    {/* --- 👆 [수정 끝] --- */}
+    {/* --- [끝] --- */}
   </>
 );
-// --- 👆 [수정 끝] ---
+// --- [끝] ---
 
 function HelpModal({ isOpen, onClose }) {
   const [language, setLanguage] = useState("en");

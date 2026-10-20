@@ -1,4 +1,5 @@
 import { useCallback, useRef } from "react";
+import { resolveGroupApiNextNode } from "@/core/scenario-core/src/engine/groupApiRouting";
 import { useTranslation } from "react-i18next";
 
 import { useBuilderStore } from "../../../store/index";
@@ -320,16 +321,22 @@ export function useBuilderExecution({ nodes, edges }: UseBuilderExecutionArgs) {
 
   const findNextNode = useCallback(
     (sourceNodeId: string, sourceHandle?: string | null) => {
+      const groupApiNext = resolveGroupApiNextNode(
+        { nodes: nodes as any, edges, version: "1.0" },
+        sourceNodeId,
+        sourceHandle ?? null,
+      );
+      if (groupApiNext) return groupApiNext;
       let nextEdge: BuilderEdge | undefined;
 
-      if (sourceHandle) {
+      if (sourceHandle && groupApiNext === undefined) {
         nextEdge = edges.find(
           (edge) =>
             edge.source === sourceNodeId && edge.sourceHandle === sourceHandle,
         );
       }
 
-      if (!nextEdge) {
+      if (!nextEdge && groupApiNext === undefined) {
         const sourceNode = getNodeById(sourceNodeId);
         nextEdge =
           edges.find(
@@ -382,7 +389,7 @@ export function useBuilderExecution({ nodes, edges }: UseBuilderExecutionArgs) {
       }
       return getNodeById(nextEdge.target);
     },
-    [edges, getNodeById],
+    [nodes, edges, getNodeById],
   );
 
   const getChildNodes = useCallback(
@@ -604,7 +611,8 @@ export function useBuilderExecution({ nodes, edges }: UseBuilderExecutionArgs) {
       } catch (error: any) {
         const errorNextNode = findNextNode(node.id, "onError");
 
-        if (!errorNextNode) {
+        const parent = getNodeById(node.parentNode);
+        if (!errorNextNode && parent?.type !== "selectionGroup") {
           throw new Error(
             error?.message ||
               "API request failed and no onError edge is connected.",
@@ -623,7 +631,7 @@ export function useBuilderExecution({ nodes, edges }: UseBuilderExecutionArgs) {
         };
       }
     },
-    [findNextNode, setSlots],
+    [findNextNode, getNodeById, setSlots],
   );
 
   const executeLlmNode = useCallback(

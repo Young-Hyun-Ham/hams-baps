@@ -213,7 +213,7 @@ function BranchNode(props) {
     // 4. NodeWrapper로 감싸기
     <NodeWrapper
       id={id}
-      typeLabel={t("Condition Branch")}
+      typeLabel={t("Branch")}
       icon={<NodeTypeIcon type="branch" />}
       nodeColor={nodeColor}
       textColor={textColor}

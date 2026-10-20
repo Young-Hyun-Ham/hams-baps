@@ -7,8 +7,31 @@
   - `store/historyStore.ts`
   - 전역 `useStore`
 
+Standalone regular nodes use a 250px collapsed width and a 420px expanded width. Nodes inside groups retain their current size. Group Edit sits on the same row as the description.
+
+Within selection groups, API success handles are fixed to Bottom and failure handles to Right. Success continues to the next ordered child; failure follows an explicit onError edge when connected, otherwise it continues to the next child. The last API exits through the group continuation. Internal failure edges remain visible and survive automatic sequence rebuilding. Input/output position controls are hidden in the context menu for group children.
+
+Double-click a Delay node to edit its duration in a popover: a positive numeric value (up to 9999, decimals allowed), S/M/H units, a total-delay preview, Cancel and Apply. The Value field is narrow and the Unit field has at least 156px to keep its label visible. Changing units retains the numeric input. Enter from the numeric field applies; Escape, Cancel or clicking outside discards the draft. Unit selection retains its normal keyboard behavior. The duration remains stored in milliseconds, with durationUnit retaining the chosen display unit. Legacy nodes default to seconds. Validation requires at least 1ms and rejects durations above the browser timer limit (2,147,483,647ms). Apply uses the existing modification permissions and undo/redo history. Other node types do not open this editor.
+
+Y/N Branch and Delay nodes do not display a title or Edit button on the canvas. Their Y/N and duration labels, slot badges and handles remain visible.
+
+Canvas, node, edge and selection context menus measure their rendered dimensions before paint. When the menu would cross the bottom edge, it opens upward with its bottom at the pointer. Right-edge overflow opens the menu to the left. All menus stay within an 8px viewport margin and scroll internally if taller than the viewport; resizing and content-size changes trigger repositioning.
+
+Right-click an edge and choose Add Delay Node to insert a default 1-second Delay at the click position. The original edge becomes source -> Delay -> target, preserving the source output and target input handles. Sequence insertions inside a shared group retain group membership and are automatically laid out. The operation is included in undo history.
+
+G creates an empty expanded selection group when no eligible nodes are selected. Selected regular nodes can still be grouped. The group header toggle collapses the body, children and canvas area together. Group size follows its contents; manual resizing is removed. Edit is aligned to the right of the group body.
+
 ## 주요 동작
 
+- 시나리오 목록은 기본적으로 최근 사용일(`lastUsedAt`, API 응답은 `last_used_at`) 내림차순으로 표시한다. Firebase Timestamp도 비교하며 사용일이 없거나 유효하지 않은 항목은 뒤에 배치한다. Sort Order에서 이름·최근 수정일·배포순 정렬로 변경할 수 있다.
+- Firebase 시나리오 최초 저장 시 `lastUsedAt`도 `createdAt`·`updatedAt`과 함께 서버 시각으로 초기화한다.
+- 시나리오 모달 헤더는 타입 배지, 이름, 최신 버전을 표시하며 미발행 시 Draft로 표시한다. 이름·타입은 폼 입력에 따라 갱신되며, 오른쪽 X와 하단 CLOSE 및 ESC·배경 클릭은 같은 닫기 처리를 사용해 생성 취소 시 임시 항목을 제거한다.
+- Flow edit와 버전 조회로 이동할 때는 편집 모달의 모드와 내용을 유지하고, 목적 화면 전환 시 목록 화면과 함께 모달이 해제된다.
+- 편집 모달의 Name을 수정하고 저장할 수 있으며 공백 이름은 저장하지 않는다. Firebase에서는 문서 UUID를 유지하고 `name`만 갱신하므로 버전·배포 이력 경로는 유지된다.
+- 기존 이름 기반 Firebase 문서 ID의 UUID 이전 스크립트와 검증 절차는 [마이그레이션 기록](../../../job/20261020/scenario-uuid-migration.md)을 참고한다. 이전 ID는 `scenarioId`에 보존하며 새 조회 결과의 `id`는 실제 문서 UUID이다.
+- 시나리오 목록의 편집 모달 상단 왼쪽에는 저장된 노드·연결선을 축소한 SVG 섬네일을 표시하며 그룹 내부 노드의 상대 좌표를 반영한다. 노드가 없으면 안내 문구를 표시한다.
+- 상단 오른쪽에는 Last Used Date, Last Editor, Latest Version, Deploy Version과 BuildIcon 버전 조회 버튼을 표시한다. 변경 사용자 ID는 상세 응답의 `upd_user_id`, `updated_by`, `updatedBy` 순으로 확인하며 값이 없으면 `-`로 표시한다. 서버의 변경 사용자 기록 기능을 새로 추가하지는 않는다.
+- 요약 영역 하단의 Flow edit 버튼은 기존 시나리오 상세 편집 화면으로 이동하며, 좁은 화면에서는 섬네일과 정보를 세로로 배치한다.
 - 시나리오 목록 조회, 선택, 생성, 이름 수정, 삭제
 - 선택한 시나리오를 React Flow 상세 편집 화면으로 전환
 - 노드 추가, 드래그 배치, 연결, 삭제, 복제, import/export

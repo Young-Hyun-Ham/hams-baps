@@ -32,11 +32,6 @@ export function createGroupActionStore(
           node.type !== "selectionGroup",
       );
 
-      if (selectedNodes.length < 2) {
-        alert("그룹화하려면 2개 이상의 최상위 노드를 선택해야 합니다.");
-        return;
-      }
-
       const selectedIds = new Set(selectedNodes.map((node) => node.id));
 
       const internalEdges = curEdges.filter(
@@ -69,8 +64,8 @@ export function createGroupActionStore(
       const MIN_GROUP_W = 420;
       const MIN_GROUP_H = 260;
 
-      let minX = Infinity;
-      let minY = Infinity;
+      let minX = selectedNodes.length ? Infinity : 160;
+      let minY = selectedNodes.length ? Infinity : 160;
       let maxX = 0;
       let maxY = 0;
 

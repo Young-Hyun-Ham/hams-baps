@@ -86,7 +86,8 @@ export function subscribeMessages(
 export const fetchScenarioDatas = async ({ scenarioId }: any) => {
   if (!scenarioId)
     return { nodes: [], edges: [], startNodeId: null, description: "" };
-  const scenarioDocRef = doc(db, "scenarios", scenarioId);
+  const { resolveScenarioRef } = await import("@/lib/firebaseScenarioRef");
+  const scenarioDocRef = await resolveScenarioRef(scenarioId);
   const docSnap = await getDoc(scenarioDocRef);
   if (docSnap.exists()) {
     const data = docSnap.data();
