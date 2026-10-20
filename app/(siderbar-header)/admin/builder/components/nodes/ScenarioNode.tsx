@@ -25,6 +25,10 @@ function ScenarioNode({ id, data }: { id: string; data: any }) {
     (state) => state.toggleScenarioNode,
   );
   const deleteNode = useBuilderStore((state) => state.deleteNode);
+  const isGroupChild = useBuilderStore((state) => {
+    const node = state.nodes.find((item) => item.id === id);
+    return state.nodes.some((item) => item.id === node?.parentNode && item.type === "selectionGroup");
+  });
   const updateNodeInternals = useUpdateNodeInternals();
 
   const isCollapsed = data.isCollapsed !== false;
@@ -36,11 +40,11 @@ function ScenarioNode({ id, data }: { id: string; data: any }) {
 
   useLayoutEffect(() => {
     updateNodeInternals(id);
-  }, [id, inputPos, outputPos, updateNodeInternals]);
+  }, [id, inputPos, outputPos, isGroupChild, updateNodeInternals]);
 
   return (
     <div
-      className={`${styles.nodeWrapper} ${styles.scenarioNodeWrapper} ${isStartNode ? styles.startNode : ""}`}
+      className={`${styles.nodeWrapper} ${isGroupChild ? styles.groupChildNode : ""} ${styles.scenarioNodeWrapper} ${isStartNode ? styles.startNode : ""}`}
       style={
         isCollapsed
           ? { height: "50px", width: "450px" }

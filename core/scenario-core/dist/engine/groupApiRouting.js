@@ -8,7 +8,7 @@ function resolveGroupApiNextNode(scenario, nodeId, handle) {
     if (node?.type !== "api" || parent?.type !== "selectionGroup")
         return undefined;
     if (handle === "onError") {
-        const errorEdge = scenario.edges.find((edge) => edge.source === nodeId && edge.sourceHandle === "onError");
+        const errorEdge = scenario.edges.find((edge) => edge.source === nodeId && edge.sourceHandle === "onError") ?? scenario.edges.find((edge) => edge.source === nodeId && edge.sourceHandle === "onFail");
         if (errorEdge) {
             return scenario.nodes.find((item) => item.id === errorEdge.target) ?? null;
         }

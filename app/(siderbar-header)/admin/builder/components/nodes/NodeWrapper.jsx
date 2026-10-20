@@ -81,6 +81,7 @@ function NodeWrapper({
   const isRunningNode = executionRunning && executionCurrentNodeId === id;
   const isCompletedNode = executionCompletedNodeIds.includes(id);
 
+  const nodeType = useBuilderStore((state) => state.nodes.find((node) => node.id === id)?.type);
   const storeNodeData = useBuilderStore(
     (state) => state.nodes.find((n) => n.id === id)?.data,
   );
@@ -124,7 +125,8 @@ function NodeWrapper({
 
   return (
     <div
-      className={`${styles.nodeWrapper} ${isAnchored ? styles.anchored : ""} ${isStartNode ? styles.startNode : ""} ${customClassName}`}
+      data-node-type={nodeType}
+      className={`${styles.nodeWrapper} ${isSelectionGroupChild ? styles.groupChildNode : ""} ${isAnchored ? styles.anchored : ""} ${isStartNode ? styles.startNode : ""} ${customClassName}`}
       style={{
         ...style,
         ...(isStandaloneRegularNode

@@ -13,6 +13,8 @@ export function resolveGroupApiNextNode(
   if (handle === "onError") {
     const errorEdge = scenario.edges.find(
       (edge) => edge.source === nodeId && edge.sourceHandle === "onError",
+    ) ?? scenario.edges.find(
+      (edge) => edge.source === nodeId && edge.sourceHandle === "onFail",
     );
     if (errorEdge) {
       return scenario.nodes.find((item) => item.id === errorEdge.target) ?? null;

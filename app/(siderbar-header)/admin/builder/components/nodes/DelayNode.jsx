@@ -1,3 +1,4 @@
+import styles from "./ChatNodes.module.css";
 import React, { memo, useLayoutEffect, useState } from "react";
 import { Handle, Position, useUpdateNodeInternals } from "reactflow";
 import {
@@ -20,6 +21,10 @@ import {
 } from "../../utils/delayDuration";
 
 const DelayNode = ({ id, data, selected }) => {
+  const isGroupChild = useBuilderStore((state) => {
+    const node = state.nodes.find((item) => item.id === id);
+    return state.nodes.some((item) => item.id === node?.parentNode && item.type === "selectionGroup");
+  });
   const updateNodeInternals = useUpdateNodeInternals();
   const { t } = useTranslation();
   const { showAlert } = useModal();
@@ -85,7 +90,7 @@ const DelayNode = ({ id, data, selected }) => {
 
   useLayoutEffect(() => {
     updateNodeInternals(id);
-  }, [id, inputPos, outputPos, updateNodeInternals]);
+  }, [id, inputPos, outputPos, isGroupChild, updateNodeInternals]);
 
   const displayTime = formatDelayDuration(
     Number(data?.duration),
@@ -95,6 +100,8 @@ const DelayNode = ({ id, data, selected }) => {
   return (
     <>
       <Box
+        className={isGroupChild ? styles.groupChildNode : undefined}
+        data-node-type="delay"
         onDoubleClick={openEditor}
         title={t("Double-click to edit delay")}
         sx={{

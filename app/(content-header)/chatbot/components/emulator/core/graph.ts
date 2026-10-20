@@ -1,5 +1,6 @@
 // app/(content-header)/chatbot/components/emulator/core/graph.ts
 import type { AnyEdge, AnyNode } from "../../../types";
+import { resolveGroupApiNextNode } from "@/core/scenario-core/src/engine/groupApiRouting";
 
 function isGroupNode(node: AnyNode | null | undefined) {
   return node?.type === "scenario" || node?.type === "selectionGroup";
@@ -16,6 +17,10 @@ function getOutgoingEdge(
   if (handle) {
     const matched = candidates.find((e) => e.sourceHandle === handle);
     if (matched) return matched;
+    if (handle === "onError") {
+      const legacyError = candidates.find((e) => e.sourceHandle === "onFail");
+      if (legacyError) return legacyError;
+    }
   }
 
   const defaultEdge = candidates.find((e) => e.sourceHandle === "default");
@@ -83,6 +88,18 @@ export function findNextExecutableNode(
 ): AnyNode | null {
   const currentNode = nodes.find((n) => n.id === currentId) ?? null;
   if (!currentNode) return null;
+
+  const groupApiNext = resolveGroupApiNextNode(
+    { nodes, edges, version: "1.0" },
+    currentId,
+    handle === "onFail" ? "onError" : (handle ?? null),
+  );
+  if (groupApiNext !== undefined) {
+    if (groupApiNext) return resolveExecutableNode(nodes, edges, groupApiNext);
+    return currentNode.parentNode
+      ? findNextExecutableNode(nodes, edges, currentNode.parentNode, null)
+      : null;
+  }
 
   const nextEdge = getOutgoingEdge(edges, currentId, handle);
 

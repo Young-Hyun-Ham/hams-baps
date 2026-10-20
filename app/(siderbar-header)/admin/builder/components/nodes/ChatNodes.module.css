@@ -823,3 +823,16 @@
   border: 0;
   background: transparent;
 }
+
+/* Keep invisible sequence handles measurable for React Flow's stored edges. */
+.groupChildNode :global(.react-flow__handle) {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.groupChildNode[data-node-type="api"] :global(.react-flow__handle.source[data-handleid="onError"]),
+.groupChildNode[data-node-type="branch"] :global(.react-flow__handle.source),
+.groupChildNode[data-node-type="ynBranch"] :global(.react-flow__handle.source) {
+  visibility: visible;
+  pointer-events: auto;
+}

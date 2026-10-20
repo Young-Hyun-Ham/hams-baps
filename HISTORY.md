@@ -19,6 +19,10 @@ HAMS-BAPS의 사용자 동작, API, 데이터 구조, 설정, 운영 문서 변�
 
 ### Changed
 
+- 2026-10-20: Fixed the active builder simulator requesting onFail instead of onError and falling back to the first outgoing edge after API failure. Its auto runner and graph resolver now share selection-group API routing: explicit Error wins; unconnected failures continue below; success follows child order. Legacy onFail remains supported. Lint, core compilation and 14 routing tests passed, including seven tests exercising the actual emulator runner/hook/graph with simulated HTTP 503 and network failures. Full build compilation passed but type checking failed on the existing scenarioTabs.ts:7 mismatch. Browser interaction and live API calls were not verified. See [routing work log](docs/job/20261020/group-api-routing.md).
+
+- 2026-10-20: Hid input/ordinary output connectors for selection-group children while retaining sequence edges and execution. API Error and Branch/Y-N outputs remain visible on the right. Explicit branch edges now survive group sequence rebuilding and remain visible alongside API failure routes. Lint and diff checks passed; type checking reported only the existing scenarioTabs.ts:7 mismatch. Browser visual validation and full build were not repeated for this presentation/filter change.
+
 - 2026-10-20: Limited Delay Value to four integer digits (maximum 9999, decimals retained), narrowed its input and widened Unit to avoid clipping. Targeted lint, diff checks and six duration tests passed. Browser visual validation and full build were not repeated for this input/layout adjustment.
 
 - 2026-10-20: Delay nodes now open a numeric S/M/H duration editor on double-click, with preview, validation, Apply/Cancel, Enter/Escape and undo/redo. Millisecond execution values remain compatible; the selected display unit is retained. Lint, diff checks and five conversion/validation tests passed. Full build compiled successfully but type checking failed on the existing scenarioTabs.ts:7 mismatch. Browser interaction and live database writes were not verified. See [work log](docs/job/20261020/delay-duration-editor.md).

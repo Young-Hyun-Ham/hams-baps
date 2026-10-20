@@ -1,6 +1,8 @@
+import styles from "./ChatNodes.module.css";
 import React, { memo, useLayoutEffect } from "react";
 import { Handle, Position, NodeProps, useUpdateNodeInternals } from "reactflow";
 import { Box, Typography } from "@mui/material";
+import { useBuilderStore } from "../../store";
 
 export interface YnBranchNodeData {
   id?: string;
@@ -14,16 +16,22 @@ export interface YnBranchNodeData {
 const YnBranchNode = ({ id, data, selected }: NodeProps<YnBranchNodeData>) => {
   const replyYId = data?.replies?.[0]?.value || "Y";
   const replyNId = data?.replies?.[1]?.value || "N";
+  const isGroupChild = useBuilderStore((state) => {
+    const node = state.nodes.find((item) => item.id === id);
+    return state.nodes.some((item) => item.id === node?.parentNode && item.type === "selectionGroup");
+  });
   const updateNodeInternals = useUpdateNodeInternals();
 
   const inputPos = data?.inputPosition === "top" ? Position.Top : Position.Left;
 
   useLayoutEffect(() => {
     updateNodeInternals(id);
-  }, [id, inputPos, updateNodeInternals]);
+  }, [id, inputPos, data?.outputPositions, isGroupChild, updateNodeInternals]);
 
   return (
     <Box
+      className={isGroupChild ? styles.groupChildNode : undefined}
+      data-node-type="ynBranch"
       sx={{
         width: 30,
         height: 30,
@@ -101,7 +109,7 @@ const YnBranchNode = ({ id, data, selected }: NodeProps<YnBranchNodeData>) => {
 
       {/* Output Y handle */}
       {(() => {
-        const posY = data?.outputPositions?.["Y"] || "right";
+        const posY = isGroupChild ? "right" : data?.outputPositions?.["Y"] || "right";
         const isBottomY = posY === "bottom";
 
         return (
@@ -150,7 +158,7 @@ const YnBranchNode = ({ id, data, selected }: NodeProps<YnBranchNodeData>) => {
 
       {/* Output N handle */}
       {(() => {
-        const posN = data?.outputPositions?.["N"] || "bottom";
+        const posN = isGroupChild ? "right" : data?.outputPositions?.["N"] || "bottom";
         const isRightN = posN === "right";
 
         return (

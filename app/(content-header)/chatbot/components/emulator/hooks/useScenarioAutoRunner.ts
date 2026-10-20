@@ -129,22 +129,7 @@ export function useScenarioAutoRunner(args: {
           const ok = await args.runApiNode(currentNode);
           if (cancelled) return;
 
-          if (!ok) {
-            const failNext = findNextExecutableNode(
-              args.nodes,
-              args.edges,
-              currentNode.id,
-              "onFail",
-            );
-            if (failNext) {
-              args.setCurrentNodeId(failNext.id);
-              return;
-            }
-            goNext("onSuccess");
-            return;
-          }
-
-          goNext("onSuccess");
+          goNext(ok ? "onSuccess" : "onError");
           return;
         }
 

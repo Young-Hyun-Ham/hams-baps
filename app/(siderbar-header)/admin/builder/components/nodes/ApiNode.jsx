@@ -97,6 +97,7 @@ function ApiNode({ id, data }) {
         style={successHandleStyle}
       />
       <span
+        hidden={isGroupChild}
         style={
           isSuccessBottom
             ? {

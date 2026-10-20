@@ -191,6 +191,10 @@ const nodeTypes = {
   ynBranch: YnBranchNode,
 } as const;
 
+const isBranchOutputEdge = (edge: Edge, sourceNode?: Node) =>
+  (sourceNode?.type === "branch" || sourceNode?.type === "ynBranch") &&
+  Boolean(edge.sourceHandle);
+
 const edgeTypes = {
   orthogonal: CustomOrthogonalEdge,
 };
@@ -380,6 +384,7 @@ const Flow = ({ scenario, scenarios }: any) => {
         // remain in state for execution, but the sequence line is not rendered.
         return !(
           edge.sourceHandle !== "onError" &&
+          !isBranchOutputEdge(edge, sourceNode) &&
           sharedParentId &&
           sharedParentId === targetNode?.parentNode &&
           nodeById.get(sharedParentId)?.type === "selectionGroup"
@@ -2006,7 +2011,7 @@ const Flow = ({ scenario, scenarios }: any) => {
         const nonSequenceEdges = edges
           .filter(
             (edge: Edge) =>
-              !(edge.sourceHandle !== "onError" && childIds.has(edge.source) && childIds.has(edge.target)),
+              !(edge.sourceHandle !== "onError" && !isBranchOutputEdge(edge, nodes.find((node: Node) => node.id === edge.source)) && childIds.has(edge.source) && childIds.has(edge.target)),
           )
           .map((edge: Edge) => {
             if (
@@ -2651,6 +2656,7 @@ const Flow = ({ scenario, scenarios }: any) => {
           const targetNode: any = currentNodeById.get(edge.target);
           return (
             edge.sourceHandle !== "onError" &&
+            !isBranchOutputEdge(edge, sourceNode) &&
             sourceNode?.parentNode === groupId &&
             targetNode?.parentNode === groupId
           );
@@ -2672,7 +2678,7 @@ const Flow = ({ scenario, scenarios }: any) => {
         sourceNode.parentNode === targetNode?.parentNode
           ? sourceNode.parentNode
           : null;
-      if (edge.sourceHandle !== "onError" && internalGroupId && groupsToReconnect.has(internalGroupId)) {
+      if (edge.sourceHandle !== "onError" && !isBranchOutputEdge(edge, sourceNode) && internalGroupId && groupsToReconnect.has(internalGroupId)) {
         hasEdgeChanges = true;
         return [];
       }
