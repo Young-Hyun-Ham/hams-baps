@@ -1,11 +1,24 @@
-# `/admin/builder`
+# `/admin/builder/react-flow/scenario-flow`
 
-- 파일: `app/(siderbar-header)/admin/builder/page.tsx`
+- 파일: `app/(siderbar-header)/admin/builder/react-flow/scenario-flow/page.tsx`
 - 목적: React Flow 기반 시나리오 빌더 관리자 화면
 - 주요 상태 관리
   - `useBuilderStore`
   - `store/historyStore.ts`
   - 전역 `useStore`
+
+## 퍼블리싱 스타일 적용 (2026-11-24)
+
+- 상세 Flow는 기존 전역 theme의 라이트·다크 값을 읽어 헤더·라이브러리·캔버스·미니맵·노드·속성 패널의 표면과 강조색을 맞춘다. 테마 설정을 새로 저장하지 않는다.
+- 공통 노드는 작은 타입 아이콘, 얇은 타입별 경계, 제목 말줄임, 펼친 본문의 우측 Edit를 사용한다. 설정된 노드 색과 제목 전체 값은 보존한다.
+- 그룹 헤더에 직접 자식 노드 수를 표시하고 하단 안쪽의 원형 +로 기존 추가 동작을 실행한다. 설명·그룹 Edit·빈 그룹 생성과 기존 크기 계산은 유지한다.
+- 더보기는 Edit·시작·앵커·타입별 액션·삭제를 제공한다. API 테스트와 Ungroup도 보존한다.
+- 우측 패널에는 타입 헤더·닫기, BASIC 및 기존 Chain 설정의 BEHAVIOUR 구획, 고정 하단 Save Changes가 있다. 닫기는 로컬 초안을 저장하지 않는다. 좁은 화면에서는 캔버스 위로 패널을 겹쳐 표시한다.
+- `scenario-tab-menu`의 트리거·메뉴·스타일·탭 캐시와 타입 해석은 변경하지 않았다. 기존 `agent`/`unit` 타입 불일치는 별도 미해결 사항이다.
+- presentation context는 상세 Flow에 한정한다. 내부 Flow 편집·조회 모달은 context를 초기화하며, Orkes 전용 노드는 기존 외형을 사용한다.
+- Save·Publish의 기존 정의 저장·버전 생성 의미와 그룹 내부 핸들/순서선 숨김을 유지한다. 미저장 가드·실제 배포·새 분기 편입 정책은 추가하지 않았다. DB 변경은 없다.
+
+[작업·검증 기록](../../../work/2026-11-24/빌더-퍼블리싱-스타일-개편.md). 아래 과거 변경 기록의 `Detail.tsx` 등은 이전 구조를 설명하며 현재 진입점은 위 파일이다.
 
 Standalone regular nodes use a 250px collapsed width and a 420px expanded width. Nodes inside groups retain their current size. Group Edit sits on the same row as the description.
 

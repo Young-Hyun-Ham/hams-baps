@@ -1,5 +1,6 @@
 import { BaseEdge, EdgeLabelRenderer } from "reactflow";
 import { useBuilderStore } from "../../store/index";
+import { useBuilderAppearance } from "../BuilderAppearance";
 
 const MIN_SEGMENT_LENGTH = 24;
 
@@ -291,6 +292,7 @@ function CustomOrthogonalEdge(props) {
   } = props;
 
   const updateEdgePoints = useBuilderStore((state) => state.updateEdgePoints);
+  const appearance = useBuilderAppearance();
 
   const bendPoints = getBendPoints(
     sourceX,
@@ -363,19 +365,19 @@ function CustomOrthogonalEdge(props) {
               position: "absolute",
               transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
               background:
-                displayLabel === "Y"
+                appearance ? "var(--builder-edge)" : displayLabel === "Y"
                   ? "#16a34a"
                   : displayLabel === "N"
                     ? "#dc2626"
                     : displayLabel === "Default"
                       ? "#ef4444"
                       : "#2563eb",
-              color: "#ffffff",
-              padding: displayLabel === "Default" ? "3px 9px" : "2px 8px",
+              color: appearance ? "var(--builder-surface)" : "#ffffff",
+              padding: appearance ? "1px 5px" : displayLabel === "Default" ? "3px 9px" : "2px 8px",
               borderRadius: "12px",
-              fontSize: "11px",
-              fontWeight: 700,
-              boxShadow: "0 2px 6px rgba(0,0,0,0.18)",
+              fontSize: appearance ? "10px" : "11px",
+              fontWeight: appearance ? 500 : 700,
+              boxShadow: appearance ? "none" : "0 2px 6px rgba(0,0,0,0.18)",
               pointerEvents: "all",
               zIndex: 25,
             }}

@@ -8,6 +8,7 @@ Claude Code로 이 저장소를 수정할 때는 먼저 [`AGENTS.md`](./AGENTS.m
 2. `README.md`, 관련 `docs/pages/*.md`, 최신 `docs/job/*`를 확인한다.
 3. Firebase/PostgreSQL 지원 여부와 SSO·관리자·AI 권한 경계를 확인한다.
 4. 기존 변경을 보존한 채 최소 범위로 수정한다.
+5. 설계 문서로 구현을 요청받으면 `docs/history`의 해당 파일을 최신 상태로 다시 읽고, 구현 결과는 요청된 `docs/work/YYYY-MM-DD`와 `WORK_HISTORY.md`에 남긴다.
 
 ## 핵심 주의사항
 
@@ -19,6 +20,8 @@ Claude Code로 이 저장소를 수정할 때는 먼저 [`AGENTS.md`](./AGENTS.m
 - `NEXT_PUBLIC_BACKEND`가 있어도 모든 기능이 양쪽 DB를 지원하지는 않는다.
 - 사용자별 AI 키는 서버에서만 사용한다. 키나 사용자 프로필 전체를 로그에 출력하지 않는다.
 - `core/scenario-core/src` 수정 시 생성물과 소비 코드를 함께 확인한다.
+- 빌더 퍼블리싱 스타일은 `BuilderAppearanceContext`를 사용하는 상세 Flow 범위에 한정한다. 공유 조회·내부 모달의 context 경계를 확인하고 `scenario-tab-menu`의 외형·탭 캐시를 보존한다.
+- 빌더 저장 backend는 `firebase | fastapi`이며, Publish의 버전 생성과 실제 배포는 별개다. 스타일 수정으로 DB·실행 규칙을 변경하지 않는다.
 
 ## 명령
 
@@ -36,3 +39,4 @@ pnpm build
 - 화면 변경은 `docs/pages`, 복잡한 구현 변경은 `docs/job/YYYYMMDD`에 반영한다.
 - 환경변수 변경은 안전한 예시만 `env.download`와 `README.md`에 반영한다.
 - 완료 응답에는 변경 요약, 검증 명령과 결과, 남은 제약을 포함한다.
+- 신규 작업 기록에는 DB 변경 여부와 미완료 사항을 명시하고, 기존 타입 오류 등 변경 전부터 존재한 실패는 새 오류와 구분한다. 문서 날짜는 한국시간을 사용한다.

@@ -1,4 +1,4 @@
-import { useLayoutEffect } from "react";
+import { useLayoutEffect, type CSSProperties } from "react";
 import { Handle, Position, useUpdateNodeInternals } from "reactflow";
 import { useTranslation } from "react-i18next";
 
@@ -7,6 +7,7 @@ import NodeTypeIcon from "../icons/NodeTypeIcon";
 import NodeEditButton from "./NodeEditButton";
 import NodeTitle from "./NodeTitle";
 import { useBuilderStore } from "../../store/index";
+import { useBuilderAppearance } from "../BuilderAppearance";
 import {
   CollapseNodeIcon,
   ExpandNodeIcon,
@@ -15,6 +16,7 @@ import {
 
 function ScenarioNode({ id, data }: { id: string; data: any }) {
   const { t } = useTranslation();
+  const appearance = useBuilderAppearance();
   const startNodeId = useBuilderStore((state) => state.startNodeId);
   const setStartNodeId = useBuilderStore((state) => state.setStartNodeId);
   const nodeColor =
@@ -40,16 +42,17 @@ function ScenarioNode({ id, data }: { id: string; data: any }) {
 
   useLayoutEffect(() => {
     updateNodeInternals(id);
-  }, [id, inputPos, outputPos, isGroupChild, updateNodeInternals]);
+  }, [id, inputPos, outputPos, isGroupChild, isCollapsed, appearance, updateNodeInternals]);
 
   return (
     <div
-      className={`${styles.nodeWrapper} ${isGroupChild ? styles.groupChildNode : ""} ${styles.scenarioNodeWrapper} ${isStartNode ? styles.startNode : ""}`}
-      style={
-        isCollapsed
+      className={`${styles.nodeWrapper} ${appearance ? styles.publishingNode : ""} ${isGroupChild ? styles.groupChildNode : ""} ${styles.scenarioNodeWrapper} ${isStartNode ? styles.startNode : ""}`}
+      style={{
+        ...(appearance ? { "--node-accent": nodeColor } : {}),
+        ...(isCollapsed
           ? { height: "50px", width: "450px" }
-          : { height: "120px", width: "450px" }
-      }
+          : { height: "120px", width: "450px" }),
+      } as CSSProperties}
     >
       <Handle
         type="target"
@@ -67,11 +70,11 @@ function ScenarioNode({ id, data }: { id: string; data: any }) {
       />
       <div
         className={styles.nodeHeader}
-        style={{ backgroundColor: nodeColor, color: textColor }}
+        style={appearance ? undefined : { backgroundColor: nodeColor, color: textColor }}
       >
         <span
           className={styles.headerIcon}
-          style={{ backgroundColor: nodeColor, color: textColor }}
+          style={appearance ? undefined : { backgroundColor: nodeColor, color: textColor }}
         >
           <NodeTypeIcon type="scenario" />
         </span>
@@ -101,7 +104,7 @@ function ScenarioNode({ id, data }: { id: string; data: any }) {
               deleteNode(id);
             }}
             className={styles.deleteButton}
-            style={{ color: textColor, fontSize: "1rem", marginRight: "-5px" }}
+            style={{ color: appearance ? "var(--builder-muted)" : textColor, fontSize: "1rem", marginRight: "-5px" }}
           >
             &times;
           </button>

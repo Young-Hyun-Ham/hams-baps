@@ -10,9 +10,11 @@ import NodeWrapper from "./NodeWrapper";
 import NodeTypeIcon from "../icons/NodeTypeIcon";
 
 import { useTranslation } from "react-i18next";
+import { useBuilderAppearance } from "../BuilderAppearance";
 
 function ApiNode({ id, data }) {
   const { t } = useTranslation();
+  const appearance = useBuilderAppearance();
   const { showAlert } = useModal();
   const apiCount = data.apis?.length || 0;
   const isMulti = data.isMulti;
@@ -57,6 +59,7 @@ function ApiNode({ id, data }) {
       disabled={isTesting}
     >
       {isTesting ? <span className={styles.buttonSpinner} /> : <PlayIcon />}
+      {appearance && <span>{t("Test API")}</span>}
     </button>
   ) : null;
 

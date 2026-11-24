@@ -4,6 +4,8 @@ HAMS-BAPS(Business Automation Portal Service)는 사내 업무 콘텐츠와 AI �
 
 > 현재 저장소 구현을 기준으로 작성한 문서입니다. 화면별 설명은 [`docs/pages`](./docs/pages/README.md), 상세 작업 기록은 [`docs/job`](./docs/job), 변경 이력은 [`HISTORY.md`](./HISTORY.md)를 참고하세요.
 
+설계 문서는 `docs/history/YYYY-MM-DD`, 구현·검증 기록은 `docs/work/YYYY-MM-DD`에 정리하며, 새 작업 목록은 [WORK_HISTORY.md](./WORK_HISTORY.md)에서 확인할 수 있습니다. 기존 `docs/job` 기록도 보존합니다.
+
 ## 주요 기능
 
 ### 사용자 포털
@@ -74,6 +76,14 @@ scripts/                  # 메뉴 마이그레이션과 DB DDL
 | 관리자 | `/admin/user-info`, `/admin/user-stats`, `/admin/token-manage` | 사용자와 AI 사용량 관리 |
 
 전체 화면은 [`docs/pages/README.md`](./docs/pages/README.md)에서 확인할 수 있습니다.
+
+### 시나리오 상세 편집 화면
+
+`/admin/builder/react-flow/scenario-flow`는 퍼블리싱 기준의 라이트·다크 테마, 노드 카드·그룹 노드 수 배지, 그룹 내부 추가 버튼, 텍스트 더보기 메뉴와 닫을 수 있는 속성 패널을 제공합니다. 기존 전역 theme를 읽어 적용하며 테마 반영을 위한 추가 DB 쓰기는 없습니다.
+
+좌측 상단 `scenario-tab-menu`의 UI와 탭 전환·캐시는 유지합니다. 상세 Flow 전용 presentation을 사용하므로 공유 조회 화면과 내부 Flow 모달, Orkes 전용 노드에는 새 카드 스타일을 자동 적용하지 않습니다. Save는 정의 저장, Publish는 버전 생성이며 실제 배포와 구분됩니다. 시나리오 전체 미저장 표시·이탈 확인과 새로운 분기 편입 정책은 이번 개편에 포함하지 않았습니다.
+
+설계와 검증 범위는 [빌더 퍼블리싱 스타일 개편 작업 기록](docs/work/2026-11-24/빌더-퍼블리싱-스타일-개편.md)을 참고하세요.
 
 ## 로컬 실행
 

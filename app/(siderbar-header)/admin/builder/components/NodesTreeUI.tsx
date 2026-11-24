@@ -47,28 +47,29 @@ function NodesTreeUI({
           minHeight: 0,
           display: "flex",
           flexDirection: "column",
-          bgcolor: "#fff",
-          borderRight: "1px solid #e5e5e5",
+          bgcolor: "var(--builder-surface)",
+          borderRight: "1px solid var(--builder-border)",
           overflow: "hidden",
         }}
       >
         <Box
           sx={{
-            height: 38,
+            height: 34,
             px: 1.25,
             display: "flex",
             alignItems: "center",
-            borderBottom: "1px solid #e5e5e5",
+            borderBottom: "1px solid var(--builder-border)",
             flexShrink: 0,
           }}
         >
           {!isMenuCollapsed && (
-            <Typography sx={{ flex: 1, fontSize: 12, fontWeight: 500 }}>
+            <Typography sx={{ flex: 1, fontSize: 12, fontWeight: 500, color: "var(--builder-text)" }}>
               {t("Node type")}
             </Typography>
           )}
           <IconButton
             size="small"
+            sx={{ color: "var(--builder-muted)" }}
             aria-label={
               isMenuCollapsed ? "Expand Nodes Tree" : "Collapse Nodes Tree"
             }
@@ -102,7 +103,7 @@ function NodesTreeUI({
               mx: 1,
               "& .MuiFormControlLabel-label": {
                 fontSize: 11,
-                color: "#737373",
+                color: "var(--builder-muted)",
               },
             }}
             control={

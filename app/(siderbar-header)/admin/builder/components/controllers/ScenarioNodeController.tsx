@@ -8,6 +8,7 @@ import styles from "../NodeController.module.css";
 import ScenarioGroupModal from "../modals/ScenarioGroupModal";
 import ScenarioViewModal from "../modals/ScenarioFlowViewerModal";
 import ScenarioFlowEditorModal from "../modals/ScenarioFlowEditorModal";
+import { BuilderAppearanceContext } from "../BuilderAppearance";
 
 type ScenarioLocalNode = {
   id: string;
@@ -510,6 +511,7 @@ function ScenarioNodeController({
         }}
       />
 
+      <BuilderAppearanceContext.Provider value={null}>
       <ScenarioViewModal
         isOpen={isGroupViewModalOpen}
         onClose={() => setIsGroupViewModalOpen(false)}
@@ -521,6 +523,7 @@ function ScenarioNodeController({
         onClose={() => setIsGroupEditorModalOpen(false)}
         scenario={selectedScenario}
       />
+      </BuilderAppearanceContext.Provider>
 
       <div className={styles.formGroup}>
         <label>{t("Group header")}</label>

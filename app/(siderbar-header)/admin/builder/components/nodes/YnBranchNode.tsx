@@ -3,6 +3,7 @@ import React, { memo, useLayoutEffect } from "react";
 import { Handle, Position, NodeProps, useUpdateNodeInternals } from "reactflow";
 import { Box, Typography } from "@mui/material";
 import { useBuilderStore } from "../../store";
+import { useBuilderAppearance } from "../BuilderAppearance";
 
 export interface YnBranchNodeData {
   id?: string;
@@ -14,6 +15,7 @@ export interface YnBranchNodeData {
 }
 
 const YnBranchNode = ({ id, data, selected }: NodeProps<YnBranchNodeData>) => {
+  const appearance = useBuilderAppearance();
   const replyYId = data?.replies?.[0]?.value || "Y";
   const replyNId = data?.replies?.[1]?.value || "N";
   const isGroupChild = useBuilderStore((state) => {
@@ -30,7 +32,7 @@ const YnBranchNode = ({ id, data, selected }: NodeProps<YnBranchNodeData>) => {
 
   return (
     <Box
-      className={isGroupChild ? styles.groupChildNode : undefined}
+      className={`${isGroupChild ? styles.groupChildNode : ""} ${appearance ? styles.publishingCompact : ""}`}
       data-node-type="ynBranch"
       sx={{
         width: 30,

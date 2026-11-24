@@ -6,9 +6,14 @@ import { Plus, Split } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import NodeWrapper from "./NodeWrapper";
 import NodeTypeIcon from "../icons/NodeTypeIcon";
+import { useBuilderAppearance } from "../BuilderAppearance";
 
 function GroupNode({ id, data }) {
   const { t } = useTranslation();
+  const appearance = useBuilderAppearance();
+  const childCount = useBuilderStore(
+    (state) => state.nodes.filter((node) => node.parentNode === id).length,
+  );
   const updateNodeInternals = useUpdateNodeInternals();
   const toggleScenarioNode = useBuilderStore(
     (state) => state.toggleScenarioNode,
@@ -36,6 +41,7 @@ function GroupNode({ id, data }) {
         title="Ungroup"
       >
         <Split size={14} />
+        {appearance && <span>{t("Ungroup")}</span>}
       </button>
     </>
   );
@@ -45,6 +51,9 @@ function GroupNode({ id, data }) {
       id={id}
       typeLabel={t("Group")}
       icon={<NodeTypeIcon type="selectionGroup" />}
+      headerPrefix={appearance ? (
+        <span className={styles.groupCount}>{childCount} {t("Nodes")}</span>
+      ) : null}
       nodeColor="#475569"
       textColor="#ffffff"
       headerButtons={headerButtons}
@@ -63,6 +72,8 @@ function GroupNode({ id, data }) {
         <button
           type="button"
           className={`${styles.groupAddNodeButton} nodrag nopan`}
+          title={t("Add Node")}
+          aria-label={t("Add Node")}
           onClick={(event) => {
             event.stopPropagation();
             window.dispatchEvent(

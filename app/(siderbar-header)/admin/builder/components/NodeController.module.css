@@ -9,6 +9,107 @@
   border-left: 1px solid #e0e0e0;
 }
 
+.publishingController.controllerContainer {
+  background: var(--builder-surface);
+  color: var(--builder-text);
+  border-left-color: var(--builder-border);
+}
+.publishingHeader {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 39px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--builder-border);
+  font-size: 12px;
+  font-weight: 500;
+}
+.publishingHeader > svg { width: 16px; height: 16px; color: var(--builder-accent); }
+.publishingHeader button {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  margin-left: auto;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--builder-muted);
+  cursor: pointer;
+}
+.publishingController .mainControls { padding: 14px 12px; min-height: 0; }
+.sectionHeading {
+  margin: 0 0 14px;
+  color: var(--builder-accent);
+  font-size: 10px;
+  font-weight: 600;
+}
+.publishingController .form { gap: 14px; }
+.publishingController .formGroup label { font-size: 11px; font-weight: 400; color: var(--builder-text); }
+.publishingController :is(input, textarea, select):not([type="checkbox"]):not([type="radio"]) {
+  background: var(--builder-input);
+  color: var(--builder-text);
+  border-color: var(--builder-border);
+  font-size: 12px;
+  border-radius: 4px;
+  padding: 7px;
+}
+.publishingController :is(input, textarea, select):disabled,
+.publishingController :is(input, textarea)[readonly] {
+  background: var(--builder-muted-surface);
+  color: var(--builder-muted);
+}
+.publishingController :is(input, textarea)::placeholder { color: var(--builder-muted); opacity: 1; }
+.publishingController input[type="checkbox"] { accent-color: var(--builder-accent); }
+.publishingController :is(.repliesContainer, .elementsContainer, .elementEditor, .elementItem) {
+  background: var(--builder-input);
+  color: var(--builder-text);
+  border-color: var(--builder-border);
+}
+.publishingController :is(.elementTabs button, .addReplyButton, .deleteReplyButton, .elementDeleteButton) {
+  background: var(--builder-input);
+  color: var(--builder-text);
+  border-color: var(--builder-border);
+}
+.publishingController .elementItem.selected {
+  border-color: var(--builder-accent);
+  background: var(--builder-accent-soft);
+}
+.publishingController :is(.placeholder, .elementType) { color: var(--builder-muted); }
+.publishingController :is(.mainControls, .advancedControls) h3 { color: var(--builder-text); }
+.publishingController .controllerActions {
+  padding: 10px 12px;
+  border-top: 1px solid var(--builder-border);
+  background: var(--builder-surface);
+}
+.publishingController .saveNodeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 32px;
+  padding: 7px 10px;
+  border-radius: 4px;
+  background: var(--builder-accent);
+  color: var(--builder-on-accent);
+  font-size: 12px;
+  font-weight: 500;
+}
+.publishingController .saveNodeButton:hover:not(:disabled) { background: var(--builder-accent-hover); }
+.publishingController .saveNodeButton:disabled { opacity: .45; cursor: default; }
+.publishingController :is(button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--builder-accent);
+  outline-offset: 2px;
+}
+.publishingController .behaviourSection { border-top: 1px solid var(--builder-border); margin-top: 5px; }
+.publishingController :global(.MuiInputBase-root),
+.publishingController :global(.MuiFormLabel-root),
+.publishingController :global(.MuiTypography-root),
+.publishingController :global(.MuiSelect-icon) { color: var(--builder-text); }
+.publishingController :global(.MuiOutlinedInput-notchedOutline) { border-color: var(--builder-border); }
+.publishingController :global(.MuiPaper-root) { background: var(--builder-input); color: var(--builder-text); }
+
 .mainControls {
   padding: 15px;
   flex-grow: 1; /* 남은 공간을 모두 차지하도록 설정 */

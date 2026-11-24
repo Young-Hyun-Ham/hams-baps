@@ -1,9 +1,9 @@
 .editor {
   min-width: 0;
   gap: 0;
-  background: #fff;
-  color: #38383d;
-  border: 1px solid #e4e4e7;
+  background: var(--builder-surface);
+  color: var(--builder-text);
+  border: 1px solid var(--builder-border);
   border-radius: 0;
   overflow: hidden;
 }
@@ -15,8 +15,8 @@
   min-height: 42px;
   padding: 5px 12px;
   flex-shrink: 0;
-  border-bottom: 1px solid #e4e4e7;
-  background: #fff;
+  border-bottom: 1px solid var(--builder-border);
+  background: var(--builder-surface);
   z-index: 12;
 }
 
@@ -59,8 +59,8 @@
 .statusBadge {
   border-radius: 12px;
   padding: 2px 6px;
-  background: #f1f1f2;
-  color: #777;
+  background: var(--builder-muted-surface);
+  color: var(--builder-muted);
   font-size: 10px;
   white-space: nowrap;
 }
@@ -88,9 +88,9 @@
   flex-shrink: 0;
   gap: 0;
   padding: 1px;
-  border: 1px solid #e3e3e7;
+  border: 1px solid var(--builder-border);
   border-radius: 4px;
-  background: #fff;
+  background: var(--builder-surface);
 }
 
 .toolGroup > div > button {
@@ -105,8 +105,8 @@
   padding: 0;
   border: 0;
   border-radius: 3px;
-  background: #fff;
-  color: #626267;
+  background: var(--builder-surface);
+  color: var(--builder-muted);
   display: grid;
   place-items: center;
   cursor: pointer;
@@ -118,8 +118,8 @@
 }
 
 .toolButton:hover:not(:disabled) {
-  background: #f3f3f5;
-  color: #29292e;
+  background: var(--builder-muted-surface);
+  color: var(--builder-text);
 }
 
 .toolButton:disabled {
@@ -128,15 +128,15 @@
 }
 
 .toolButtonActive {
-  color: #ff6900;
-  background: #fff4ea;
+  color: var(--builder-accent);
+  background: var(--builder-accent-soft);
 }
 
 .zoomValue {
   min-width: 34px;
   text-align: center;
   font-size: 10px;
-  color: #626267;
+  color: var(--builder-muted);
 }
 
 .headerActions {
@@ -155,29 +155,30 @@
   gap: 5px;
   height: 28px;
   padding: 0 9px;
-  border: 1px solid #a68a72;
+  border: 1px solid var(--builder-border);
   border-radius: 4px;
-  background: #fff;
-  color: #67513f;
+  background: var(--builder-surface);
+  color: var(--builder-text);
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
 }
 
 .headerPublish {
-  background: #ff6900;
-  border-color: #ff6900;
-  color: #fff;
+  background: var(--builder-accent);
+  border-color: var(--builder-accent);
+  color: var(--builder-on-accent);
 }
 
 .headerSave:hover {
-  background: #faf6f2;
+  background: var(--builder-muted-surface);
 }
 .headerPublish:hover {
-  background: #e95f00;
+  background: var(--builder-accent-hover);
 }
 
 .editorBody {
+  position: relative;
   border: 0;
   border-radius: 0;
   min-width: 0;
@@ -198,7 +199,7 @@
   margin: 24px;
   border-radius: 4px;
   overflow: hidden;
-  background: #ededee;
+  background: var(--builder-muted-surface);
   box-shadow: none;
 }
 
@@ -209,9 +210,9 @@
   flex-direction: column;
   gap: 8px;
   padding: 8px;
-  border: 1px solid #e4e4e7;
+  border: 1px solid var(--builder-border);
   border-radius: 4px;
-  background: #fff;
+  background: var(--builder-surface);
   box-shadow: 0 3px 12px #0000000a;
 }
 
@@ -238,7 +239,7 @@
   min-width: 0 !important;
   height: 40px;
   padding: 0 8px;
-  border: 1px solid #dedee2;
+  border: 1px solid var(--builder-border);
   border-radius: 4px;
   font-size: 12px;
 }
@@ -253,7 +254,7 @@
   margin: 0 0 8px;
   font-size: 11px;
   font-weight: 400;
-  color: #5f5f66;
+  color: var(--builder-muted);
 }
 .paletteGrid {
   display: grid;
@@ -267,10 +268,10 @@
   min-width: 0;
   height: 29px;
   padding: 0 5px;
-  border: 1px solid color-mix(in srgb, var(--node-accent) 40%, white);
+  border: 1px solid color-mix(in srgb, var(--node-accent) 40%, var(--builder-surface));
   border-radius: 3px;
-  background: color-mix(in srgb, var(--node-accent) 4%, white);
-  color: color-mix(in srgb, var(--node-accent) 75%, #333);
+  background: color-mix(in srgb, var(--node-accent) 4%, var(--builder-surface));
+  color: color-mix(in srgb, var(--node-accent) 75%, var(--builder-text));
   cursor: grab;
   font-size: 11px;
 }
@@ -284,14 +285,14 @@
   text-overflow: ellipsis;
 }
 .paletteItem:hover {
-  background: color-mix(in srgb, var(--node-accent) 12%, white);
+  background: color-mix(in srgb, var(--node-accent) 12%, var(--builder-surface));
 }
 .paletteItem:active {
   cursor: grabbing;
 }
-.editor button:focus-visible,
+.editor button:focus-visible:not(.unitBadge),
 .paletteItem:focus-visible {
-  outline: 2px solid #ff6900;
+  outline: 2px solid var(--builder-accent);
   outline-offset: 2px;
 }
 
@@ -343,8 +344,8 @@
   height: 26px;
   padding: 6px;
   border: 0;
-  background: #fff;
-  color: #626267;
+  background: var(--builder-surface);
+  color: var(--builder-muted);
 }
 .tabMenuPaper:global(.MuiPaper-root) {
   width: 340px;
@@ -412,4 +413,70 @@
   max-height: calc(100dvh - 16px);
   overflow: auto;
   overscroll-behavior: contain;
+}
+
+/* Only the Flow canvas opts into these overrides. Tab menu rules above remain
+   unchanged, including the trigger's original focus ring. */
+.unitBadge:focus-visible { outline: 2px solid #ff6900; outline-offset: 2px; }
+.controllerPanel {
+  width: 0;
+  min-height: 0;
+  flex-shrink: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--builder-surface);
+  transition: width .2s ease;
+}
+.controllerPanel.visible { width: 340px; }
+.viewSwitch {
+  display: inline-flex;
+  margin-left: 4px;
+  padding: 1px;
+  border: 1px solid var(--builder-border);
+  border-radius: 3px;
+  background: var(--builder-muted-surface);
+}
+.viewSwitch button {
+  padding: 3px 7px;
+  border: 0;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--builder-muted);
+  font-size: 10px;
+  cursor: pointer;
+}
+.viewSwitch button[aria-pressed="true"] {
+  background: var(--builder-surface);
+  color: var(--builder-accent);
+}
+.mainContent :global(.react-flow__minimap-mask) { stroke: var(--builder-accent); }
+.canvas { background: var(--builder-canvas); }
+.canvas :global(.react-flow__edge-path) { stroke: var(--builder-edge); }
+.canvas :global(.react-flow__edge.selected .react-flow__edge-path) { stroke: var(--builder-accent); }
+.canvas :global(.react-flow__connection-path) { stroke: var(--builder-accent); }
+.canvas :global(.react-flow__selection),
+.canvas :global(.react-flow__nodesselection-rect) {
+  background: color-mix(in srgb, var(--builder-accent) 7%, transparent);
+  border: 1px dashed var(--builder-accent);
+}
+.searchPanel :global(.MuiInputBase-root),
+.searchPanel :global(.MuiFormLabel-root),
+.searchPanel :global(.MuiSelect-icon) { color: var(--builder-text); }
+.searchPanel :global(.MuiOutlinedInput-notchedOutline) { border-color: var(--builder-border); }
+.editor[data-builder-theme="dark"] :global([aria-label="Nodes Tree"]) img {
+  filter: invert(1);
+}
+@media (max-width: 1000px) {
+  .controllerPanel.visible { width: min(310px, 40vw); }
+}
+@media (max-width: 700px) {
+  .controllerPanel.visible {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    z-index: 15;
+    width: min(340px, calc(100% - 40px));
+    box-shadow: -3px 0 15px #0000001a;
+  }
 }

@@ -836,3 +836,189 @@
   visibility: visible;
   pointer-events: auto;
 }
+
+/* Opt-in detail canvas chrome. Dimensions stay aligned with the existing
+   measured-node layout; no graph or group membership is changed by styling. */
+.publishingNode.nodeWrapper {
+  border: 1px solid color-mix(in srgb, var(--node-accent) 45%, var(--builder-border));
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--node-accent) 3%, var(--builder-surface));
+  color: var(--builder-text);
+  box-shadow: var(--builder-shadow);
+}
+
+.publishingNode .nodeHeader {
+  min-height: 32px;
+  padding: 0 6px;
+  gap: 5px;
+  border-radius: 4px;
+  border-bottom: 0;
+  background: transparent;
+  color: var(--builder-text);
+}
+
+.publishingNode .headerLeft { min-width: 0; gap: 5px; }
+.publishingNode .headerButtons { gap: 2px; }
+.publishingNode .headerIcon {
+  flex: 0 0 22px;
+  width: 22px;
+  height: 22px;
+  border-radius: 3px;
+  color: var(--node-accent);
+  background: color-mix(in srgb, var(--node-accent) 12%, var(--builder-surface));
+}
+.publishingNode .headerIcon > svg { width: 15px; height: 15px; }
+.publishingNode .nodeTitleText { font-size: 11px; font-weight: 500; }
+.publishingNode .nodeTypeLabel { color: var(--builder-muted); }
+.publishingNode .nodeTitleInput {
+  border-color: var(--builder-accent);
+  background: var(--builder-input);
+  color: var(--builder-text);
+}
+.publishingNode .bodyToggleButton,
+.publishingNode .headerMoreButton,
+.publishingNode .nodeTitleEditButton { color: var(--builder-muted); }
+.publishingNode .bodyToggleButton { width: 18px; padding: 0; }
+.publishingNode button:hover,
+.publishingNode .headerMoreButton[aria-expanded="true"] {
+  color: var(--builder-accent);
+  background: var(--builder-accent-soft);
+}
+.publishingNode button:focus-visible,
+.publishingActions button:focus-visible {
+  outline: 2px solid var(--builder-accent);
+  outline-offset: 2px;
+}
+.publishingNode:hover { border-color: var(--node-accent); }
+:global(.react-flow__node.selected) .publishingNode.nodeWrapper {
+  border-color: var(--builder-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--builder-accent) 30%, transparent);
+}
+.publishingNode.nodeWrapper.startNode {
+  border-color: var(--builder-accent);
+  box-shadow: 0 0 0 1px var(--builder-accent);
+}
+.publishingNode.nodeWrapper.anchored {
+  border-color: var(--builder-danger);
+  box-shadow: 0 0 0 1px var(--builder-danger);
+}
+.publishingNode .nodeBody { padding: 10px; gap: 10px; font-size: 12px; }
+.publishingNode .nodeBody :is(input, textarea, select) {
+  background: var(--builder-input);
+  color: var(--builder-text);
+  border-color: var(--builder-border);
+}
+.publishingNode :is(.formBuilderPreview, .formPreview, .formElementsPlaceholder, .quickReply, .previewOptionsContainer, .previewBox) {
+  background: var(--builder-muted-surface);
+  color: var(--builder-text);
+  border-color: var(--builder-border);
+}
+.publishingNode :is(.previewLabel, .formFeatureIndicator) { color: var(--builder-muted); }
+.publishingNode .nodeBody :is(input, textarea)[readonly] { color: var(--builder-muted); }
+.publishingNode .nodeBody :global(.MuiTypography-root),
+.publishingNode .nodeBody :global(.MuiInputBase-root),
+.publishingNode .nodeBody :global(.MuiFormLabel-root) { color: var(--builder-text); }
+.publishingNode .nodeBody :global(.MuiOutlinedInput-notchedOutline) { border-color: var(--builder-border); }
+.publishingNode :is(.sectionTitle, .scenarioDescription, .groupNodeDescription) {
+  color: var(--builder-muted);
+}
+.publishingNode .nodeEditFooter {
+  justify-content: flex-end;
+  border-color: var(--builder-border);
+  background: transparent;
+}
+.publishingNode .nodeEditButton {
+  height: 23px;
+  border-color: var(--builder-border);
+  background: var(--builder-surface);
+  color: var(--builder-text);
+}
+.publishingNode :global(.react-flow__handle) {
+  background: var(--node-accent) !important;
+  border-color: var(--builder-surface) !important;
+}
+.publishingNode.groupNodeWrapper {
+  --node-accent: var(--builder-group) !important;
+  border-style: solid;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--builder-group) 7%, var(--builder-surface));
+}
+.publishingNode.groupNodeWrapper > .nodeHeader {
+  margin: 5px;
+  min-height: 32px;
+  border: 1px solid var(--builder-border);
+  border-radius: 6px;
+  background: var(--builder-surface);
+}
+.publishingNode.groupNodeWrapper .nodeBody {
+  padding: 8px 12px;
+  height: calc(100% - 44px);
+}
+.publishingNode .groupNodeDescription { font-size: 10px; line-height: 20px; }
+.groupCount {
+  flex-shrink: 0;
+  padding: 1px 5px;
+  border: 1px solid var(--builder-border);
+  border-radius: 9px;
+  background: var(--builder-muted-surface);
+  color: var(--builder-muted);
+  font-size: 9px;
+  white-space: nowrap;
+}
+.publishingNode .groupAddNodeButton {
+  left: 50%;
+  bottom: 14px;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  transform: translateX(-50%);
+  border: 1px solid var(--builder-surface);
+  border-radius: 50%;
+  color: #fff;
+  background: var(--builder-group);
+  opacity: 1;
+  pointer-events: auto;
+  box-shadow: var(--builder-shadow);
+}
+.publishingNode .groupAddNodeButton span { display: none; }
+.publishingNode.groupNodeWrapper:hover .groupAddNodeButton,
+.publishingNode .groupAddNodeButton:focus-visible { transform: translateX(-50%); }
+.publishingActions.headerActionsPalette {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-width: 165px;
+  gap: 2px;
+  padding: 4px;
+  background: var(--builder-surface);
+  color: var(--builder-text);
+}
+.publishingActions button {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  width: 100%;
+  justify-content: flex-start;
+  text-align: left;
+  gap: 8px;
+  padding: 5px 8px;
+  border: 0;
+  background: transparent;
+  color: var(--builder-text);
+  font-size: 11px;
+  cursor: pointer;
+}
+.publishingActions button svg { width: 14px; height: 14px; flex-shrink: 0; }
+.publishingActions button:hover:not(:disabled) { background: var(--builder-accent-soft); }
+.publishingActions button:disabled { opacity: .45; cursor: default; }
+.publishingActions .active { color: var(--builder-accent); }
+.publishingActions .deleteButton { color: var(--builder-danger); }
+
+.publishingCompact:global(.MuiBox-root) {
+  background: var(--builder-surface);
+  color: var(--builder-text);
+  box-shadow: var(--builder-shadow);
+}
+.publishingCompact :global(.MuiTypography-root) { color: var(--builder-text); }

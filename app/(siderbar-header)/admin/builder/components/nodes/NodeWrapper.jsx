@@ -1,4 +1,4 @@
-import { useId, useLayoutEffect, useState } from "react";
+import { useContext, useId, useLayoutEffect, useState } from "react";
 import { Popover } from "@mui/material";
 import { Handle, Position, useUpdateNodeInternals } from "reactflow";
 
@@ -17,8 +17,10 @@ import {
   X,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import NodeEditButton from "./NodeEditButton";
+import NodeEditButton, { NodeEditContext } from "./NodeEditButton";
 import NodeTitle from "./NodeTitle";
+import { useBuilderAppearance } from "../BuilderAppearance";
+import appearanceStyles from "../BuilderAppearance.module.css";
 /**
  * 모든 노드에서 공통으로 사용되는 래퍼 컴포넌트입니다.
  * 헤더, 버튼(시작, 앵커, 삭제), 공통 스타일, 기본 핸들을 관리합니다.
@@ -45,6 +47,7 @@ function NodeWrapper({
   handles = null,
   headerButtons = null,
   nodeChrome = null,
+  headerPrefix = null,
   hideBody = false,
   bodyCollapsed,
   onToggleBody,
@@ -52,6 +55,8 @@ function NodeWrapper({
   style = {},
 }) {
   const { t } = useTranslation();
+  const appearance = useBuilderAppearance();
+  const onEdit = useContext(NodeEditContext);
   const [localBodyCollapsed, setIsBodyCollapsed] = useState(true);
   const isBodyCollapsed = bodyCollapsed ?? localBodyCollapsed;
   const [actionsAnchor, setActionsAnchor] = useState(null);
@@ -120,15 +125,17 @@ function NodeWrapper({
     isBodyCollapsed,
     isStandaloneRegularNode,
     isSelectionGroupChild,
+    appearance,
     updateNodeInternals,
   ]);
 
   return (
     <div
       data-node-type={nodeType}
-      className={`${styles.nodeWrapper} ${isSelectionGroupChild ? styles.groupChildNode : ""} ${isAnchored ? styles.anchored : ""} ${isStartNode ? styles.startNode : ""} ${customClassName}`}
+      className={`${styles.nodeWrapper} ${appearance ? styles.publishingNode : ""} ${isSelectionGroupChild ? styles.groupChildNode : ""} ${isAnchored ? styles.anchored : ""} ${isStartNode ? styles.startNode : ""} ${customClassName}`}
       style={{
         ...style,
+        ...(appearance ? { "--node-accent": nodeColor || "var(--builder-group)" } : {}),
         ...(isStandaloneRegularNode
           ? { width: isBodyCollapsed ? 250 : 420, boxSizing: "border-box" }
           : {}),
@@ -193,15 +200,16 @@ function NodeWrapper({
               )}
             </button>
           )}
-          {icon && (
+          {headerPrefix}
+          {icon && !headerPrefix && (
             <span
               className={styles.headerIcon}
-              style={{ backgroundColor: nodeColor, color: textColor }}
+              style={appearance ? undefined : { backgroundColor: nodeColor, color: textColor }}
             >
               {icon}
             </span>
           )}
-          {!icon && (
+          {!icon && !headerPrefix && (
             <span
               className={styles.headerColorIndicator}
               style={{ backgroundColor: nodeColor }}
@@ -247,12 +255,13 @@ function NodeWrapper({
               paper: {
                 role: "dialog",
                 "aria-label": t("Node actions"),
-                className: styles.headerActionsPaper,
+                className: `${styles.headerActionsPaper} ${appearance ? `${appearanceStyles.surface} ${appearanceStyles.popover}` : ""}`,
+                "data-builder-theme": appearance || undefined,
               },
             }}
           >
             <div
-              className={`nodrag nopan nowheel ${styles.headerActionsPalette}`}
+              className={`nodrag nopan nowheel ${styles.headerActionsPalette} ${appearance ? styles.publishingActions : ""}`}
               role="toolbar"
               aria-label={t("Node actions")}
               onKeyDown={(event) => {
@@ -266,6 +275,25 @@ function NodeWrapper({
                 }
               }}
             >
+              {appearance && onEdit && (
+                <button
+                  type="button"
+                  className={styles.anchorButton}
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "flex-start",
+                    gap: 8,
+                    textAlign: "left",
+                    whiteSpace: "nowrap",
+                  }}
+                  onClick={() => void onEdit(id)}
+                >
+                  <Pencil size={14} />
+                  <span>{t("Edit")}</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={(e) => {
@@ -276,6 +304,7 @@ function NodeWrapper({
                 title={t("Set as Start Node")}
               >
                 <StartNodeIcon />
+                {appearance && <span>{t("Set as Start Node")}</span>}
               </button>
               <button
                 type="button"
@@ -287,6 +316,7 @@ function NodeWrapper({
                 title={t("Set as anchor")}
               >
                 <AnchorIcon />
+                {appearance && <span>{t("Set as anchor")}</span>}
               </button>
               {/* 2a. (선택) 추가 헤더 버튼 */}
               {headerButtons}
@@ -297,8 +327,11 @@ function NodeWrapper({
                   deleteNode(id);
                 }}
                 className={styles.deleteButton}
+                title={t("Delete")}
+                aria-label={t("Delete")}
               >
                 <X />
+                {appearance && <span>{t("Delete")}</span>}
               </button>
             </div>
           </Popover>

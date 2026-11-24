@@ -1,5 +1,6 @@
 import styles from "../../NodeController.module.css";
 import { useTranslation } from "react-i18next";
+import { useBuilderAppearance } from "../../BuilderAppearance";
 
 /**
  * Node Controller에서 공통으로 사용되는 'Chain with next node' 체크박스
@@ -9,8 +10,10 @@ import { useTranslation } from "react-i18next";
  */
 function ChainNextCheckbox({ checked, onChange }) {
   const { t } = useTranslation();
+  const appearance = useBuilderAppearance();
   return (
-    <div className={styles.formGroup} style={{ paddingTop: "10px" }}>
+    <div className={`${styles.formGroup} ${appearance ? styles.behaviourSection : ""}`} style={{ paddingTop: "10px" }}>
+      {appearance && <h4 className={styles.sectionHeading}>{t("BEHAVIOUR")}</h4>}
       <label
         style={{
           display: "flex",

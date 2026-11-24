@@ -14,10 +14,14 @@ HAMS-BAPS의 사용자 동작, API, 데이터 구조, 설정, 운영 문서 변�
 
 ### Added
 
+- [빌더 퍼블리싱 스타일 개편 설계](docs/history/2026-11-24/빌더-퍼블리싱-스타일-개편.md) - 2026-11-24
+
 - 2026-08-31: 저장소 변경을 지속적으로 추적할 `HISTORY.md`와 작성 규칙을 추가했습니다.
 - 2026-08-31: 코딩 도구가 서비스 구조, 권한, 이중 백엔드와 문서화 원칙을 따르도록 `AGENTS.md`, `CLAUDE.md`를 추가했습니다.
 
 ### Changed
+
+- 2026-11-24: 상세 Flow 빌더의 라이트·다크 퍼블리싱 스타일, 노드·그룹·텍스트 액션 메뉴와 닫을 수 있는 속성 패널을 적용했습니다. 시나리오 탭 메뉴와 저장·실행·DB 구조는 유지합니다. Lint·회귀 테스트 20개·분리된 브라우저 컴포넌트 검증은 통과했으며 전체 빌드는 컴파일 후 기존 scenarioTabs.ts 타입 불일치로 중단되었습니다. [작업·검증 기록](docs/work/2026-11-24/빌더-퍼블리싱-스타일-개편.md).
 
 - 2026-10-20: Fixed the active builder simulator requesting onFail instead of onError and falling back to the first outgoing edge after API failure. Its auto runner and graph resolver now share selection-group API routing: explicit Error wins; unconnected failures continue below; success follows child order. Legacy onFail remains supported. Lint, core compilation and 14 routing tests passed, including seven tests exercising the actual emulator runner/hook/graph with simulated HTTP 503 and network failures. Full build compilation passed but type checking failed on the existing scenarioTabs.ts:7 mismatch. Browser interaction and live API calls were not verified. See [routing work log](docs/job/20261020/group-api-routing.md).
 
@@ -95,6 +99,10 @@ HAMS-BAPS의 사용자 동작, API, 데이터 구조, 설정, 운영 문서 변�
 - 2026-08-31: 손상되고 오래된 루트 README를 현재 구현 기준의 서비스 개요, 기능, 구조, 실행법, 환경변수, 권한 및 운영 주의사항으로 전면 개정했습니다.
 
 ### Fixed
+
+- 2026-11-24: Edit 메뉴의 두 줄 표시 재보고에 따라 첫 버튼에 공통 버튼 클래스와 직접적인 가로 정렬을 적용했습니다. 분리 Edge 검사는 라이트·다크 각각 14개 통과했으며 사용자 로그인 화면 확인은 포함되지 않습니다. [재수정 기록](docs/work/2026-11-24/노드-옵션메뉴-Edit-정렬-수정.md).
+
+- 2026-11-24: 캔버스 노드 옵션메뉴의 Edit 아이콘과 메뉴명을 한 줄로 정렬했습니다. 분리된 Edge 컴포넌트 검증에서 라이트·다크 각각 14개 검사가 통과했습니다. CSS 정렬 수정으로 전체 빌드는 반복하지 않았습니다. [작업 기록](docs/work/2026-11-24/노드-옵션메뉴-Edit-정렬-수정.md).
 
 - 2026-10-16: API 노드 생성 시 Headers가 '{}'로 설정되어 기본 JSON이 표시되지 않던 문제를 수정했습니다. 기존 빈 Headers도 편집 시작 시 기본값으로 초기화합니다. 전체 빌드 및 브라우저 검증은 수행하지 않았습니다.
 - 2026-09-22: Selection Group에서 특정 노드를 밖으로 분리하거나 다른 그룹으로 이동할 때 해당 노드의 기존 edge를 제거하고, 이전 노드와 다음 노드를 직접 연결하여 그룹 실행 흐름이 끊기지 않도록 수정했습니다.

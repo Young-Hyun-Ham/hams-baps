@@ -101,6 +101,8 @@ import { sanitizeEdgesForSave } from "../../store/edgeControlActionStore";
 import { fetchScenarioData } from "../../services/backendService";
 import sharedStyles from "../../components/Detail.module.css";
 import pageStyles from "./ScenarioFlow.module.css";
+import appearanceStyles from "../../components/BuilderAppearance.module.css";
+import { BuilderAppearanceContext } from "../../components/BuilderAppearance";
 import { getScenarioTabKind, getScenarioTabVersion } from "./scenarioTabs";
 
 const styles = { ...sharedStyles, ...pageStyles };
@@ -318,6 +320,7 @@ const getGridDisplayColumns = (
 };
 
 const Flow = ({ scenario, scenarios }: any) => {
+  const builderTheme = useStore((state: any) => state.theme) === "dark" ? "dark" : "light";
   const { t } = useTranslation();
   const router = useRouter();
   const { showAlert, showConfirm } = useModal();
@@ -3581,7 +3584,8 @@ const Flow = ({ scenario, scenarios }: any) => {
   return (
     <Box
       flex={1}
-      className={styles.editor}
+      className={`${styles.editor} ${appearanceStyles.surface}`}
+      data-builder-theme={builderTheme}
       sx={{ minHeight: 0 }}
       height={"100%"}
       display={"flex"}
@@ -3777,7 +3781,7 @@ const Flow = ({ scenario, scenarios }: any) => {
                 type="button"
                 title={`${t("log preview")} (${t("DB JSON Edit")})`}
                 onClick={() => setIsLogVisible(true)}
-                className={`${styles.toolButton} ${isMemoVisible ? styles.toolButtonActive : ""}`}
+                className={`${styles.toolButton} ${isLogVisible ? styles.toolButtonActive : ""}`}
               >
                 <Activity size={18} />
               </button>
@@ -3823,63 +3827,10 @@ const Flow = ({ scenario, scenarios }: any) => {
                 <b>{t("G")}</b>
               </button>
 
-              {/* Segmented Switch Control for View Mode (Far Right of Toolbar) */}
-              <Box
-                sx={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  backgroundColor: "#f1f5f9",
-                  borderRadius: "8px",
-                  padding: "2px",
-                  border: "1px solid #cbd5e1",
-                  ml: 0.5,
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={() => handleViewModeChange("flow")}
-                  style={{
-                    padding: "4px 12px",
-                    borderRadius: "6px",
-                    fontSize: "12px",
-                    fontWeight: viewMode === "flow" ? 700 : 500,
-                    color: viewMode === "flow" ? "#0f172a" : "#64748b",
-                    backgroundColor:
-                      viewMode === "flow" ? "#ffffff" : "transparent",
-                    boxShadow:
-                      viewMode === "flow"
-                        ? "0 1px 3px rgba(0,0,0,0.12)"
-                        : "none",
-                    border: "none",
-                    cursor: "pointer",
-                    transition: "all 0.15s ease",
-                  }}
-                >
-                  Flow
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleViewModeChange("orkes")}
-                  style={{
-                    padding: "4px 12px",
-                    borderRadius: "6px",
-                    fontSize: "12px",
-                    fontWeight: viewMode === "orkes" ? 700 : 500,
-                    color: viewMode === "orkes" ? "#0f172a" : "#64748b",
-                    backgroundColor:
-                      viewMode === "orkes" ? "#ffffff" : "transparent",
-                    boxShadow:
-                      viewMode === "orkes"
-                        ? "0 1px 3px rgba(0,0,0,0.12)"
-                        : "none",
-                    border: "none",
-                    cursor: "pointer",
-                    transition: "all 0.15s ease",
-                  }}
-                >
-                  Orkes
-                </button>
-              </Box>
+              <div className={pageStyles.viewSwitch} role="group" aria-label={t("View mode")}>
+                <button type="button" onClick={() => handleViewModeChange("flow")} aria-pressed={viewMode === "flow"}>Flow</button>
+                <button type="button" onClick={() => handleViewModeChange("orkes")} aria-pressed={viewMode === "orkes"}>Orkes</button>
+              </div>
               <button
                 type="button"
                 className={`${styles.toolButton} ${!isCanvasPanelCollapsed ? styles.toolButtonActive : ""}`}
@@ -4261,10 +4212,9 @@ const Flow = ({ scenario, scenarios }: any) => {
                 </div>
 
                 {viewMode === "flow" ? (
+                  <BuilderAppearanceContext.Provider value={builderTheme}>
                   <ReactFlow
-                    className={
-                      isPanMode ? styles.panCanvas : styles.selectCanvas
-                    }
+                    className={`${pageStyles.canvas} ${isPanMode ? styles.panCanvas : styles.selectCanvas}`}
                     key={scenario?.id}
                     nodes={visibleNodes}
                     edges={formattedEdges}
@@ -4280,7 +4230,7 @@ const Flow = ({ scenario, scenarios }: any) => {
                     onDragOver={onDragOver}
                     onDrop={onDrop}
                     fitView
-                    style={{ backgroundColor: "#fafafa" }}
+                    style={{ backgroundColor: "var(--builder-canvas)" }}
                     fitViewOptions={{ padding: 0.2, maxZoom: 1.2 }}
                     onMove={(_, vp) => setViewport(vp)}
                     defaultViewport={{ x: 100, y: 100, zoom: 0.5 }}
@@ -4324,7 +4274,7 @@ const Flow = ({ scenario, scenarios }: any) => {
                       variant={BackgroundVariant.Dots}
                       gap={20}
                       size={1}
-                      color="#c7c7cc"
+                      color="var(--builder-dot)"
                     />
                     {isPreviewVisible && (
                       <MiniMap
@@ -4333,12 +4283,15 @@ const Flow = ({ scenario, scenarios }: any) => {
                             ? nodeColors[(n as { type: string }).type]
                             : "#ddd"
                         }
+                        maskColor="color-mix(in srgb, var(--builder-canvas) 65%, transparent)"
+                        maskStrokeColor="var(--builder-accent)"
                         nodeStrokeWidth={3}
                         zoomable
                         pannable
                       />
                     )}
                   </ReactFlow>
+                  </BuilderAppearanceContext.Provider>
                 ) : (
                   <div
                     style={{
@@ -4882,7 +4835,11 @@ const Flow = ({ scenario, scenarios }: any) => {
         <div
           className={`${styles.controllerPanel} ${isNodeEditorVisible ? styles.visible : ""}`}
         >
-          {isNodeEditorVisible && <NodeController />}
+          {isNodeEditorVisible && (
+            <BuilderAppearanceContext.Provider value={viewMode === "flow" ? builderTheme : null}>
+              <NodeController onClose={() => setEditingNodeId(null)} />
+            </BuilderAppearanceContext.Provider>
+          )}
         </div>
       </Box>
 

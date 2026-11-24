@@ -13,6 +13,8 @@ import {
 import { useBuilderStore } from "../../store";
 import { useModal } from "@/providers/ModalProvider";
 import { useTranslation } from "react-i18next";
+import { useBuilderAppearance } from "../BuilderAppearance";
+import appearanceStyles from "../BuilderAppearance.module.css";
 import {
   DELAY_UNITS,
   getDelayUnit,
@@ -21,6 +23,7 @@ import {
 } from "../../utils/delayDuration";
 
 const DelayNode = ({ id, data, selected }) => {
+  const appearance = useBuilderAppearance();
   const isGroupChild = useBuilderStore((state) => {
     const node = state.nodes.find((item) => item.id === id);
     return state.nodes.some((item) => item.id === node?.parentNode && item.type === "selectionGroup");
@@ -100,7 +103,7 @@ const DelayNode = ({ id, data, selected }) => {
   return (
     <>
       <Box
-        className={isGroupChild ? styles.groupChildNode : undefined}
+        className={`${isGroupChild ? styles.groupChildNode : ""} ${appearance ? styles.publishingCompact : ""}`}
         data-node-type="delay"
         onDoubleClick={openEditor}
         title={t("Double-click to edit delay")}
@@ -177,6 +180,10 @@ const DelayNode = ({ id, data, selected }) => {
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
         transformOrigin={{ vertical: "top", horizontal: "center" }}
         disableScrollLock
+        slotProps={{ paper: {
+          className: appearance ? `${appearanceStyles.surface} ${appearanceStyles.popover}` : undefined,
+          "data-builder-theme": appearance || undefined,
+        } }}
         onPointerDown={(event) => event.stopPropagation()}
         onClick={(event) => event.stopPropagation()}
         onDoubleClick={(event) => event.stopPropagation()}
@@ -240,6 +247,10 @@ const DelayNode = ({ id, data, selected }) => {
               size="small"
               label={t("Unit")}
               value={unit}
+              SelectProps={appearance ? { MenuProps: { slotProps: { paper: {
+                className: `${appearanceStyles.surface} ${appearanceStyles.popover}`,
+                "data-builder-theme": appearance,
+              } } } } : undefined}
               onChange={(event) => setUnit(event.target.value)}
               sx={{ flex: "1 0 156px", minWidth: 0 }}
             >

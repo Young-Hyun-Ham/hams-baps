@@ -17,6 +17,7 @@
 3. `NEXT_PUBLIC_BACKEND` 분기와 Firebase/PostgreSQL 구현 범위를 확인한다.
 4. SSO, 관리자 이메일, `aiEnabled` 검사가 필요한 경로인지 확인한다.
 5. 기존 작업 트리 변경을 보존하고 관련 없는 파일을 수정하지 않는다.
+6. 설계 문서 기반 구현은 `docs/history`의 요청 파일을 매번 다시 읽는다. 결정이 유보된 기능은 문서의 기본 범위와 구분한다.
 
 ## 코드 규칙
 
@@ -42,6 +43,15 @@
 - `core/scenario-core/src`: 시나리오 엔진 원본. `dist`는 생성 결과다.
 - `docs/pages`: 화면 목적과 흐름
 - `docs/job/YYYYMMDD`: 복잡한 작업의 설계·변경 기록
+- `docs/history/YYYY-MM-DD`: 검토용 설계 문서. 사용자가 수정한 최신 내용을 구현 기준으로 삼는다.
+- `docs/work/YYYY-MM-DD`: 구현 결과·변경 파일·DB 변경 여부·검증·미완료 사항. 목록은 `WORK_HISTORY.md`에 기록한다.
+
+## 빌더 화면 수정 경계
+
+- 현재 상세 편집 진입점은 `app/(siderbar-header)/admin/builder/react-flow/scenario-flow/page.tsx`다.
+- `BuilderAppearanceContext`는 상세 Flow와 속성 패널에서만 활성화한다. 공유 조회·내부 Flow 모달·Orkes 전용 노드의 기본 외형을 유지하고, portal paper에는 필요한 테마를 명시적으로 전달한다.
+- 좌측 상단 `scenario-tab-menu`와 탭 캐시는 별도 요구가 없으면 보존한다. 스타일 작업에 타입 분류·탭 동작 변경을 섞지 않는다.
+- 빌더 backend는 `firebase | fastapi`이며 포털의 PostgreSQL 선택과 다르다. Publish는 버전 생성으로, 실제 배포 API와 구별한다.
 
 ## 검증
 
@@ -61,6 +71,7 @@ pnpm build
 - `Added`, `Changed`, `Fixed`, `Removed`, `Security` 중 알맞은 섹션에 한 줄로 쓴다.
 - 화면 동작 변경은 대응하는 `docs/pages/*.md`를 갱신한다.
 - 복잡한 기능은 `docs/job/YYYYMMDD/<topic>.md`에 배경, 결정, 변경 파일, 검증 결과를 기록한다.
+- `docs/work` 작업 기록을 요청받으면 해당 경로와 `WORK_HISTORY.md`를 우선 사용하며 기존 `docs/job` 기록은 보존한다. 작업 중단 시 완료·남은 작업·재개 정보를 남긴다.
 - 환경변수 추가 시 `env.download`에는 안전한 예시만 넣고 `README.md`도 갱신한다.
 - API 키, 쿠키, 세션 비밀값, 서비스 계정 키, 개인정보를 문서·로그·커밋에 남기지 않는다.
 

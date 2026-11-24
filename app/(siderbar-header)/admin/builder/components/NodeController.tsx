@@ -20,6 +20,10 @@ import ScenarioNodeController from "./controllers/ScenarioNodeController";
 import YnBranchNodeController from "./controllers/YnBranchNodeController";
 
 import { useModal } from "@/providers/ModalProvider";
+import { X, Save } from "lucide-react";
+import NodeTypeIcon from "./icons/NodeTypeIcon";
+import { useBuilderAppearance } from "./BuilderAppearance";
+import { getNodeTypeLabel } from "../utils/nodeTitles";
 
 const nodeControllerMap = {
   api: ApiNodeController,
@@ -39,7 +43,7 @@ const nodeControllerMap = {
   ynBranch: YnBranchNodeController,
 } as any;
 
-function NodeController() {
+function NodeController({ onClose }: { onClose?: () => void } = {}) {
   const { selectedNodeId, nodes } = useBuilderStore();
   const selectedNode = nodes.find((n: any) => n.id === selectedNodeId);
   const scenarioEditorActive = useBuilderStore(
@@ -56,13 +60,18 @@ function NodeController() {
     <NodeControllerEditor
       key={effectiveSelectedNode?.id ?? "empty"}
       selectedNode={effectiveSelectedNode}
+      onClose={onClose}
     />
   );
 }
 
-export function NodeControllerEditor({ selectedNode }: { selectedNode: any }) {
+export function NodeControllerEditor({ selectedNode, onClose }: {
+  selectedNode: any;
+  onClose?: () => void;
+}) {
   // console.log("NodeControllerEditor ==========> ", selectedNode)
   const { t } = useTranslation();
+  const appearance = useBuilderAppearance();
   const { showConfirm } = useModal();
   const { edges, nodes, setEdges, setNodes, startNodeId, updateNodeData } =
     useBuilderStore() as any;
@@ -194,7 +203,7 @@ export function NodeControllerEditor({ selectedNode }: { selectedNode: any }) {
 
   const renderContent = () => {
     const ControllerComponent = nodeControllerMap[localNode.type];
-    const commonProps = { localNode, setLocalNode };
+    const commonProps = { localNode, setLocalNode, publishing: Boolean(appearance) };
 
     return ControllerComponent ? (
       <ControllerComponent {...commonProps} />
@@ -206,11 +215,21 @@ export function NodeControllerEditor({ selectedNode }: { selectedNode: any }) {
   };
 
   return (
-    <div className={styles.controllerContainer}>
+    <div className={`${styles.controllerContainer} ${appearance ? styles.publishingController : ""}`}>
+      {appearance && (
+        <header className={styles.publishingHeader}>
+          <NodeTypeIcon type={localNode.type} />
+          <span>{t(getNodeTypeLabel(localNode.type))}</span>
+          {onClose && (
+            <button type="button" onClick={onClose} aria-label={t("Close node editor")} title={t("Close")}>
+              <X size={15} />
+            </button>
+          )}
+        </header>
+      )}
       <div className={styles.mainControls}>
-        <h3>
-          {t("Type")}: {localNode.type}
-        </h3>
+        {!appearance && <h3>{t("Type")}: {localNode.type}</h3>}
+        {appearance && <h4 className={styles.sectionHeading}>{t("BASIC")}</h4>}
         <div className={styles.form}>{renderContent()}</div>
       </div>
       <div className={styles.controllerActions}>
@@ -219,6 +238,7 @@ export function NodeControllerEditor({ selectedNode }: { selectedNode: any }) {
           className={styles.saveNodeButton}
           disabled={!isDirty}
         >
+          {appearance && <Save size={13} aria-hidden="true" />}
           {t("Save Changes")} {isDirty && " *"}
         </button>
       </div>

@@ -18,7 +18,7 @@ import type { DragEvent } from "react";
 
 import { useModal } from "@/providers/ModalProvider";
 
-function FormNodeController({ localNode, setLocalNode }: any) {
+function FormNodeController({ localNode, setLocalNode, publishing = false }: any) {
   const { t } = useTranslation();
   const { showConfirm } = useModal();
   const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
@@ -225,7 +225,7 @@ function FormNodeController({ localNode, setLocalNode }: any) {
           style={{
             fontSize: "0.8rem",
             fontWeight: "bold",
-            color: "#555",
+            color: publishing ? "var(--builder-text)" : "#555",
           }}
         >
           {t("Add Element")}
@@ -248,7 +248,7 @@ function FormNodeController({ localNode, setLocalNode }: any) {
           style={{
             fontSize: "0.8rem",
             fontWeight: "bold",
-            color: "#555",
+            color: publishing ? "var(--builder-text)" : "#555",
           }}
         >
           {t("Elements List")}
